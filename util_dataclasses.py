@@ -1,0 +1,145 @@
+from dataclasses import dataclass
+from typing import List, Dict, Any, Union, Optional
+
+@dataclass
+class BusinessAddress:
+    AddressLine1: str
+    AddressLine2: str
+    City: str
+    Province: str
+    Country: str
+    PostalCode: str
+    Phone: str = None
+
+@dataclass
+class Registrant:
+    RegistrationNUmber: str
+    RegistrationNUmberWithSoNum: str
+    Status: str
+    EffectiveDate: str
+    Type: str
+    Prefix: str
+    FirstName: str
+    MiddleInitials: str
+    LastName: str
+    Suffix: str
+    PositionTitle: str
+    PreviousPublicOfficeHolder: str
+    PreviousPublicOfficeHoldPosition: str
+    PreviousPublicOfficePositionProgramName: str
+    PreviousPublicOfficeHoldLastDate: str
+    BusinessAddress: BusinessAddress
+
+@dataclass
+class Communication:
+    PreviousPublicOfficeHolder: str # Not in the README
+    PreviousPublicOfficeHoldPosition: str # Not in the README
+    PreviousPublicOfficePositionProgramName: str # Not in the README
+    PreviousPublicOfficeHoldLastDate: str # Not in the README
+    POH_Office: str
+    POH_Type: str # In the README this is POH_Ty
+    POH_Position: str
+    POH_Name: str
+    CommunicationMethod: str #In the README this is CommunicationsMethod
+    CommunicationDate: str
+    CommunicationGroupId: str #In the README this is CommunicationGroupid
+    LobbyistNumber: str
+    LobbyistType: str
+    LobbyistPrefix: str
+    LobbyistFirstName: str
+    LobbyistMiddleInitials: str
+    LobbyistLastName: str
+    LobbyistSuffix: str
+    LobbyistBusiness: str
+    LobbyistPositionTitle: str
+    LobbyistPublicOfficeHolder: str = None
+    LobbyistPreviousPublicOfficeHoldPosition: str = None
+    LobbyistPreviousPublicOfficePositionProgramName: str = None
+    LobbyistPreviousPublicOfficeHoldLastDate: str = None
+    LobbyistBusinessAddress: str = None #This is not in the README
+
+@dataclass
+class Firm:
+    Type: str
+    Name: str
+    TradeName: str
+    FiscalStart: str
+    FiscalEnd: str
+    Description: str
+    BusinessType: str
+    BusinessAddress: BusinessAddress
+
+@dataclass
+class Grassroot:
+    Community: str
+    StartDate: str
+    EndDate: str
+    Target: str
+
+@dataclass
+class Beneficiary:
+    Type: str
+    Name: str
+    TradeName: str
+    FiscalStart: str
+    FiscalEnd: str
+    BusinessAddress: BusinessAddress
+
+@dataclass
+class Privatefunding:
+    Funding: str
+    Contact: str
+    Agent: str
+    AgentContact: str
+
+@dataclass
+class POH:
+    Name: str
+    Office: str
+    Title: str
+    Type: str
+
+@dataclass
+class Lobbyist:
+    Number: str
+    Prefix: str
+    FirstName: str
+    MiddleInitials: str
+    LastName: str
+    Suffix: str
+    Business: str
+    Type: str
+
+@dataclass
+class Meeting:
+    Committee: str
+    Desc: str
+    Date: str
+    POHS: Optional[List[POH]] = None
+    Lobbyists: Optional[List[Lobbyist]] = None
+
+@dataclass
+class Gmtfunding:
+    GMTName: str
+    Program: str
+
+@dataclass
+class SubjectMatter: #This is SM in the XML, i renamed it to SubjectMatter
+    SMNumber: str
+    Status: str
+    Type: str
+    SubjectMatter: List[str] # Is the string SubjectMatter in the XMl, I converted it to TBD
+    SubjectMatterDefinition: str # This is not in the README
+    Particulars: str
+    InitialApprovalDate: str
+    EffectiveDate: str
+    ProposedStartDate: str
+    ProposedEndDate: str
+    Registrant: Registrant
+    Firms: List[Firm]
+    Communications: Optional[List[Communication]] = None
+    Grassroots: Optional[List[Grassroot]] = None
+    Beneficiaries: Optional[List[Beneficiary]] = None
+    Privatefundings: Optional[List[Privatefunding]] = None
+    Gmtfundings: Optional[dict] = None # XML says GMTFUNDINGS, but GMTFUNDINGS and Gmtfundings are both in the XML
+    Meetings: Optional[List[Meeting]] = None 
