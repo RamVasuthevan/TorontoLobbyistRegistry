@@ -46,9 +46,9 @@ class Communication:
     POH_Type: str  # In the README this is POH_Ty
     POH_Position: str
     POH_Name: str
-    CommunicationMethod: str  # In the README this is CommunicationsMethod
+    CommunicationMethod: List[str]  # In the README, this is a string
     CommunicationDate: str
-    CommunicationGroupId: str  # In the README this is CommunicationGroupid
+    CommunicationGroupId: str 
     LobbyistNumber: str
     LobbyistType: str
     LobbyistPrefix: str
@@ -146,7 +146,7 @@ class SubjectMatter:  # This is SM in the XML, i renamed it to SubjectMatter
     # Is the string SubjectMatter in the XMl, I converted it to TBD
     SubjectMatter: List[str]
     SubjectMatterDefinition: str  # This is not in the README
-    Particulars: str
+    Particulars: List[str]  # In the README, this is a string
     InitialApprovalDate: str
     EffectiveDate: str
     ProposedStartDate: str

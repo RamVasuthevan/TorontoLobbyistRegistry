@@ -27,7 +27,7 @@ class Parse:
 
             subjectMatter = SubjectMatter(**ROW['SMXML']['SM'])
             subjectMatter.SubjectMatter = list(val if len(val.replace(":",",").split(','))==1 else list(val.replace(":",",").split(',')) for val in list(subjectMatter.SubjectMatter.split(";")))
-            
+            subjectMatter.Particulars = subjectMatter.Particulars.split(';')
 
             subjectMatter.Registrant = Registrant(**subjectMatter.Registrant)
             subjectMatter.Registrant.BusinessAddress = BusinessAddress(**subjectMatter.Registrant.BusinessAddress)
@@ -38,6 +38,7 @@ class Parse:
                 else:
                     subjectMatter.Communications = [Communication(**communication) for communication in subjectMatter.Communications['Communication']]
                 for communication in subjectMatter.Communications:
+                    communication.CommunicationMethod = communication.CommunicationMethod.split(';')
                     communication.LobbyistBusinessAddress = BusinessAddress(**communication.LobbyistBusinessAddress)
             
             if type(subjectMatter.Firms['Firm']) == dict:
