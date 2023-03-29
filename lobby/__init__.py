@@ -1,1 +1,1 @@
-all = ['parser','util','yaml','downloader']
+all = ['parser', 'util', 'yaml', 'downloader']

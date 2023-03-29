@@ -4,7 +4,7 @@ import xmltodict
 import yaml
 from .util import *
 from functools import cache
-
+import dataclasses
 
 class Parse:
     
@@ -97,9 +97,32 @@ class Parse:
         return results
 
     @cache
-    def get_results_json(self):
+    def get_results_dataclasses(self):
         results = []
         for file_name,zipfile in self.lobbyactivity_xml_documents.items():
             document = xmltodict.parse(zipfile, dict_constructor=dict)
             results += self.parse_doument_xml(document)
         return results
+
+    def _add_yaml_representers(self):
+        clsmembers = inspect.getmembers(sys.modules[util.__name__], inspect.isclass)
+
+        for val in clsmembers:
+            def _representer(dumper, data):
+                return dumper.represent_dict({key:val for key,val in data.__dict__.items() if val is not None and val })
+
+            yaml.add_representer(val[1], _representer)
+    
+    class _CNoAliasDumper(yaml.CDumper):
+        def ignore_aliases(self, data):
+            return True    
+
+    @cache
+    def get_results_yaml(self):
+        self._add_yaml_representers()
+        data = {"SubjectMaters":self.get_results_json()}
+        return yaml.dump(data, default_flow_style=False, Dumper=self._CNoAliasDumper, sort_keys=False)
+
+    @cache
+    def get_results_json(self):
+        return [dataclasses.asdict(result) for result in self.get_results_dataclasses()]
