@@ -12,7 +12,7 @@ class Parse:
         self.lobbyactivity_xml_documents = lobbyactivity_xml
 
     @staticmethod
-    def parse_doument_xml(document: dict)->List[SubjectMatter]:
+    def parse_doument(document: dict)->List[SubjectMatter]:
         assert list(document['ROWSET'].keys()) == ['ROW'], f"ROWSET should have only one key 'ROW'. Actual keys: {list(document['ROWSET'].keys())}"
 
         results = []
@@ -102,7 +102,7 @@ class Parse:
         results = []
         for file_name,zipfile in self.lobbyactivity_xml_documents.items():
             document = xmltodict.parse(zipfile, dict_constructor=dict)
-            results += self.parse_doument_xml(document)
+            results += self.parse_doument(document)
         return results
 
     def _add_yaml_representers(self):
