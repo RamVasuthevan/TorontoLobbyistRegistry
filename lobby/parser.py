@@ -38,7 +38,7 @@ class Parse:
                 else:
                     subjectMatter.Communications = [Communication(**communication) for communication in subjectMatter.Communications['Communication']]
                 for communication in subjectMatter.Communications:
-                    communication.CommunicationMethod = communication.CommunicationMethod.split(';')
+                    communication.CommunicationMethod = None if communication.CommunicationMethod is None else communication.CommunicationMethod.split(';')
                     communication.LobbyistBusinessAddress = BusinessAddress(**communication.LobbyistBusinessAddress)
             
             if type(subjectMatter.Firms['Firm']) == dict:

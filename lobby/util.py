@@ -46,7 +46,6 @@ class Communication:
     POH_Type: str  # In the README this is POH_Ty
     POH_Position: str
     POH_Name: str
-    CommunicationMethod: List[str]  # In the README, this is a string
     CommunicationDate: str
     CommunicationGroupId: str 
     LobbyistNumber: str
@@ -58,6 +57,7 @@ class Communication:
     LobbyistSuffix: str
     LobbyistBusiness: str
     LobbyistPositionTitle: str
+    CommunicationMethod: Optional[List[str]] = None  # In the README, this is a string
     LobbyistPublicOfficeHolder: str = None
     LobbyistPreviousPublicOfficeHoldPosition: str = None
     LobbyistPreviousPublicOfficePositionProgramName: str = None
