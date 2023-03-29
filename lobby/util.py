@@ -1,7 +1,9 @@
 from dataclasses import dataclass
 from typing import List, Dict, Any, Union, Optional
 
-FILE_NAMES = {"active": "lobbyactivity-active.xml", "closed": "lobbyactivity-closed.xml"}
+FILE_NAMES = {"active": "lobbyactivity-active.xml",
+              "closed": "lobbyactivity-closed.xml"}
+
 
 @dataclass
 class BusinessAddress:
@@ -12,6 +14,7 @@ class BusinessAddress:
     Country: str
     PostalCode: str
     Phone: str = None
+
 
 @dataclass
 class Registrant:
@@ -32,19 +35,20 @@ class Registrant:
     PreviousPublicOfficeHoldLastDate: str
     BusinessAddress: BusinessAddress
 
+
 @dataclass
 class Communication:
-    PreviousPublicOfficeHolder: str # Not in the README
-    PreviousPublicOfficeHoldPosition: str # Not in the README
-    PreviousPublicOfficePositionProgramName: str # Not in the README
-    PreviousPublicOfficeHoldLastDate: str # Not in the README
+    PreviousPublicOfficeHolder: str  # Not in the README
+    PreviousPublicOfficeHoldPosition: str  # Not in the README
+    PreviousPublicOfficePositionProgramName: str  # Not in the README
+    PreviousPublicOfficeHoldLastDate: str  # Not in the README
     POH_Office: str
-    POH_Type: str # In the README this is POH_Ty
+    POH_Type: str  # In the README this is POH_Ty
     POH_Position: str
     POH_Name: str
-    CommunicationMethod: str #In the README this is CommunicationsMethod
+    CommunicationMethod: str  # In the README this is CommunicationsMethod
     CommunicationDate: str
-    CommunicationGroupId: str #In the README this is CommunicationGroupid
+    CommunicationGroupId: str  # In the README this is CommunicationGroupid
     LobbyistNumber: str
     LobbyistType: str
     LobbyistPrefix: str
@@ -58,7 +62,8 @@ class Communication:
     LobbyistPreviousPublicOfficeHoldPosition: str = None
     LobbyistPreviousPublicOfficePositionProgramName: str = None
     LobbyistPreviousPublicOfficeHoldLastDate: str = None
-    LobbyistBusinessAddress: str = None #This is not in the README
+    LobbyistBusinessAddress: str = None  # This is not in the README
+
 
 @dataclass
 class Firm:
@@ -71,12 +76,14 @@ class Firm:
     BusinessType: str
     BusinessAddress: BusinessAddress
 
+
 @dataclass
 class Grassroot:
     Community: str
     StartDate: str
     EndDate: str
     Target: str
+
 
 @dataclass
 class Beneficiary:
@@ -87,6 +94,7 @@ class Beneficiary:
     FiscalEnd: str
     BusinessAddress: BusinessAddress
 
+
 @dataclass
 class Privatefunding:
     Funding: str
@@ -94,12 +102,14 @@ class Privatefunding:
     Agent: str
     AgentContact: str
 
+
 @dataclass
 class POH:
     Name: str
     Office: str
     Title: str
     Type: str
+
 
 @dataclass
 class Lobbyist:
@@ -112,6 +122,7 @@ class Lobbyist:
     Business: str
     Type: str
 
+
 @dataclass
 class Meeting:
     Committee: str
@@ -120,18 +131,21 @@ class Meeting:
     POHS: Optional[List[POH]] = None
     Lobbyists: Optional[List[Lobbyist]] = None
 
+
 @dataclass
 class Gmtfunding:
     GMTName: str
     Program: str
 
+
 @dataclass
-class SubjectMatter: #This is SM in the XML, i renamed it to SubjectMatter
+class SubjectMatter:  # This is SM in the XML, i renamed it to SubjectMatter
     SMNumber: str
     Status: str
     Type: str
-    SubjectMatter: List[str] # Is the string SubjectMatter in the XMl, I converted it to TBD
-    SubjectMatterDefinition: str # This is not in the README
+    # Is the string SubjectMatter in the XMl, I converted it to TBD
+    SubjectMatter: List[str]
+    SubjectMatterDefinition: str  # This is not in the README
     Particulars: str
     InitialApprovalDate: str
     EffectiveDate: str
@@ -143,5 +157,6 @@ class SubjectMatter: #This is SM in the XML, i renamed it to SubjectMatter
     Grassroots: Optional[List[Grassroot]] = None
     Beneficiaries: Optional[List[Beneficiary]] = None
     Privatefundings: Optional[List[Privatefunding]] = None
-    Gmtfundings: Optional[dict] = None # XML says GMTFUNDINGS, but GMTFUNDINGS and Gmtfundings are both in the XML
-    Meetings: Optional[List[Meeting]] = None 
+    # XML says GMTFUNDINGS, but GMTFUNDINGS and Gmtfundings are both in the XML
+    Gmtfundings: Optional[dict] = None
+    Meetings: Optional[List[Meeting]] = None
