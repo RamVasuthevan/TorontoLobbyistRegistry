@@ -90,7 +90,7 @@ class BusinessAddress(Base):
     Province = Column(String)
     Country = Column(String)
     PostalCode = Column(String)
-    Phone = Column(String)
+    Phone = Column(String,)
 
 class Registrant(Base):
     __tablename__ = 'registrant'
@@ -187,7 +187,7 @@ class GmtFunding(Base):
     __tablename__ = 'gmt_funding'
     id = Column(Integer, primary_key=True)
     GMTName = Column(String)
-    GMTContact = Column(String)
+    Program = Column(String)
 
 class POH(Base):
     __tablename__ = 'poh'
@@ -252,33 +252,52 @@ results = parser.Parse(lobbyactivity_xml).get_results_dataclasses()[:100]
 
 with Session(engine) as session:
     for result in results:
+        #SMNumber,Status,Type,SubjectMatter,SubjectMatterDefinition,Particulars,InitialApprovalDate,EffectiveDate,ProposedStartDate,ProposedEndDate
+        #subjectMatter = SubjectMatter(**{key:val for key,val in result.__dict__.items() if key in [c.name for c in SubjectMatter.__table__.columns]})
+        subjectMatter = SubjectMatter(SMNumber=result.SMNumber,Status=result.Status,Type=result.Type,SubjectMatter=result.SubjectMatter,SubjectMatterDefinition=result.SubjectMatterDefinition,Particulars=result.Particulars,InitialApprovalDate=result.InitialApprovalDate,EffectiveDate=result.EffectiveDate,ProposedStartDate=result.ProposedStartDate,ProposedEndDate=result.ProposedEndDate)
 
-        subjectMatter = SubjectMatter(**{key:val for key,val in result.__dict__.items() if key in [c.name for c in SubjectMatter.__table__.columns]})
-        registrant = Registrant(**{key:val for key,val in result.Registrant.__dict__.items() if key in [c.name for c in Registrant.__table__.columns]})
-        businessAddress = BusinessAddress(**{key:val for key,val in result.Registrant.BusinessAddress.__dict__.items() if key in [c.name for c in BusinessAddress.__table__.columns]})
-        firms = [Firm(**{key:val for key,val in firm.__dict__.items() if key in [c.name for c in Firm.__table__.columns]}) for firm in result.Firms]
+        # 'RegistrationNUmber,Status,EffectiveDate,Type,Prefix,FirstName,MiddleInitials,LastName,Suffix,PositionTitle,PreviousPublicOfficeHolder,PreviousPublicOfficeHoldPosition,PreviousPublicOfficePositionProgramName,PreviousPublicOfficeHoldLastDate'
+        # registrant = Registrant(**{key:val for key,val in result.Registrant.__dict__.items() if key in [c.name for c in Registrant.__table__.columns]})
+        registrant = Registrant(RegistrationNUmber=result.Registrant.RegistrationNUmber,Status=result.Registrant.Status,EffectiveDate=result.Registrant.EffectiveDate,Type=result.Registrant.Type,Prefix=result.Registrant.Prefix,FirstName=result.Registrant.FirstName,MiddleInitials=result.Registrant.MiddleInitials,LastName=result.Registrant.LastName,Suffix=result.Registrant.Suffix,PositionTitle=result.Registrant.PositionTitle,PreviousPublicOfficeHolder=result.Registrant.PreviousPublicOfficeHolder,PreviousPublicOfficeHoldPosition=result.Registrant.PreviousPublicOfficeHoldPosition,PreviousPublicOfficePositionProgramName=result.Registrant.PreviousPublicOfficePositionProgramName,PreviousPublicOfficeHoldLastDate=result.Registrant.PreviousPublicOfficeHoldLastDate)
+
+        # 'AddressLine1,AddressLine2,City,Province,Country,PostalCode,Phone'
+        #businessAddress = BusinessAddress(**{key:val for key,val in result.Registrant.BusinessAddress.__dict__.items() if key in [c.name for c in BusinessAddress.__table__.columns]})
+        businessAddress = BusinessAddress(AddressLine1=result.Registrant.BusinessAddress.AddressLine1,AddressLine2=result.Registrant.BusinessAddress.AddressLine2,City=result.Registrant.BusinessAddress.City,Province=result.Registrant.BusinessAddress.Province,Country=result.Registrant.BusinessAddress.Country,PostalCode=result.Registrant.BusinessAddress.PostalCode,Phone=result.Registrant.BusinessAddress.Phone)
+
+        # 'Type,Name,TradeName,FiscalStart,FiscalEnd,Description,BusinessType'
+        #firms = [Firm(**{key:val for key,val in firm.__dict__.items() if key in [c.name for c in Firm.__table__.columns]}) for firm in result.Firms]
+        firms = [Firm(Type=firm.Type,Name=firm.Name,TradeName=firm.TradeName,FiscalStart=firm.FiscalStart,FiscalEnd=firm.FiscalEnd,Description=firm.Description,BusinessType=firm.BusinessType) for firm in result.Firms]
+
 
         firms = []
         subjectmatter_to_firm_associations = []
         for val in result.Firms:
-            firm = Firm(**{key:val for key,val in val.__dict__.items() if key in [c.name for c in Firm.__table__.columns]})
+            #firm = Firm(**{key:val for key,val in val.__dict__.items() if key in [c.name for c in Firm.__table__.columns]})
+            #FIXME
+            firm = Firm(Type=val.Type,Name=val.Name,TradeName=val.TradeName,FiscalStart=val.FiscalStart,FiscalEnd=val.FiscalEnd,Description=val.Description,BusinessType=val.BusinessType)  
             subjectmatter_to_firm_association = SubjectMatterToFirm(SubjectMatter=subjectMatter, Firm=firm)
             firms.append(firm)
             subjectmatter_to_firm_associations.append(subjectmatter_to_firm_association)
 
-            firm_businessAddress = BusinessAddress(**{key:val for key,val in val.BusinessAddress.__dict__.items() if key in [c.name for c in BusinessAddress.__table__.columns]})
+            
+            #firm_businessAddress = BusinessAddress(**{key:val for key,val in val.BusinessAddress.__dict__.items() if key in [c.name for c in BusinessAddress.__table__.columns]})
+            firm_businessAddress = BusinessAddress(AddressLine1=val.BusinessAddress.AddressLine1,AddressLine2=val.BusinessAddress.AddressLine2,City=val.BusinessAddress.City,Province=val.BusinessAddress.Province,Country=val.BusinessAddress.Country,PostalCode=val.BusinessAddress.PostalCode,Phone=val.BusinessAddress.Phone)
             firm.BusinessAddress = firm_businessAddress
 
         if result.Communications is not None:
             communications = []
             subjectMatter_to_communication_associations = []
             for val in result.Communications:
-                communication = Communication(**{key:val for key,val in val.__dict__.items() if key in [c.name for c in Communication.__table__.columns]})
+                # 'PreviousPublicOfficeHolder,PreviousPublicOfficeHoldPosition,PreviousPublicOfficePositionProgramName,PreviousPublicOfficeHoldLastDate,POH_Office,POH_Type,POH_Position,POH_Name,CommunicationDate,CommunicationGroupId,LobbyistNumber,LobbyistType,LobbyistPrefix,LobbyistFirstName,LobbyistMiddleInitials,LobbyistLastName,LobbyistSuffix,LobbyistBusiness,LobbyistPositionTitle,CommunicationMethod,LobbyistPublicOfficeHolder,LobbyistPreviousPublicOfficeHoldPosition,LobbyistPreviousPublicOfficePositionProgramName,LobbyistPreviousPublicOfficeHoldLastDate'
+                # communication = Communication(**{key:val for key,val in val.__dict__.items() if key in [c.name for c in Communication.__table__.columns]})
+                communication = Communication(PreviousPublicOfficeHolder = val.PreviousPublicOfficeHolder, PreviousPublicOfficeHoldPosition = val.PreviousPublicOfficeHoldPosition, PreviousPublicOfficePositionProgramName = val.PreviousPublicOfficePositionProgramName, PreviousPublicOfficeHoldLastDate = val.PreviousPublicOfficeHoldLastDate, POH_Office = val.POH_Office, POH_Type = val.POH_Type, POH_Position = val.POH_Position, POH_Name = val.POH_Name, CommunicationDate = val.CommunicationDate, CommunicationGroupId = val.CommunicationGroupId, LobbyistNumber = val.LobbyistNumber, LobbyistType = val.LobbyistType, LobbyistPrefix = val.LobbyistPrefix, LobbyistFirstName = val.LobbyistFirstName, LobbyistMiddleInitials = val.LobbyistMiddleInitials, LobbyistLastName = val.LobbyistLastName, LobbyistSuffix = val.LobbyistSuffix, LobbyistBusiness = val.LobbyistBusiness, LobbyistPositionTitle = val.LobbyistPositionTitle, CommunicationMethod = val.CommunicationMethod, LobbyistPublicOfficeHolder = val.LobbyistPublicOfficeHolder, LobbyistPreviousPublicOfficeHoldPosition = val.LobbyistPreviousPublicOfficeHoldPosition, LobbyistPreviousPublicOfficePositionProgramName = val.LobbyistPreviousPublicOfficePositionProgramName, LobbyistPreviousPublicOfficeHoldLastDate = val.LobbyistPreviousPublicOfficeHoldLastDate)
+
                 subjectMatter_to_communication_association = SubjectMatterToCommunication(SubjectMatter=subjectMatter, Communication=communication)
                 communications.append(communication)
                 subjectMatter_to_communication_associations.append(subjectMatter_to_communication_association)
 
-                communication_LobbyistBusinessAddress = BusinessAddress(**{key:val for key,val in val.LobbyistBusinessAddress.__dict__.items() if key in [c.name for c in BusinessAddress.__table__.columns]})
+                #communication_LobbyistBusinessAddress = BusinessAddress(**{key:val for key,val in val.LobbyistBusinessAddress.__dict__.items() if key in [c.name for c in BusinessAddress.__table__.columns]})
+                communication_LobbyistBusinessAddress = BusinessAddress(AddressLine1=val.LobbyistBusinessAddress.AddressLine1,AddressLine2=val.LobbyistBusinessAddress.AddressLine2,City=val.LobbyistBusinessAddress.City,Province=val.LobbyistBusinessAddress.Province,Country=val.LobbyistBusinessAddress.Country,PostalCode=val.LobbyistBusinessAddress.PostalCode,Phone=val.LobbyistBusinessAddress.Phone)
                 communication.LobbyistBusinessAddress = communication_LobbyistBusinessAddress
 
                 if communication.CommunicationMethod is not None:
@@ -288,7 +307,9 @@ with Session(engine) as session:
             grassroots = []
             subjectMatter_to_grassroot_associations = []
             for val in result.Grassroots:
-                grassroot = Grassroot(**{key:val for key,val in val.__dict__.items() if key in [c.name for c in Grassroot.__table__.columns]})
+                # Community, StartDate, EndDate, Target
+                #grassroot = Grassroot(**{key:val for key,val in val.__dict__.items() if key in [c.name for c in Grassroot.__table__.columns]})
+                grassroot = Grassroot(Community=val.Community,StartDate=val.StartDate,EndDate=val.EndDate,Target=val.Target)
                 subjectMatter_to_grassroot_association = SubjectMatterToGrassroot(SubjectMatter=subjectMatter, Grassroot=grassroot)
                 grassroots.append(grassroot)
                 subjectMatter_to_grassroot_associations.append(subjectMatter_to_grassroot_association)
@@ -297,19 +318,24 @@ with Session(engine) as session:
             beneficiaries = []
             subjectMatter_to_beneficiary_associations = []
             for val in result.Beneficiaries:
-                beneficiary = Beneficiary(**{key:val for key,val in val.__dict__.items() if key in [c.name for c in Beneficiary.__table__.columns]})
+                'Type,Name,TradeName,FiscalStart,FiscalEnd'
+                #beneficiary = Beneficiary(**{key:val for key,val in val.__dict__.items() if key in [c.name for c in Beneficiary.__table__.columns]})
+                beneficiary = Beneficiary(Type=val.Type,Name=val.Name,TradeName=val.TradeName,FiscalStart=val.FiscalStart,FiscalEnd=val.FiscalEnd)
                 subjectMatter_to_beneficiary_association = SubjectMatterToBeneficiary(SubjectMatter=subjectMatter, Beneficiary=beneficiary)
                 beneficiaries.append(beneficiary)
                 subjectMatter_to_beneficiary_associations.append(subjectMatter_to_beneficiary_association)
 
-                beneficiary_BusinessAddress = BusinessAddress(**{key:val for key,val in val.BusinessAddress.__dict__.items() if key in [c.name for c in BusinessAddress.__table__.columns]})
+                #beneficiary_BusinessAddress = BusinessAddress(**{key:val for key,val in val.BusinessAddress.__dict__.items() if key in [c.name for c in BusinessAddress.__table__.columns]})
+                beneficiary_BusinessAddress = BusinessAddress(AddressLine1=val.BusinessAddress.AddressLine1,AddressLine2=val.BusinessAddress.AddressLine2,City=val.BusinessAddress.City,Province=val.BusinessAddress.Province,Country=val.BusinessAddress.Country,PostalCode=val.BusinessAddress.PostalCode,Phone=val.BusinessAddress.Phone)
                 beneficiary.BusinessAddress = beneficiary_BusinessAddress
 
         if result.Privatefundings is not None:
             privatefundings = []
             subjectMatter_to_privatefunding_associations = []
             for val in result.Privatefundings:
-                privatefunding = PrivateFunding(**{key:val for key,val in val.__dict__.items() if key in [c.name for c in PrivateFunding.__table__.columns]})
+                #'Funding,Contact,Agent,AgentContact'
+                #privatefunding = PrivateFunding(**{key:val for key,val in val.__dict__.items() if key in [c.name for c in PrivateFunding.__table__.columns]})
+                privatefunding = PrivateFunding(Funding=val.Funding,Contact=val.Contact,Agent=val.Agent,AgentContact=val.AgentContact)
                 subjectMatter_to_privatefunding_association = SubjectMatterToPrivateFunding(SubjectMatter=subjectMatter, PrivateFunding=privatefunding)
                 privatefundings.append(privatefunding)
                 subjectMatter_to_privatefunding_associations.append(subjectMatter_to_privatefunding_association)
@@ -318,7 +344,9 @@ with Session(engine) as session:
             gmtfundings = []
             subjectMatter_to_gmtfunding_associations = []
             for val in result.Gmtfundings:
-                gmtfunding = GmtFunding(**{key:val for key,val in val.__dict__.items() if key in [c.name for c in GmtFunding.__table__.columns]})
+                #GMTName, Program
+                #gmtfunding = GmtFunding(**{key:val for key,val in val.__dict__.items() if key in [c.name for c in GmtFunding.__table__.columns]})
+                gmtfunding = GmtFunding(GMTName=val.GMTName, Program=val.Program)
                 subjectMatter_to_gmtfunding_association = SubjectMatterToGmtFunding(SubjectMatter=subjectMatter, GmtFunding=gmtfunding)
                 gmtfundings.append(gmtfunding)
                 subjectMatter_to_gmtfunding_associations.append(subjectMatter_to_gmtfunding_association)
@@ -329,7 +357,9 @@ with Session(engine) as session:
             meeting_to_POHS_associations = []
             metting_to_lobbyists_associations = []
             for val in result.Meetings:
-                meeting = Meeting(**{key:val for key,val in val.__dict__.items() if key in [c.name for c in Meeting.__table__.columns]})
+                # Committee, Desc , Date
+                # meeting = Meeting(**{key:val for key,val in val.__dict__.items() if key in [c.name for c in Meeting.__table__.columns]})
+                meeting = Meeting(Committee=val.Committee,Desc=val.Desc,Date=val.Date)
                 subjectMatter_to_meeting_association = SubjectMatterToMeeting(SubjectMatter=subjectMatter, Meeting=meeting)
                 meetings.append(meeting)
                 subjectMatter_to_meeting_associations.append(subjectMatter_to_meeting_association)
@@ -337,13 +367,17 @@ with Session(engine) as session:
 
                 if meeting.POHS is not None:
                     for val in meeting.POHS:
-                        POH = POH(**{key:val for key,val in val.__dict__.items() if key in [c.name for c in POH.__table__.columns]})
+                        # Name, Office, Title, Type
+                        # POH = POH(**{key:val for key,val in val.__dict__.items() if key in [c.name for c in POH.__table__.columns]})
+                        POH = POH(Name=val.Name, Office=val.Office, Title=val.Title, Type=val.Type)
                         meeting_to_POH_association = MeetingToPOH(Meeting=meeting, POH=POH)
                         meeting_to_POHS_associations.append(meeting_to_POH_association)
                 
                 if meeting.Lobbyists is not None:
                     for val in meeting.Lobbyists:
-                        lobbyist = Lobbyist(**{key:val for key,val in val.__dict__.items() if key in [c.name for c in Lobbyist.__table__.columns]})
+                        # Number, Prefix, FirstName, MiddleInitials, LastName, Suffix, Business, Type
+                        # lobbyist = Lobbyist(**{key:val for key,val in val.__dict__.items() if key in [c.name for c in Lobbyist.__table__.columns]})
+                        lobbyist = Lobbyist(Number=val.Number, Prefix=val.Prefix, FirstName=val.FirstName, MiddleInitials=val.MiddleInitials, LastName=val.LastName, Suffix=val.Suffix, Business=val.Business, Type=val.Type)
                         meeting_to_lobbyist_association = MeetingToLobbyist(Meeting=meeting, Lobbyist=lobbyist)
                         metting_to_lobbyists_associations.append(meeting_to_lobbyist_association)
             
