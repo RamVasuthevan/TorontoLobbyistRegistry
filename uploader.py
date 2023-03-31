@@ -2,6 +2,7 @@ from sqlalchemy import Column
 from sqlalchemy import ForeignKey
 from sqlalchemy import Integer
 from sqlalchemy import String
+from sqlalchemy import ForeignKeyConstraint
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy import create_engine
@@ -48,17 +49,21 @@ class SubjectMatterToBeneficiary(Base):
 
 class SubjectMatterToPrivateFunding(Base):
     __tablename__ = "subjectMatter_to_privateFunding"
-    Subject_matter_SMNumber = Column(String, ForeignKey("subject_matter.SMNumber"), primary_key=True)
-    privateFunding_id  = Column(Integer, ForeignKey("private_funding.id"), primary_key=True)
+    Subject_matter_SMNumber = Column(String, ForeignKey("subject_matter.SMNumber"), primary_key=True, nullable=True)
+    privateFunding_Funding = Column(String, ForeignKey("private_funding.Funding"), primary_key=True,nullable=True)
+    privateFunding_Contact = Column(String, ForeignKey("private_funding.Contact"), primary_key=True,nullable=True)
+    privateFunding_Agent = Column(String, ForeignKey("private_funding.Agent"), primary_key=True, nullable=True)
+    privateFunding_AgentContact = Column(String, ForeignKey("private_funding.AgentContact"), primary_key=True , nullable=True)
     SubjectMatter = relationship("SubjectMatter", back_populates="PrivateFundings")
-    PrivateFunding = relationship("PrivateFunding")
+    PrivateFunding = relationship("PrivateFunding", primaryjoin="and_(SubjectMatterToPrivateFunding.privateFunding_Funding == PrivateFunding.Funding, SubjectMatterToPrivateFunding.privateFunding_Contact == PrivateFunding.Contact, SubjectMatterToPrivateFunding.privateFunding_Agent == PrivateFunding.Agent, SubjectMatterToPrivateFunding.privateFunding_AgentContact == PrivateFunding.AgentContact)")
 
 class SubjectMatterToGmtFunding(Base):
     __tablename__ = "subjectMatter_to_gmtFunding"
     Subject_matter_SMNumber = Column(String, ForeignKey("subject_matter.SMNumber"), primary_key=True)
-    gmtFunding_id  = Column(Integer, ForeignKey("gmt_funding.id"), primary_key=True)
+    gmtFunding_GMTName = Column(String, ForeignKey("gmt_funding.GMTName"), primary_key=True)
+    gmtFunding_Program = Column(String,ForeignKey("gmt_funding.Program"), primary_key=True)
     SubjectMatter = relationship("SubjectMatter", back_populates="GmtFundings")
-    GmtFunding = relationship("GmtFunding")
+    GmtFunding = relationship("GmtFunding", primaryjoin="and_(SubjectMatterToGmtFunding.gmtFunding_GMTName == GmtFunding.GMTName, SubjectMatterToGmtFunding.gmtFunding_Program == GmtFunding.Program)")
 
 class SubjectMatterToMeeting(Base):
     __tablename__ = "subjectMatter_to_meeting"
@@ -177,17 +182,15 @@ class Beneficiary(Base):
 
 class PrivateFunding(Base):
     __tablename__ = 'private_funding'
-    id = Column(Integer, primary_key=True)
-    Funding = Column(String)
-    Contact = Column(String)
-    Agent = Column(String)
-    AgentContact = Column(String)
+    Funding = Column(String, primary_key=True, nullable=True)
+    Contact = Column(String, primary_key=True, nullable=True)
+    Agent = Column(String, primary_key=True, nullable=True)
+    AgentContact = Column(String, primary_key=True, nullable=True)
 
 class GmtFunding(Base):
     __tablename__ = 'gmt_funding'
-    id = Column(Integer, primary_key=True)
-    GMTName = Column(String)
-    Program = Column(String)
+    GMTName = Column(String, primary_key=True)
+    Program = Column(String, primary_key=True)
 
 class POH(Base):
     __tablename__ = 'poh'
@@ -244,17 +247,23 @@ import os
 if os.path.exists("TorontoLobbyistRegistry.db"):
     os.remove("TorontoLobbyistRegistry.db")
 
-engine = create_engine("sqlite:///TorontoLobbyistRegistry.db", echo=True, future=True)
+engine = create_engine("sqlite:///TorontoLobbyistRegistry.db", echo=False, future=True)
 Base.metadata.create_all(engine)
 
 lobbyactivity_xml = downloader.Downloader().download_lobbyactivity_xml()
 results = parser.Parse(lobbyactivity_xml).get_results_dataclasses()
 
+
+
 with Session(engine) as session:
-    for result in results:
+    for idx, result in enumerate(results):
+        print(f"{idx}/{len(results)}")
         subjectMatter = SubjectMatter(SMNumber=result.SMNumber,Status=result.Status,Type=result.Type,SubjectMatter=result.SubjectMatter,SubjectMatterDefinition=result.SubjectMatterDefinition,Particulars=result.Particulars,InitialApprovalDate=result.InitialApprovalDate,EffectiveDate=result.EffectiveDate,ProposedStartDate=result.ProposedStartDate,ProposedEndDate=result.ProposedEndDate)
         registrant = Registrant(RegistrationNUmber=result.Registrant.RegistrationNUmber,Status=result.Registrant.Status,EffectiveDate=result.Registrant.EffectiveDate,Type=result.Registrant.Type,Prefix=result.Registrant.Prefix,FirstName=result.Registrant.FirstName,MiddleInitials=result.Registrant.MiddleInitials,LastName=result.Registrant.LastName,Suffix=result.Registrant.Suffix,PositionTitle=result.Registrant.PositionTitle,PreviousPublicOfficeHolder=result.Registrant.PreviousPublicOfficeHolder,PreviousPublicOfficeHoldPosition=result.Registrant.PreviousPublicOfficeHoldPosition,PreviousPublicOfficePositionProgramName=result.Registrant.PreviousPublicOfficePositionProgramName,PreviousPublicOfficeHoldLastDate=result.Registrant.PreviousPublicOfficeHoldLastDate)
         businessAddress = BusinessAddress(AddressLine1=result.Registrant.BusinessAddress.AddressLine1,AddressLine2=result.Registrant.BusinessAddress.AddressLine2,City=result.Registrant.BusinessAddress.City,Province=result.Registrant.BusinessAddress.Province,Country=result.Registrant.BusinessAddress.Country,PostalCode=result.Registrant.BusinessAddress.PostalCode,Phone=result.Registrant.BusinessAddress.Phone)
+
+        subjectMatter.SubjectMatter = "TODO"
+        subjectMatter.Particulars = "TODO"
 
         firms = []
         subjectmatter_to_firm_associations = []
@@ -304,26 +313,42 @@ with Session(engine) as session:
                 beneficiary_BusinessAddress = BusinessAddress(AddressLine1=val.BusinessAddress.AddressLine1,AddressLine2=val.BusinessAddress.AddressLine2,City=val.BusinessAddress.City,Province=val.BusinessAddress.Province,Country=val.BusinessAddress.Country,PostalCode=val.BusinessAddress.PostalCode,Phone=val.BusinessAddress.Phone)
                 beneficiary.BusinessAddress = beneficiary_BusinessAddress
 
+        # if result.Privatefundings is not None:
+        #     privatefundings = []
+        #     subjectMatter_to_privatefunding_associations = []
+        #     for val in result.Privatefundings:
+        #         privatefunding = PrivateFunding(Funding=val.Funding,Contact=val.Contact,Agent=val.Agent,AgentContact=val.AgentContact)
+        #         subjectMatter_to_privatefunding_association = SubjectMatterToPrivateFunding(SubjectMatter=subjectMatter, PrivateFunding=privatefunding)
+        #         privatefundings.append(privatefunding)
+        #         subjectMatter_to_privatefunding_associations.append(subjectMatter_to_privatefunding_association)
+
+
         if result.Privatefundings is not None:
-            privatefundings = []
-            subjectMatter_to_privatefunding_associations = []
             for val in result.Privatefundings:
-                privatefunding = PrivateFunding(Funding=val.Funding,Contact=val.Contact,Agent=val.Agent,AgentContact=val.AgentContact)
-                subjectMatter_to_privatefunding_association = SubjectMatterToPrivateFunding(SubjectMatter=subjectMatter, PrivateFunding=privatefunding)
-                privatefundings.append(privatefunding)
-                subjectMatter_to_privatefunding_associations.append(subjectMatter_to_privatefunding_association)
+                privatefunding = session.query(PrivateFunding).filter(PrivateFunding.Funding == val.Funding, PrivateFunding.Contact == val.Contact, PrivateFunding.Agent == val.Agent, PrivateFunding.AgentContact == val.AgentContact).first()
+                if privatefunding is None:
+                    privatefunding = PrivateFunding(Funding=val.Funding,Contact=val.Contact,Agent=val.Agent,AgentContact=val.AgentContact)
+                    session.add(privatefunding)
+                    session.flush()
+                subjectMatter_to_privatefunding_association = SubjectMatterToPrivateFunding(SubjectMatter=subjectMatter, PrivateFunding=privatefunding,privateFunding_Funding=val.Funding ,privateFunding_Contact=val.Contact,privateFunding_Agent=val.Agent,privateFunding_AgentContact=val.AgentContact)
+                session.add(privatefunding)
+                session.add(subjectMatter_to_privatefunding_association)
 
         if result.Gmtfundings is not None:
-            gmtfundings = []
-            subjectMatter_to_gmtfunding_associations = []
             for val in result.Gmtfundings:
-                gmtfunding = GmtFunding(GMTName=val.GMTName, Program=val.Program)
-                subjectMatter_to_gmtfunding_association = SubjectMatterToGmtFunding(SubjectMatter=subjectMatter, GmtFunding=gmtfunding)
-                gmtfundings.append(gmtfunding)
-                subjectMatter_to_gmtfunding_associations.append(subjectMatter_to_gmtfunding_association)
+                gmtfunding = session.query(GmtFunding).filter(GmtFunding.GMTName == val.GMTName, GmtFunding.Program == val.Program).first()
+                if gmtfunding is None:
+                    gmtfunding = GmtFunding(GMTName=val.GMTName, Program=val.Program)
+                    session.add(gmtfunding)
+                    session.flush()
+                subjectMatter_to_gmtfunding_association = SubjectMatterToGmtFunding(SubjectMatter=subjectMatter, GmtFunding=gmtfunding,gmtFunding_GMTName=val.GMTName ,gmtFunding_Program=val.Program)
+                session.add(gmtfunding)
+                session.add(subjectMatter_to_gmtfunding_association)
         
         if result.Meetings is not None:
             meetings = []
+            pohs = []
+            lobbyists = []
             subjectMatter_to_meeting_associations = []
             meeting_to_POHS_associations = []
             metting_to_lobbyists_associations = []
@@ -337,17 +362,31 @@ with Session(engine) as session:
                     for val in meeting.POHS:
                         POH = POH(Name=val.Name, Office=val.Office, Title=val.Title, Type=val.Type)
                         meeting_to_POH_association = MeetingToPOH(Meeting=meeting, POH=POH)
+                        pohs.append(POH)
                         meeting_to_POHS_associations.append(meeting_to_POH_association)
                 
                 if meeting.Lobbyists is not None:
                     for val in meeting.Lobbyists:
                         lobbyist = Lobbyist(Number=val.Number, Prefix=val.Prefix, FirstName=val.FirstName, MiddleInitials=val.MiddleInitials, LastName=val.LastName, Suffix=val.Suffix, Business=val.Business, Type=val.Type)
                         meeting_to_lobbyist_association = MeetingToLobbyist(Meeting=meeting, Lobbyist=lobbyist)
+                        lobbyists.append(lobbyist)
                         metting_to_lobbyists_associations.append(meeting_to_lobbyist_association)
-            
-        subjectMatter.SubjectMatter = "TODO"
-        subjectMatter.Particulars = "TODO"
+            session.add(meeting)
+            session.add_all(pohs)
+            session.add_all(lobbyists)
+            session.flush()
+            for meeting,subjectMatterToMeeting in zip(meetings, subjectMatter_to_meeting_associations):
+                subjectMatterToMeeting.Meeting_id = meeting.id
+                subjectMatterToMeeting.SubjectMatter_SMNumber = subjectMatter.SMNumber
 
+            for meeting_to_POHS_association in meeting_to_POHS_associations:
+                meeting_to_POHS_association.Meeting_id = meeting_to_POHS_association.Meeting.id
+                meeting_to_POHS_association.POHS_id = meeting_to_POHS_association.POHS.id
+
+            for meeting_to_lobbyists_association in metting_to_lobbyists_associations:
+                meeting_to_lobbyists_association.Meeting_id = meeting_to_lobbyists_association.Meeting.id
+                meeting_to_lobbyists_association.Lobbyist_id = meeting_to_lobbyists_association.Lobbyist.id
+            
         session.add(subjectMatter)
         session.add(registrant)
         session.add(businessAddress)
@@ -359,10 +398,8 @@ with Session(engine) as session:
             session.add_all(grassroots)
         if result.Beneficiaries is not None:
             session.add_all(beneficiaries)
-        if result.Privatefundings is not None:
-            session.add_all(privatefundings)
-        if result.Gmtfundings is not None:
-            session.add_all(gmtfundings)
+        #if result.Privatefundings is not None:
+        #    session.add_all(privatefundings)
         if result.Meetings is not None:
             session.add_all(meetings)
 
@@ -397,28 +434,11 @@ with Session(engine) as session:
                 beneficiary.BusinessAddress_id = beneficiary.BusinessAddress.id
         
         if result.Privatefundings is not None:
-            for privatefunding,subjectMatterToPrivateFunding in zip(privatefundings, subjectMatter_to_privatefunding_associations):
-                subjectMatterToPrivateFunding.Privatefunding_id = privatefunding.id
-                subjectMatterToPrivateFunding.SubjectMatter_SMNumber = subjectMatter.SMNumber
-        
-        if result.Gmtfundings is not None:
-            for gmtfunding,subjectMatterToGmtFunding in zip(gmtfundings, subjectMatter_to_gmtfunding_associations):
-                subjectMatterToGmtFunding.Gmtfunding_id = gmtfunding.id
-                subjectMatterToGmtFunding.SubjectMatter_SMNumber = subjectMatter.SMNumber
-        
-        if result.Meetings is not None:
-            for meeting,subjectMatterToMeeting in zip(meetings, subjectMatter_to_meeting_associations):
-                subjectMatterToMeeting.Meeting_id = meeting.id
-                subjectMatterToMeeting.SubjectMatter_SMNumber = subjectMatter.SMNumber
-
-            for meeting_to_POHS_association in meeting_to_POHS_associations:
-                meeting_to_POHS_association.Meeting_id = meeting_to_POHS_association.Meeting.id
-                meeting_to_POHS_association.POHS_id = meeting_to_POHS_association.POHS.id
-
-            for meeting_to_lobbyists_association in metting_to_lobbyists_associations:
-                meeting_to_lobbyists_association.Meeting_id = meeting_to_lobbyists_association.Meeting.id
-                meeting_to_lobbyists_association.Lobbyist_id = meeting_to_lobbyists_association.Lobbyist.id
-        
+            pass
+            # for privatefunding,subjectMatterToPrivateFunding in zip(privatefundings, subjectMatter_to_privatefunding_associations):
+            #     subjectMatterToPrivateFunding.Privatefunding_id = privatefunding.id
+            #     subjectMatterToPrivateFunding.SubjectMatter_SMNumber = subjectMatter.SMNumber
+         
         session.flush()    
     session.commit()
 
