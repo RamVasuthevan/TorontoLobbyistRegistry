@@ -26,7 +26,7 @@ class Parse:
                 del ROW['SMXML']['SM']['GMTFUNDINGS']
 
             subjectMatter = SubjectMatter(**ROW['SMXML']['SM'])
-            subjectMatter.SubjectMatter = list(val if len(val.replace(":",",").split(','))==1 else list(val.replace(":",",").split(',')) for val in list(subjectMatter.SubjectMatter.split(";")))
+            subjectMatter.SubjectMatter = list(val if len(val.replace(":",",").split(','))==1 else list(val.replace(":",",").split(',')) for val in list(subjectMatter.SubjectMatter.split(";")))[0]
             subjectMatter.Particulars = subjectMatter.Particulars.split(';')
 
             subjectMatter.Registrant = Registrant(**subjectMatter.Registrant)
