@@ -26,8 +26,10 @@ class Parse:
                 del ROW['SMXML']['SM']['GMTFUNDINGS']
 
             subjectMatter = SubjectMatter(**ROW['SMXML']['SM'])
-            subjectMatter.SubjectMatter = list(val if len(val.replace(":",",").split(','))==1 else list(val.replace(":",",").split(',')) for val in list(subjectMatter.SubjectMatter.split(";")))[0]
-            subjectMatter.Particulars = subjectMatter.Particulars.split(';')
+            #subjectMatter.SubjectMatter = list(val if len(val.replace(":",",").split(','))==1 else list(val.replace(":",",").split(',')) for val in list(subjectMatter.SubjectMatter.split(";")))[0]
+            subjectMatter.SubjectMatter = subjectMatter.SubjectMatter.split(';')
+            #subjectMatter.Particulars = subjectMatter.Particulars.split(';')
+            subjectMatter.Particulars = subjectMatter.Particulars
 
             subjectMatter.Registrant = Registrant(**subjectMatter.Registrant)
             subjectMatter.Registrant.BusinessAddress = BusinessAddress(**subjectMatter.Registrant.BusinessAddress)
@@ -80,7 +82,7 @@ class Parse:
                     subjectMatter.Meetings = [Meeting(**subjectMatter.Meetings['Meeting'])]
                 else:
                     subjectMatter.Meetings = [Meeting(**meeting) for meeting in subjectMatter.Meetings['Meeting']]
-                
+
                 for meeting in subjectMatter.Meetings:
                     if meeting.POHS:
                         if type(meeting.POHS['POH']) == dict:

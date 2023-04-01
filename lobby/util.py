@@ -62,7 +62,7 @@ class Communication:
     LobbyistPreviousPublicOfficeHoldPosition: str = None
     LobbyistPreviousPublicOfficePositionProgramName: str = None
     LobbyistPreviousPublicOfficeHoldLastDate: str = None
-    LobbyistBusinessAddress: str = None  # This is not in the README #TODO: Check this
+    LobbyistBusinessAddress: BusinessAddress = None
 
 
 @dataclass
@@ -111,6 +111,7 @@ class POH:
     Type: str
 
 
+
 @dataclass
 class Lobbyist:
     Number: str
@@ -132,7 +133,7 @@ class Meeting:
     Lobbyists: Optional[List[Lobbyist]] = None
 
 
-@dataclass
+@dataclass(eq=True, frozen=True)
 class Gmtfunding:
     GMTName: str
     Program: str

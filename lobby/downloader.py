@@ -8,10 +8,11 @@ from datetime import datetime
 
 class Downloader:
 
-    def __init__(self):
+    def __init__(self, load_from_url=True):
         self._called = False
         self.package = self._get_package()
         self.metadata = self._get_metadata()
+
 
     def _get_package(self):
         if self._called:
@@ -54,8 +55,10 @@ class Downloader:
 
     @cache
     def download_lobbyactivity_zip(self, url) -> bytes:
-        lobbyist_data = requests.get(url)
-        lobbyist_data_zip = lobbyist_data.content
+        #lobbyist_data = requests.get(url)
+        #lobbyist_data_zip = lobbyist_data.content
+        # open file Lobbyist Registry Activity.zip
+        return open('Lobbyist Registry Activity.zip', 'rb').read()
         return lobbyist_data_zip
 
     @cache
