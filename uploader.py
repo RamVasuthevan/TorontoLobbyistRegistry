@@ -3,11 +3,14 @@ from sqlalchemy import ForeignKey
 from sqlalchemy import Integer
 from sqlalchemy import String
 from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import relationship
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from sqlalchemy.orm import backref
 from sqlalchemy.orm import Mapped
+from sqlalchemy.orm import mapped_column
+
 from sqlalchemy import Table
 
 import pprint as pp
@@ -17,87 +20,89 @@ from lobby import downloader, parser
 from itertools import chain
 
 
-Base = declarative_base()
+class Base(DeclarativeBase):
+    pass
 
-class SubjectMatterToCommunication(Base):
-    __tablename__ = "subjectMatter_to_communication"
-    Subject_matter_SMNumber = Column(String, ForeignKey("subject_matter.SMNumber"), primary_key=True)
-    communication_id  = Column(Integer, ForeignKey("communication.id"), primary_key=True)
-    SubjectMatter = relationship("SubjectMatter", back_populates="Communications")
-    Communication = relationship("Communication")
-class SubjectMatterToFirm(Base):
-    __tablename__ = "subjectMatter_to_firm"
-    Subject_matter_SMNumber = Column(String, ForeignKey("subject_matter.SMNumber"), primary_key=True)
-    firm_id  = Column(Integer, ForeignKey("firm.id"), primary_key=True)
-    SubjectMatter = relationship("SubjectMatter", back_populates="Firms")
-    Firm = relationship("Firm")
-class SubjectMatterToGrassroot(Base):
-    __tablename__ = "subjectMatter_to_grassroot"
-    Subject_matter_SMNumber = Column(String, ForeignKey("subject_matter.SMNumber"), primary_key=True)
-    grassroot_id  = Column(Integer, ForeignKey("grassroot.id"), primary_key=True)
-    SubjectMatter = relationship("SubjectMatter", back_populates="Grassroots")
-    Grassroot = relationship("Grassroot")
-class SubjectMatterToBeneficiary(Base):
-    __tablename__ = "subjectMatter_to_beneficiary"
-    Subject_matter_SMNumber = Column(String, ForeignKey("subject_matter.SMNumber"), primary_key=True)
-    beneficiary_id  = Column(Integer, ForeignKey("beneficiary.id"), primary_key=True)
-    SubjectMatter = relationship("SubjectMatter", back_populates="Beneficiaries")
-    Beneficiary = relationship("Beneficiary")
-class SubjectMatterToPrivateFunding(Base):
-    __tablename__ = "subjectMatter_to_privateFunding"
-    Subject_matter_SMNumber = Column(String, ForeignKey("subject_matter.SMNumber"), primary_key=True)
-    privateFunding_id  = Column(Integer, ForeignKey("private_funding.id"), primary_key=True)
-    SubjectMatter = relationship("SubjectMatter", back_populates="PrivateFundings")
-    PrivateFunding = relationship("PrivateFunding")
-class SubjectMatterToGmtFunding(Base):
-    __tablename__ = "subjectMatter_to_gmtFunding"
-    Subject_matter_SMNumber = Column(String, ForeignKey("subject_matter.SMNumber"), primary_key=True)
-    gmtFunding_id  = Column(Integer, ForeignKey("gmt_funding.id"), primary_key=True)
-    SubjectMatter = relationship("SubjectMatter", back_populates="GmtFundings")
-    GmtFunding = relationship("GmtFunding")
-class SubjectMatterToMeeting(Base):
-    __tablename__ = "subjectMatter_to_meeting"
-    Subject_matter_SMNumber = Column(String, ForeignKey("subject_matter.SMNumber"), primary_key=True)
-    meeting_id  = Column(Integer, ForeignKey("meeting.id"), primary_key=True)
-    SubjectMatter = relationship("SubjectMatter", back_populates="Meetings")
-    Meeting = relationship("Meeting")
+# class SubjectMatterToCommunication(Base):
+#     __tablename__ = "subjectMatter_to_communication"
+#     Subject_matter_SMNumber = Column(String, ForeignKey("subject_matter.SMNumber"), primary_key=True)
+#     communication_id  = Column(Integer, ForeignKey("communication.id"), primary_key=True)
+#     SubjectMatter = relationship("SubjectMatter", back_populates="Communications")
+#     Communication = relationship("Communication")
+# class SubjectMatterToFirm(Base):
+#     __tablename__ = "subjectMatter_to_firm"
+#     Subject_matter_SMNumber = Column(String, ForeignKey("subject_matter.SMNumber"), primary_key=True)
+#     firm_id  = Column(Integer, ForeignKey("firm.id"), primary_key=True)
+#     SubjectMatter = relationship("SubjectMatter", back_populates="Firms")
+#     Firm = relationship("Firm")
+# class SubjectMatterToGrassroot(Base):
+#     __tablename__ = "subjectMatter_to_grassroot"
+#     Subject_matter_SMNumber = Column(String, ForeignKey("subject_matter.SMNumber"), primary_key=True)
+#     grassroot_id  = Column(Integer, ForeignKey("grassroot.id"), primary_key=True)
+#     SubjectMatter = relationship("SubjectMatter", back_populates="Grassroots")
+#     Grassroot = relationship("Grassroot")
+# class SubjectMatterToBeneficiary(Base):
+#     __tablename__ = "subjectMatter_to_beneficiary"
+#     Subject_matter_SMNumber = Column(String, ForeignKey("subject_matter.SMNumber"), primary_key=True)
+#     beneficiary_id  = Column(Integer, ForeignKey("beneficiary.id"), primary_key=True)
+#     SubjectMatter = relationship("SubjectMatter", back_populates="Beneficiaries")
+#     Beneficiary = relationship("Beneficiary")
+# class SubjectMatterToPrivateFunding(Base):
+#     __tablename__ = "subjectMatter_to_privateFunding"
+#     Subject_matter_SMNumber = Column(String, ForeignKey("subject_matter.SMNumber"), primary_key=True)
+#     privateFunding_id  = Column(Integer, ForeignKey("private_funding.id"), primary_key=True)
+#     SubjectMatter = relationship("SubjectMatter", back_populates="PrivateFundings")
+#     PrivateFunding = relationship("PrivateFunding")
+# class SubjectMatterToGmtFunding(Base):
+#     __tablename__ = "subjectMatter_to_gmtFunding"
+#     Subject_matter_SMNumber = Column(String, ForeignKey("subject_matter.SMNumber"), primary_key=True)
+#     gmtFunding_id  = Column(Integer, ForeignKey("gmt_funding.id"), primary_key=True)
+#     SubjectMatter = relationship("SubjectMatter", back_populates="GmtFundings")
+#     GmtFunding = relationship("GmtFunding")
+# class SubjectMatterToMeeting(Base):
+#     __tablename__ = "subjectMatter_to_meeting"
+#     Subject_matter_SMNumber = Column(String, ForeignKey("subject_matter.SMNumber"), primary_key=True)
+#     meeting_id  = Column(Integer, ForeignKey("meeting.id"), primary_key=True)
+#     SubjectMatter = relationship("SubjectMatter", back_populates="Meetings")
+#     Meeting = relationship("Meeting")
 
-class SubjectMatterToGroup(Base):
-    __tablename__ = "subjectMatter_to_group"
-    Subject_matter_SMNumber = Column(String, ForeignKey("subject_matter.SMNumber"), primary_key=True)
-    subjectMatterGroup_id  = Column(Integer, ForeignKey("subject_matter_group.id"), primary_key=True)
-    SubjectMatter = relationship("SubjectMatter", back_populates="SubjectMatterGroups")
-    SubjectMatterGroup = relationship("SubjectMatterGroup")
-class MeetingToPOH(Base):
-    __tablename__ = "meeting_to_POH"
-    meeting_id  = Column(Integer, ForeignKey("meeting.id"), primary_key=True)
-    POH_id = Column(Integer, ForeignKey("poh.id"), primary_key=True)
-    Meeting = relationship("Meeting", back_populates="POHS")
-    POH = relationship("POH")
-class MeetingToLobbyist(Base):
-    __tablename__ = "meeting_to_lobbyist"
-    meeting_id  = Column(Integer, ForeignKey("meeting.id"), primary_key=True)
-    lobbyist_id = Column(Integer, ForeignKey("lobbyist.id"), primary_key=True)
-    Meeting = relationship("Meeting", back_populates="Lobbyists")
-    Lobbyist = relationship("Lobbyist")
+# class SubjectMatterToGroup(Base):
+#     __tablename__ = "subjectMatter_to_group"
+#     Subject_matter_SMNumber = Column(String, ForeignKey("subject_matter.SMNumber"), primary_key=True)
+#     subjectMatterGroup_id  = Column(Integer, ForeignKey("subject_matter_group.id"), primary_key=True)
+#     SubjectMatter = relationship("SubjectMatter", back_populates="SubjectMatterGroups")
+#     SubjectMatterGroup = relationship("SubjectMatterGroup")
+# class MeetingToPOH(Base):
+#     __tablename__ = "meeting_to_POH"
+#     meeting_id  = Column(Integer, ForeignKey("meeting.id"), primary_key=True)
+#     POH_id = Column(Integer, ForeignKey("poh.id"), primary_key=True)
+#     Meeting = relationship("Meeting", back_populates="POHS")
+#     POH = relationship("POH")
+# class MeetingToLobbyist(Base):
+#     __tablename__ = "meeting_to_lobbyist"
+#     meeting_id  = Column(Integer, ForeignKey("meeting.id"), primary_key=True)
+#     lobbyist_id = Column(Integer, ForeignKey("lobbyist.id"), primary_key=True)
+#     Meeting = relationship("Meeting", back_populates="Lobbyists")
+#     Lobbyist = relationship("Lobbyist")
 
 class PreviousPublicOfficeHolder(Base):
     __tablename__ = 'previous_public_office_holder'
-    id = Column(Integer, primary_key=True)
-    Position = Column(String,)
-    PositionProgramName = Column(String)
-    HoldLastDate = Column(String)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    Position: Mapped[str] = mapped_column()
+    PositionProgramName: Mapped[str] = mapped_column()
+    HoldLastDate: Mapped[str] = mapped_column()
 
-class BusinessAddress(Base):
+
+class BusinessAddress(Base): # Find where the null address is coming from
     __tablename__ = 'business_address'
-    id = Column(Integer, primary_key=True)
-    AddressLine1 = Column(String)
-    AddressLine2 = Column(String)
-    City = Column(String)
-    Province = Column(String)
-    Country = Column(String)
-    PostalCode = Column(String)
-    Phone = Column(String,)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    AddressLine1: Mapped[str] = mapped_column(nullable=True)
+    AddressLine2: Mapped[str] = mapped_column(nullable=True)
+    City: Mapped[str] = mapped_column(nullable=True)
+    Province: Mapped[str] = mapped_column(nullable=True)
+    Country: Mapped[str] = mapped_column(nullable=True)
+    PostalCode: Mapped[str] = mapped_column(nullable=True)
+    Phone: Mapped[str] = mapped_column(nullable=True)
 
 class RegistrantStatus(Base):
     __tablename__ = 'registrant_status'
@@ -115,22 +120,32 @@ class RegistrantPrefix(Base):
     Prefix = Column(String)
 class Registrant(Base):
     __tablename__ = 'registrant'
-    id = Column(Integer, primary_key=True)
-    RegistrationNUmber = Column(String)
-    RegistrationNumberWithSoNum = Column(String)
-    Status_id = Column(Integer, ForeignKey('registrant_status.id'))
-    EffectiveDate = Column(String)
-    Type = Column(String)
-    Prefix = Column(String)
-    FirstName = Column(String)
-    MiddleInitials = Column(String)
-    LastName = Column(String)
-    Suffix = Column(String)
-    PositionTitle = Column(String)
-    PreviousPublicOfficeHolder = relationship("PreviousPublicOfficeHolder", backref=backref("registrant", uselist=False))
-    PreviousPublicOfficeHolder_id = Column(Integer, ForeignKey('previous_public_office_holder.id'), nullable=True)
-    BusinessAddress = relationship("BusinessAddress", backref=backref("registrant", uselist=False))
-    BusinessAddress_id = Column(Integer, ForeignKey('business_address.id'))
+    id: Mapped[int] = mapped_column(primary_key=True)
+    RegistrationNUmber: Mapped[String] = mapped_column(String)
+    RegistrationNumberWithSoNum: Mapped[String] = mapped_column(String, nullable=True)
+
+    Status_id : Mapped[int] = mapped_column(ForeignKey('registrant_status.id'), nullable=True)
+    Status: Mapped["RegistrantStatus"] = relationship()
+    
+    EffectiveDate = mapped_column(String, nullable=True)
+
+    Type_id: Mapped[int] = mapped_column(ForeignKey('registrant_type.id'), nullable=True)
+    Type: Mapped["RegistrantType"] = relationship()
+
+    Prefix_id: Mapped[int] = mapped_column(ForeignKey('registrant_prefix.id'), nullable=True)
+    Prefix: Mapped["RegistrantPrefix"] = relationship()
+
+    FirstName = mapped_column(String, nullable=True)
+    MiddleInitials = mapped_column(String, nullable=True)
+    LastName = mapped_column(String, nullable=True)
+    Suffix = mapped_column(String, nullable=True)
+    PositionTitle = mapped_column(String, nullable=True)
+
+    PreviousPublicOfficeHolder_id: Mapped[int] = mapped_column(ForeignKey('previous_public_office_holder.id'), nullable=True) 
+    PreviousPublicOfficeHolder: Mapped["PreviousPublicOfficeHolder"] = relationship()
+
+    BusinessAddress_id: Mapped[int] = mapped_column(ForeignKey('business_address.id'), nullable=True)
+    BusinessAddress: Mapped["BusinessAddress"] = relationship()
 
 class CommunicationMethod(Base):
     __tablename__ = 'communication_method'
@@ -138,19 +153,25 @@ class CommunicationMethod(Base):
     Method = Column(String)
 class Communication(Base):
     __tablename__ = 'communication'
-    id = Column(Integer, primary_key=True)
-    PreviousPublicOfficeHolder = relationship("PreviousPublicOfficeHolder", backref=backref("communication", uselist=False))
-    PreviousPublicOfficeHolder_id = Column(Integer, ForeignKey('previous_public_office_holder.id'), nullable=True)
-    POH = relationship("POH", backref=backref("communication", uselist=False))   
-    POH_id = Column(Integer, ForeignKey('poh.id'))
-    CommunicationDate = Column(String)
-    CommunicationGroupId = Column(String)
-    Lobbyist = relationship("Lobbyist", backref=backref("communication", uselist=False))
-    Lobbyist_id = Column(Integer, ForeignKey('lobbyist.id'))
-    CommunicationMethod = relationship("CommunicationMethod", backref=backref("communication", uselist=False))
-    CommunicationMethod_id = Column(Integer, ForeignKey('communication_method.id'))
-    LobbyistBusinessAddress = relationship("BusinessAddress", backref=backref("communication", uselist=False))
-    LobbyistBusinessAddress_id = Column(Integer, ForeignKey('business_address.id'))
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    PreviousPublicOfficeHolder_id : Mapped[int] = mapped_column(ForeignKey('previous_public_office_holder.id'), nullable=True)
+    PreviousPublicOfficeHolder: Mapped["PreviousPublicOfficeHolder"] = relationship()
+
+    POH_id: Mapped[int] = mapped_column(ForeignKey('poh.id'), nullable=True)
+    POH: Mapped["POH"] = relationship()
+
+    CommunicationDate = mapped_column(String, nullable=True)
+    CommunicationGroupId = mapped_column(String, nullable=True)
+
+    Lobbyist_id: Mapped[int] = mapped_column(ForeignKey('lobbyist.id'), nullable=True)
+    Lobbyist: Mapped["Lobbyist"] = relationship()
+
+    communicationMethod_id: Mapped[int] = mapped_column(ForeignKey('communication_method.id'), nullable=True)
+    communicationMethod: Mapped["CommunicationMethod"] = relationship()
+
+    LobbyistBussinessAddress_id: Mapped[int] = mapped_column(ForeignKey('business_address.id'), nullable=True)
+    LobbyistBussinessAddress: Mapped["BusinessAddress"] = relationship()
 class FirmType(Base):
     __tablename__ = 'firm_type'
     id = Column(Integer, primary_key=True)
@@ -187,30 +208,35 @@ class BeneficiaryType(Base):
     __tablename__ = 'beneficiary_type'
     id = Column(Integer, primary_key=True)
     Type = Column(String)
-
 class Beneficiary(Base):
     __tablename__ = 'beneficiary'
-    id = Column(Integer, primary_key=True)
-    Type = relationship("BeneficiaryType", backref=backref("beneficiary", uselist=False))
-    Type_id = Column(Integer, ForeignKey('beneficiary_type.id'))
-    Name = Column(String)
-    TradeName = Column(String)
-    FiscalStart = Column(String)
-    FiscalEnd = Column(String)
-    BusinessAddress = relationship("BusinessAddress", backref=backref("beneficiary", uselist=False))
-    BusinessAddress_id = Column(Integer, ForeignKey('business_address.id'))
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    Type_id: Mapped[int] = mapped_column(ForeignKey('beneficiary_type.id'))
+    Type: Mapped["BeneficiaryType"] = relationship()
+
+    Name: Mapped[str] = mapped_column(String, nullable=True)
+    TradeName: Mapped[str] = mapped_column(String, nullable=True)
+    FiscalStart: Mapped[str] = mapped_column(String, nullable=True)
+    FiscalEnd: Mapped[str] = mapped_column(String, nullable=True)
+
+    BusinessAddress_id: Mapped[int] = mapped_column(ForeignKey('business_address.id'))
+    BusinessAddress: Mapped["BusinessAddress"] = relationship()
+
 class PrivateFunding(Base):
     __tablename__ = 'private_funding'
-    id = Column(Integer, primary_key=True)
-    Funding = Column(String)
-    Contact = Column(String)
-    Agent = Column(String)
-    AgentContact = Column(String)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    Funding: Mapped[str] = mapped_column(String, nullable=True)
+    Contact: Mapped[str] = mapped_column(String, nullable=True)
+    Agent: Mapped[str] = mapped_column(String, nullable=True)
+    AgentContact: Mapped[str] = mapped_column(String, nullable=True)
+
 class GmtFunding(Base):
     __tablename__ = 'gmt_funding'
     id = Column(Integer, primary_key=True)
     GMTName = Column(String)
     Program = Column(String)
+
 class POH(Base):
     __tablename__ = 'poh'
     id = Column(Integer, primary_key=True)
@@ -218,14 +244,6 @@ class POH(Base):
     Office = Column(String)
     Title = Column(String)
     Type = Column(String)
-class Meeting(Base):
-    __tablename__ = 'meeting'
-    id = Column(Integer, primary_key=True)
-    Committee = Column(String)
-    Desc = Column(String)
-    Date = Column(String) 
-    POHS : Mapped[List[MeetingToPOH]] = relationship(back_populates="Meeting")
-    Lobbyists : Mapped[List[MeetingToLobbyist]] = relationship(back_populates="Meeting")
 
 class LobbyistType(Base):
     __tablename__ = 'lobbyist_type'
@@ -241,7 +259,28 @@ class Lobbyist(Base):
     LastName = Column(String)
     Suffix = Column(String)
     Business = Column(String)
-    Type = Column(String)
+
+    Type_id: Mapped[int] = mapped_column(ForeignKey('lobbyist_type.id'))
+    Type: Mapped["LobbyistType"] = relationship()
+
+meeting_poh_association_table = Table('meeting_poh_association', Base.metadata,
+    Column('meeting_id', Integer, ForeignKey('meeting.id')),
+    Column('poh_id', Integer, ForeignKey('poh.id'))
+)
+meeting_lobbyist_association_table = Table('meeting_lobbyist_association', Base.metadata,
+    Column('meeting_id', Integer, ForeignKey('meeting.id')),
+    Column('lobbyist_id', Integer, ForeignKey('lobbyist.id'))
+)
+class Meeting(Base):
+    __tablename__ = 'meeting'
+    id: Mapped[int] = mapped_column(primary_key=True)
+    Committee: Mapped[str] = mapped_column(String)
+    Desc: Mapped[str] = mapped_column(String, nullable=True)
+    Date: Mapped[str] = mapped_column(String)
+
+    POHS: Mapped[List[POH]] = relationship(secondary=meeting_poh_association_table)
+
+    Lobbyists: Mapped[List[Lobbyist]] = relationship(secondary=meeting_lobbyist_association_table)
 
 class SubjectMatterStatuses(Base):
     __tablename__ = 'subject_matter_statuses'
@@ -251,40 +290,90 @@ class SubjectMatterTypes(Base):
     __tablename__ = 'subject_matter_types'
     id = Column(Integer, primary_key=True)
     Type = Column(String)
-
 class SubjectMatterGroup(Base):
     __tablename__ = 'subject_matter_group'
     id = Column(Integer, primary_key=True)
     Group = Column(String)
-
 class SubjectMatterDefinition(Base):
     __tablename__ = 'subject_matter_definition'
     id = Column(Integer, primary_key=True)
     Definition = Column(String)
+
+subjectmatter_group_association_table = Table('subject_matter_to_group', Base.metadata,
+    Column('subject_matter_smnumber', Integer, ForeignKey('subject_matter.SMNumber')),
+    Column('subject_matter_group_id', Integer, ForeignKey('subject_matter_group.id'))
+)
+
+subjectMatter_firm_association_table = Table('subject_matter_to_firm', Base.metadata,
+    Column('subject_matter_smnumber', Integer, ForeignKey('subject_matter.SMNumber')),
+    Column('firm_id', Integer, ForeignKey('firm.id'))
+)
+
+subjectMatter_communication_association_table = Table('subject_matter_to_communication', Base.metadata,
+    Column('subject_matter_smnumber', Integer, ForeignKey('subject_matter.SMNumber')),
+    Column('communication_id', Integer, ForeignKey('communication.id'))
+)
+
+subjectMatter_grassroot_association_table = Table('subject_matter_to_grassroot', Base.metadata,
+    Column('subject_matter_smnumber', Integer, ForeignKey('subject_matter.SMNumber')),
+    Column('grassroot_id', Integer, ForeignKey('grassroot.id'))
+)
+
+subjectMatter_beneficiary_association_table = Table('subject_matter_to_beneficiary', Base.metadata,
+    Column('subject_matter_smnumber', Integer, ForeignKey('subject_matter.SMNumber')),
+    Column('beneficiary_id', Integer, ForeignKey('beneficiary.id'))
+)
+
+subjectMatter_private_funding_association_table = Table('subject_matter_to_private_funding', Base.metadata,
+    Column('subject_matter_smnumber', Integer, ForeignKey('subject_matter.SMNumber')),
+    Column('private_funding_id', Integer, ForeignKey('private_funding.id'))
+)
+
+subjectMatter_gmt_funding_association_table = Table('subject_matter_to_gmt_funding', Base.metadata,
+    Column('subject_matter_smnumber', Integer, ForeignKey('subject_matter.SMNumber')),
+    Column('gmt_funding_id', Integer, ForeignKey('gmt_funding.id'))
+)
+subjectmatter_meeting_association_table = Table('subject_matter_to_meeting', Base.metadata,
+    Column('subject_matter_smnumber', Integer, ForeignKey('subject_matter.SMNumber')),
+    Column('meeting_id', Integer, ForeignKey('meeting.id'))
+)
 class SubjectMatter(Base):
     __tablename__ = 'subject_matter'
-    SMNumber: Mapped[int] = Column(String,primary_key=True)
-    status: Mapped[] = relationship("SubjectMatterStatuses", backref=backref("subject_matter", uselist=False)) #Fix me should be uppercase
-    Status_id = Column(Integer, ForeignKey('subject_matter_statuses.id'))
-    Type = relationship("SubjectMatterTypes", backref=backref("subject_matter", uselist=False))
-    Type_id = Column(Integer, ForeignKey('subject_matter_types.id'))
-    SubjectMatterGroups: Mapped[List[SubjectMatterToGroup]] = relationship(back_populates="SubjectMatter")
-    SubjectMatterDefinition = relationship("SubjectMatterDefinition", backref=backref("subject_matter", uselist=True))
-    SubjectMatterDefinition_id = Column(Integer, ForeignKey('subject_matter_definition.id'))
-    Particulars = Column(String)
-    InitialApprovalDate = Column(String)
-    EffectiveDate = Column(String)
-    ProposedStartDate = Column(String)
-    ProposedEndDate = Column(String)
-    Registrant = relationship("Registrant", backref=backref("subject_matter", uselist=True))
-    Registrant_id = Column(Integer, ForeignKey('registrant.id'))
-    Firms: Mapped[List[SubjectMatterToFirm]] = relationship(back_populates="SubjectMatter")
-    Communications: Mapped[List[SubjectMatterToCommunication]] = relationship(back_populates="SubjectMatter")
-    Grassroots: Mapped[List[SubjectMatterToGrassroot]] = relationship(back_populates="SubjectMatter")
-    Beneficiaries: Mapped[List[SubjectMatterToBeneficiary]] = relationship(back_populates="SubjectMatter")
-    PrivateFundings: Mapped[List[SubjectMatterToPrivateFunding]] = relationship(back_populates="SubjectMatter")
-    GmtFundings: Mapped[List[SubjectMatterToGmtFunding]] = relationship(back_populates="SubjectMatter")
-    Meetings: Mapped[List[SubjectMatterToMeeting]] = relationship(back_populates="SubjectMatter")
+    SMNumber: Mapped[String] =  mapped_column(String,primary_key=True)
+
+    Status_id: Mapped[int] = mapped_column(ForeignKey('subject_matter_statuses.id'))
+    Status: Mapped["SubjectMatterStatuses"]  = relationship()
+
+    Type_id: Mapped[int] = mapped_column(ForeignKey('subject_matter_types.id'))
+    Type: Mapped["SubjectMatterTypes"] = relationship()
+
+    Groups: Mapped[List[SubjectMatterGroup]] = relationship(secondary=subjectmatter_group_association_table)
+    
+    Definition_id: Mapped[int] = mapped_column(ForeignKey('subject_matter_definition.id'))
+    Definition : Mapped["SubjectMatterDefinition"] = relationship()
+    
+    Particulars: Mapped[String] = Column(String)
+    InitialApprovalDate: Mapped[String] = Column(String)
+    EffectiveDate: Mapped[String] = Column(String)
+    ProposedStartDate: Mapped[String] = Column(String)
+    ProposedEndDate: Mapped[String] = Column(String)
+
+    Registrant_id:Mapped[int]  = mapped_column(ForeignKey('registrant.id'))
+    Registrant: Mapped["Registrant"] = relationship()
+                                               
+    Firms : Mapped[List[Firm]] = relationship(secondary=subjectMatter_firm_association_table)
+
+    Communications: Mapped[List[Communication]] = relationship(secondary=subjectMatter_communication_association_table)
+
+    Grassroots: Mapped[List[Grassroot]] = relationship(secondary=subjectMatter_grassroot_association_table)
+
+    Beneficiaries: Mapped[List[Beneficiary]] = relationship(secondary=subjectMatter_beneficiary_association_table)
+
+    PrivateFundings: Mapped[List[PrivateFunding]] = relationship(secondary=subjectMatter_private_funding_association_table)
+
+    GmtFundings: Mapped[List[GmtFunding]] = relationship(secondary=subjectMatter_gmt_funding_association_table)
+
+    Meetings: Mapped[List[Meeting]] = relationship(secondary=subjectmatter_meeting_association_table)
 
 def get_firm_types(results):
     firm_types = set()
@@ -419,23 +508,20 @@ if __name__ == "__main__":
             
             subjectMatter = SubjectMatter()
             subjectMatter.SMNumber = result.SMNumber
+            
             subjectMatter.Status = session.query(SubjectMatterStatuses).filter(SubjectMatterStatuses.Status == result.Status).one()
             subjectMatter.Status_id = subjectMatter.Status.id
+            
             subjectMatter.Type = session.query(SubjectMatterTypes).filter(SubjectMatterTypes.Type == result.Type).one()
             subjectMatter.Type_id = subjectMatter.Type.id
 
             for group in result.SubjectMatter:
-                subjectMatterGroup = session.query(SubjectMatterGroup).filter(SubjectMatterGroup.Group == group).one()
-                subjectMatterToGroup = SubjectMatterToGroup(Subject_matter_SMNumber = subjectMatter.SMNumber, subjectMatterGroup_id = subjectMatterGroup.id, SubjectMatter = subjectMatter, SubjectMatterGroup = subjectMatterGroup)
-                subjectMatter.SubjectMatterGroups.append(subjectMatterToGroup)
-                session.add(subjectMatterGroup)
-                session.add(subjectMatterToGroup)
-                session.flush()
-                subjectMatterToGroup.Subject_matter_SMNumber = subjectMatter.SMNumber
-                subjectMatterToGroup.subjectMatterGroup_id = subjectMatterGroup.id
+                group = session.query(SubjectMatterGroup).filter(SubjectMatterGroup.Group == group).one()
+                session.add(group)
+                subjectMatter.Groups.append(group)
             
-            subjectMatter.SubjectMatterDefinition = session.query(SubjectMatterDefinition).filter(SubjectMatterDefinition.Definition == result.SubjectMatterDefinition).one()
-            subjectMatter.SubjectMatterDefinition_id = subjectMatter.SubjectMatterDefinition.id
+            subjectMatter.Definition = session.query(SubjectMatterDefinition).filter(SubjectMatterDefinition.Definition == result.SubjectMatterDefinition).one()
+            subjectMatter.Definition_id = subjectMatter.Definition.id
             
             subjectMatter.Particulars = result.Particulars
             subjectMatter.InitialApprovalDate = result.InitialApprovalDate
@@ -446,15 +532,24 @@ if __name__ == "__main__":
             registrant = Registrant()
             registrant.RegistrationNUmber = result.Registrant.RegistrationNUmber
             registrant.RegistrationNUmberWithSoNum = result.Registrant.RegistrationNUmberWithSoNum
-            registrant.Status = session.query(RegistrantStatus).filter(RegistrantStatus.Status == result.Registrant.Status).one().id
+
+            registrant.Status = session.query(RegistrantStatus).filter(RegistrantStatus.Status == result.Registrant.Status).one()
+            registrant.Status_id = registrant.Status.id
+
             registrant.EffectiveDate = result.Registrant.EffectiveDate
-            registrant.Type = session.query(RegistrantType).filter(RegistrantType.Type == result.Registrant.Type).one().id
-            registrant.Prefix = session.query(RegistrantPrefix).filter(RegistrantPrefix.Prefix == result.Registrant.Prefix).one().id
+
+            registrant.Type = session.query(RegistrantType).filter(RegistrantType.Type == result.Registrant.Type).one()
+            registrant.Type_id = registrant.Type.id
+
+            registrant.Prefix = session.query(RegistrantPrefix).filter(RegistrantPrefix.Prefix == result.Registrant.Prefix).one()
+            registrant.Prefix_id = registrant.Prefix.id
+
             registrant.FirstName = result.Registrant.FirstName
             registrant.MiddleInitials = result.Registrant.MiddleInitials
             registrant.LastName = result.Registrant.LastName
             registrant.Suffix = result.Registrant.Suffix
             registrant.PositionTitle = result.Registrant.PositionTitle
+            
             if clean_PreviousPublicOfficeHolder(result.Registrant):
                         registrant.PreviousPublicOfficeHolder = PreviousPublicOfficeHolder()
                         registrant.PreviousPublicOfficeHolder.Position = result.Registrant.PreviousPublicOfficeHoldPosition
@@ -463,12 +558,14 @@ if __name__ == "__main__":
                         session.add(registrant.PreviousPublicOfficeHolder)
                         session.flush()
                         registrant.PreviousPublicOfficeHolder_id = registrant.PreviousPublicOfficeHolder.id
-            registrant.BusinessAddress = session.query(BusinessAddress).filter(BusinessAddress.AddressLine1 == result.Registrant.BusinessAddress.AddressLine1).first()
+            
+            registrant.BusinessAddress = session.query(BusinessAddress).filter(BusinessAddress.AddressLine1 == result.Registrant.BusinessAddress.AddressLine1).first() # TODO I need a stronger match here
             if registrant.BusinessAddress is None:
                 registrant.BusinessAddress = BusinessAddress(AddressLine1=result.Registrant.BusinessAddress.AddressLine1,AddressLine2=result.Registrant.BusinessAddress.AddressLine2,City=result.Registrant.BusinessAddress.City,Province=result.Registrant.BusinessAddress.Province,Country=result.Registrant.BusinessAddress.Country,PostalCode=result.Registrant.BusinessAddress.PostalCode,Phone=result.Registrant.BusinessAddress.Phone)
                 session.add(registrant.BusinessAddress)
                 session.flush()
             registrant.BusinessAddress_id = registrant.BusinessAddress.id
+
             subjectMatter.Registrant = registrant
             subjectMatter.Registrant_id = subjectMatter.Registrant.id
             
@@ -481,36 +578,33 @@ if __name__ == "__main__":
 
             for val in result.Firms:            
                 firm = Firm()
-                firm.Type_id = session.query(FirmType).filter(FirmType.Type == val.Type).one().id
+                firm.Type = session.query(FirmType).filter(FirmType.Type == val.Type).one()
+                firm.Type_id = firm.Type.id
                 firm.Name = val.Name
                 firm.TradeName = val.TradeName
                 firm.FiscalStart = val.FiscalStart
                 firm.FiscalEnd = val.FiscalEnd
                 firm.Description = val.Description
-                firm.BusinessType_id = session.query(FirmBusinessType).filter(FirmBusinessType.Type == val.BusinessType).one().id
+                firm.BusinessType = session.query(FirmBusinessType).filter(FirmBusinessType.Type == val.BusinessType).one()
+                firm.BusinessType_id = firm.BusinessType.id
                 firm.BusinessAddress = session.query(BusinessAddress).filter(BusinessAddress.AddressLine1 == val.BusinessAddress.AddressLine1).first()
                 if firm.BusinessAddress is None:
                     firm.BusinessAddress = BusinessAddress(AddressLine1=val.BusinessAddress.AddressLine1,AddressLine2=val.BusinessAddress.AddressLine2,City=val.BusinessAddress.City,Province=val.BusinessAddress.Province,Country=val.BusinessAddress.Country,PostalCode=val.BusinessAddress.PostalCode,Phone=val.BusinessAddress.Phone)
                     session.add(firm.BusinessAddress)
                     session.flush()
                 firm.BusinessAddress_id = firm.BusinessAddress.id
-
-                subjectmatter_to_firm_association = SubjectMatterToFirm(SubjectMatter=subjectMatter, Firm=firm)
                 session.add(firm)
-                session.add(subjectmatter_to_firm_association)
-                session.flush()
-                subjectmatter_to_firm_association.firm_id = firm.id
-                subjectmatter_to_firm_association.Subject_matter_SMNumber = subjectMatter.SMNumber
+                subjectMatter.Firms.append(firm)
 
             if result.Communications is not None:
                 for val in result.Communications:
                     communication = Communication()
                     if clean_PreviousPublicOfficeHolder(val):
                         communication.PreviousPublicOfficeHolder = PreviousPublicOfficeHolder()
-                        communication.PreviousPublicOfficeHolder.PreviousPublicOfficeHolder = val.PreviousPublicOfficeHolder
-                        communication.PreviousPublicOfficeHolder.PreviousPublicOfficeHoldPosition = val.PreviousPublicOfficeHoldPosition
-                        communication.PreviousPublicOfficeHolder.PreviousPublicOfficePositionProgramName = val.PreviousPublicOfficePositionProgramName
-                        communication.PreviousPublicOfficeHolder.PreviousPublicOfficeHoldLastDate = val.PreviousPublicOfficeHoldLastDate
+                        communication.PreviousPublicOfficeHolder.Holder = val.PreviousPublicOfficeHolder
+                        communication.PreviousPublicOfficeHolder.Position = val.PreviousPublicOfficeHoldPosition
+                        communication.PreviousPublicOfficeHolder.PositionProgramName = val.PreviousPublicOfficePositionProgramName
+                        communication.PreviousPublicOfficeHolder.HoldLastDate = val.PreviousPublicOfficeHoldLastDate
                         session.add(communication.PreviousPublicOfficeHolder)
                         session.flush()
                         communication.PreviousPublicOfficeHolder_id = communication.PreviousPublicOfficeHolder.id
@@ -529,7 +623,7 @@ if __name__ == "__main__":
 
                     communication.Lobbyist = Lobbyist()
                     communication.Lobbyist.Number = val.LobbyistNumber
-                    communication.Lobbyist.Type = session.query(LobbyistType).filter(LobbyistType.Type == val.LobbyistType).one().id
+                    communication.Lobbyist.Type = session.query(LobbyistType).filter(LobbyistType.Type == val.LobbyistType).one()
                     communication.Lobbyist.Prefix = val.LobbyistPrefix
                     communication.Lobbyist.LobbyistFirstName = val.LobbyistFirstName
                     communication.Lobbyist.LobbyistMiddleInitials = val.LobbyistMiddleInitials
@@ -554,38 +648,28 @@ if __name__ == "__main__":
                     session.flush()
                     communication.LobbyistBusinessAddress_id = communication.LobbyistBusinessAddress.id
 
-                    subjectMatter_to_communication_association = SubjectMatterToCommunication(SubjectMatter=subjectMatter, Communication=communication)
                     session.add(communication)
-                    session.add(subjectMatter_to_communication_association)
-                    session.flush()
-                    subjectMatter_to_communication_association.Communication_id = communication.id
-                    subjectMatter_to_communication_association.Subject_matter_SMNumber = subjectMatter.SMNumber
+                    subjectMatter.Communications.append(communication)
 
             if result.Grassroots is not None:
-
                 for val in result.Grassroots:
                     grassroot = Grassroot()
                     grassroot.Community = val.Community
                     grassroot.StartDate = val.StartDate
                     grassroot.EndDate = val.EndDate
                     grassroot.Target = val.Target
-                    subjectMatter_to_grassroot_association = SubjectMatterToGrassroot(SubjectMatter=subjectMatter, Grassroot=grassroot)
                     session.add(grassroot)
-                    session.add(subjectMatter_to_grassroot_association)
-                    session.flush()
-                    subjectMatter_to_grassroot_association.grassroot_id = grassroot.id
-                    subjectMatter_to_grassroot_association.Subject_matter_SMNumber = subjectMatter.SMNumber
-            
+                    subjectMatter.Grassroots.append(grassroot)
+
             if result.Beneficiaries is not None:
                 for val in result.Beneficiaries:
                     beneficiary = Beneficiary()
-                    beneficiary.Type_id = session.query(BeneficiaryType).filter(BeneficiaryType.Type == val.Type).one().id
+                    beneficiary.Type = session.query(BeneficiaryType).filter(BeneficiaryType.Type == val.Type).one()
+                    beneficiary.Type.id = beneficiary.Type.id
                     beneficiary.Name = val.Name
                     beneficiary.TradeName = val.TradeName
                     beneficiary.FiscalStart = val.FiscalStart
                     beneficiary.FiscalEnd = val.FiscalEnd
-
-                    subjectMatter_to_beneficiary_association = SubjectMatterToBeneficiary(SubjectMatter=subjectMatter, Beneficiary=beneficiary)
 
                     beneficiary.BusinessAddress = BusinessAddress()
                     beneficiary.BusinessAddress.AddressLine1 = val.BusinessAddress.AddressLine1
@@ -596,31 +680,21 @@ if __name__ == "__main__":
                     beneficiary.BusinessAddress.PostalCode = val.BusinessAddress.PostalCode
                     beneficiary.BusinessAddress.Phone = val.BusinessAddress.Phone
 
-                    subjectMatter_to_beneficiary_association = SubjectMatterToBeneficiary(SubjectMatter=subjectMatter, Beneficiary=beneficiary)
-                    session.add(subjectMatter_to_beneficiary_association)
                     session.add(beneficiary)
-                    session.flush()
-                    beneficiary.BusinessAddress_id = beneficiary.BusinessAddress.id
-                    subjectMatter_to_beneficiary_association.Beneficiary_id = beneficiary.id
+                    subjectMatter.Beneficiaries.append(beneficiary)
 
             if result.Privatefundings is not None:
                 for val in result.Privatefundings:
                     privatefunding = PrivateFunding(Funding=val.Funding,Contact=val.Contact,Agent=val.Agent,AgentContact=val.AgentContact)
-                    subjectMatter_to_privatefunding_association = SubjectMatterToPrivateFunding(SubjectMatter=subjectMatter, PrivateFunding=privatefunding)
                     session.add(privatefunding)
-                    session.add(subjectMatter_to_privatefunding_association)
-                    session.flush()
+                    subjectMatter.PrivateFundings.append(privatefunding)
 
             if result.Gmtfundings is not None:
                 for val in result.Gmtfundings:
                     gmtfunding = GmtFunding(GMTName=val.GMTName, Program=val.Program)
-                    subjectMatter_to_gmtfunding_association = SubjectMatterToGmtFunding(SubjectMatter=subjectMatter, GmtFunding=gmtfunding)
                     session.add(gmtfunding)
-                    session.add(subjectMatter_to_gmtfunding_association)
-                    session.flush()
-                    subjectMatter_to_gmtfunding_association.GmtFunding_id = gmtfunding.id
-                    subjectMatter_to_gmtfunding_association.Subject_matter_SMNumber = subjectMatter.SMNumber
-            
+                    subjectMatter.GmtFundings.append(gmtfunding)
+
             if result.Meetings is not None:
                 for val in result.Meetings:
                     meeting = Meeting()
@@ -635,13 +709,9 @@ if __name__ == "__main__":
                             poh.Office = val.Office
                             poh.Title = val.Title
                             poh.Type = val.Type
-                            meeting_to_POH_association = MeetingToPOH(Meeting=meeting, POH=POH)
                             session.add(poh)
-                            session.add(meeting_to_POH_association)
-                            session.flush()
-                            meeting_to_POH_association.POH_id = poh.id
-                            meeting_to_POH_association.Meeting_id = meeting.id        
-                    
+                            meeting.POHS.append(poh)
+                       
                     if meeting.Lobbyists is not None:
                         for val in meeting.Lobbyists:
                             lobbyist = Lobbyist()
@@ -652,91 +722,13 @@ if __name__ == "__main__":
                             lobbyist.LastName = val.LastName
                             lobbyist.Suffix = val.Suffix
                             lobbyist.Business = val.Business
-                            lobbyist.Type = session.query(LobbyistType).filter(LobbyistType.Type == val.Type).one().id
+                            lobbyist.Type = session.query(LobbyistType).filter(LobbyistType.Type == val.Type).one()
+                            lobbyist.Type_id = lobbyist.Type.id
 
-                            meeting_to_lobbyist_association = MeetingToLobbyist(Meeting=meeting, Lobbyist=lobbyist)
                             session.add(lobbyist)
-                            session.add(meeting_to_lobbyist_association)
-                            session.flush()
-                            meeting_to_lobbyist_association.Lobbyist_id = lobbyist.id
-                            meeting_to_lobbyist_association.Meeting_id = meeting.id
-                    
-                    subjectMatter_to_meeting_association = SubjectMatterToMeeting(SubjectMatter=subjectMatter, Meeting=meeting)
+                            meeting.Lobbyists.append(lobbyist)                    
                     session.add(meeting)
-                    session.add(subjectMatter_to_meeting_association)
-                    session.flush()
-                    subjectMatter_to_meeting_association.Subject_matter_SMNumber = subjectMatter.SMNumber
-                    subjectMatter_to_meeting_association.Meeting_id = meeting.id
-            
+                    subjectMatter.Meetings.append(meeting)            
             session.add(subjectMatter)
             session.flush()    
         session.commit()
-
-    import json
-    from sqlalchemy.orm import class_mapper
-    from sqlalchemy.ext.declarative import DeclarativeMeta
-    from sqlalchemy.orm import joinedload, Load
-
-    class AlchemyEncoder(json.JSONEncoder):
-        def default(self, obj):
-            if isinstance(obj.__class__, DeclarativeMeta):
-                fields = {}
-                for prop in class_mapper(obj.__class__).iterate_properties:
-                    field = prop.key
-                    data = obj.__getattribute__(field)
-                    try:
-                        if hasattr(data, '__iter__') and not isinstance(data, str):
-                            data = [self.default(item) for item in data]
-                        else:
-                            json.dumps(data)
-                        fields[field] = data
-                    except TypeError:
-                        fields[field] = None
-                return fields
-            return json.JSONEncoder.default(self, obj)
-
-
-
-    import yaml
-    from sqlalchemy.orm import selectinload
-    import json
-
-    def object_to_dict(obj):
-        if isinstance(obj.__class__, DeclarativeMeta):
-            fields = {}
-            for prop in class_mapper(obj.__class__).iterate_properties:
-                field = prop.key
-                if field == '_sa_instance_state':  # Ignore the _sa_instance_state field
-                    continue
-                data = getattr(obj, field)
-                if isinstance(data, (int, float, str, bool, type(None))):
-                    fields[field] = data
-                elif isinstance(data.__class__, DeclarativeMeta):
-                    fields[field] = object_to_dict(data)
-                elif hasattr(data, '__iter__') and not isinstance(data, str):
-                    fields[field] = [object_to_dict(item) for item in data if isinstance(item.__class__, DeclarativeMeta)]
-            return fields
-        return None
-
-
-            
-    def SubjectMatterPage(subjectmatter:SubjectMatter):
-        result = {}
-        result['SMNumber'] = subjectmatter.SMNumber
-        result['Status'] = subjectmatter.status.Status
-        #result['Type'] = subjectmatter.Type.Type
-        result['SubjectMatterGroups'] = [group.SubjectMatterGroup.Group for group in subjectmatter.SubjectMatterGroups]
-        result['Definition'] = subjectmatter.SubjectMatterDefinition.Definition
-        result['Particulars'] = subjectmatter.Particulars
-        result['Registrant'] = {}
-        result['Registrant']['RegistrationNUmber'] = subjectmatter.Registrant.RegistrationNUmber
-        result['Registrant']['Type'] = subjectmatter.Registrant.Type
-        result['Registrant']['Prefix'] = subjectmatter.Registrant.Prefix
-        result['Registrant']['FirstName'] = subjectmatter.Registrant.FirstName
-        result['Registrant']['MiddleInitials'] = subjectmatter.Registrant.MiddleInitials
-        result['Registrant']['LastName'] = subjectmatter.Registrant.LastName
-        result['Registrant']['Suffix'] = subjectmatter.Registrant.Suffix
-        result['Registrant']['PositionTitle'] = subjectmatter.Registrant.PositionTitle
-        result['Firms'] = []
-
-        return result
