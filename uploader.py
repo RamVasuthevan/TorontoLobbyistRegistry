@@ -23,68 +23,6 @@ from itertools import chain
 class Base(DeclarativeBase):
     pass
 
-# class SubjectMatterToCommunication(Base):
-#     __tablename__ = "subjectMatter_to_communication"
-#     Subject_matter_SMNumber = Column(String, ForeignKey("subject_matter.SMNumber"), primary_key=True)
-#     communication_id  = Column(Integer, ForeignKey("communication.id"), primary_key=True)
-#     SubjectMatter = relationship("SubjectMatter", back_populates="Communications")
-#     Communication = relationship("Communication")
-# class SubjectMatterToFirm(Base):
-#     __tablename__ = "subjectMatter_to_firm"
-#     Subject_matter_SMNumber = Column(String, ForeignKey("subject_matter.SMNumber"), primary_key=True)
-#     firm_id  = Column(Integer, ForeignKey("firm.id"), primary_key=True)
-#     SubjectMatter = relationship("SubjectMatter", back_populates="Firms")
-#     Firm = relationship("Firm")
-# class SubjectMatterToGrassroot(Base):
-#     __tablename__ = "subjectMatter_to_grassroot"
-#     Subject_matter_SMNumber = Column(String, ForeignKey("subject_matter.SMNumber"), primary_key=True)
-#     grassroot_id  = Column(Integer, ForeignKey("grassroot.id"), primary_key=True)
-#     SubjectMatter = relationship("SubjectMatter", back_populates="Grassroots")
-#     Grassroot = relationship("Grassroot")
-# class SubjectMatterToBeneficiary(Base):
-#     __tablename__ = "subjectMatter_to_beneficiary"
-#     Subject_matter_SMNumber = Column(String, ForeignKey("subject_matter.SMNumber"), primary_key=True)
-#     beneficiary_id  = Column(Integer, ForeignKey("beneficiary.id"), primary_key=True)
-#     SubjectMatter = relationship("SubjectMatter", back_populates="Beneficiaries")
-#     Beneficiary = relationship("Beneficiary")
-# class SubjectMatterToPrivateFunding(Base):
-#     __tablename__ = "subjectMatter_to_privateFunding"
-#     Subject_matter_SMNumber = Column(String, ForeignKey("subject_matter.SMNumber"), primary_key=True)
-#     privateFunding_id  = Column(Integer, ForeignKey("private_funding.id"), primary_key=True)
-#     SubjectMatter = relationship("SubjectMatter", back_populates="PrivateFundings")
-#     PrivateFunding = relationship("PrivateFunding")
-# class SubjectMatterToGmtFunding(Base):
-#     __tablename__ = "subjectMatter_to_gmtFunding"
-#     Subject_matter_SMNumber = Column(String, ForeignKey("subject_matter.SMNumber"), primary_key=True)
-#     gmtFunding_id  = Column(Integer, ForeignKey("gmt_funding.id"), primary_key=True)
-#     SubjectMatter = relationship("SubjectMatter", back_populates="GmtFundings")
-#     GmtFunding = relationship("GmtFunding")
-# class SubjectMatterToMeeting(Base):
-#     __tablename__ = "subjectMatter_to_meeting"
-#     Subject_matter_SMNumber = Column(String, ForeignKey("subject_matter.SMNumber"), primary_key=True)
-#     meeting_id  = Column(Integer, ForeignKey("meeting.id"), primary_key=True)
-#     SubjectMatter = relationship("SubjectMatter", back_populates="Meetings")
-#     Meeting = relationship("Meeting")
-
-# class SubjectMatterToGroup(Base):
-#     __tablename__ = "subjectMatter_to_group"
-#     Subject_matter_SMNumber = Column(String, ForeignKey("subject_matter.SMNumber"), primary_key=True)
-#     subjectMatterGroup_id  = Column(Integer, ForeignKey("subject_matter_group.id"), primary_key=True)
-#     SubjectMatter = relationship("SubjectMatter", back_populates="SubjectMatterGroups")
-#     SubjectMatterGroup = relationship("SubjectMatterGroup")
-# class MeetingToPOH(Base):
-#     __tablename__ = "meeting_to_POH"
-#     meeting_id  = Column(Integer, ForeignKey("meeting.id"), primary_key=True)
-#     POH_id = Column(Integer, ForeignKey("poh.id"), primary_key=True)
-#     Meeting = relationship("Meeting", back_populates="POHS")
-#     POH = relationship("POH")
-# class MeetingToLobbyist(Base):
-#     __tablename__ = "meeting_to_lobbyist"
-#     meeting_id  = Column(Integer, ForeignKey("meeting.id"), primary_key=True)
-#     lobbyist_id = Column(Integer, ForeignKey("lobbyist.id"), primary_key=True)
-#     Meeting = relationship("Meeting", back_populates="Lobbyists")
-#     Lobbyist = relationship("Lobbyist")
-
 class PreviousPublicOfficeHolder(Base):
     __tablename__ = 'previous_public_office_holder'
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -454,11 +392,11 @@ def clean_PreviousPublicOfficeHolder(val):
 
 if __name__ == "__main__":
     import os
-    if os.path.exists("TorontoLobbyistRegistry1.db"):
-        os.remove("TorontoLobbyistRegistry1.db")
+    if os.path.exists("TorontoLobbyistRegistry.db"):
+        os.remove("TorontoLobbyistRegistry.db")
         pass
 
-    engine = create_engine("sqlite:///TorontoLobbyistRegistry1.db", echo=False, future=True)
+    engine = create_engine("sqlite:///TorontoLobbyistRegistry.db", echo=False, future=True)
     Base.metadata.create_all(engine)
 
     lobbyactivity_xml = downloader.Downloader().download_lobbyactivity_xml()

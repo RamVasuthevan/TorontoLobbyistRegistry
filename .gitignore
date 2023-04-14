@@ -127,3 +127,11 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+/output
+
+lobbyactivity-active.xml
+lobbyactivity-closed.xml
+lobbyist-registry-readme.xls
+
+TorontoLobbyistRegistry.db
