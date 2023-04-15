@@ -2,11 +2,11 @@ import inspect
 import sys
 import xmltodict
 import yaml
-from .util import *
+from util import *
 from functools import cache
 import dataclasses
 
-class Parse:
+class LobbyParser:
     
     def __init__(self,lobbyactivity_xml):
         self.lobbyactivity_xml_documents = lobbyactivity_xml
@@ -26,9 +26,7 @@ class Parse:
                 del ROW['SMXML']['SM']['GMTFUNDINGS']
 
             subjectMatter = SubjectMatter(**ROW['SMXML']['SM'])
-            #subjectMatter.SubjectMatter = list(val if len(val.replace(":",",").split(','))==1 else list(val.replace(":",",").split(',')) for val in list(subjectMatter.SubjectMatter.split(";")))[0]
             subjectMatter.SubjectMatter = subjectMatter.SubjectMatter.split(';')
-            #subjectMatter.Particulars = subjectMatter.Particulars.split(';')
             subjectMatter.Particulars = subjectMatter.Particulars
 
             subjectMatter.Registrant = Registrant(**subjectMatter.Registrant)
