@@ -5,6 +5,7 @@ from sqlalchemy import String
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import relationship
+from sqlalchemy.inspection import inspect as sqlalchemy_inspect
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from sqlalchemy.orm import backref
@@ -16,12 +17,29 @@ from sqlalchemy import Table
 import pprint as pp
 import json
 from typing import List, Dict, Any, Union, Optional
-from lobby import downloader, parser
+from .downloader import *
+from .lobbyParser import *
 from itertools import chain
-
+import os
 
 class Base(DeclarativeBase):
-    pass
+    @staticmethod
+    def object_as_dict(obj):
+        return {c.key: getattr(obj, c.key) for c in sqlalchemy_inspect(obj).mapper.column_attrs}
+    
+    def as_dict(self):
+        data = {c.key: getattr(self, c.key) for c in sqlalchemy_inspect(self).mapper.column_attrs}
+
+        # Include related objects
+        for name, relation in sqlalchemy_inspect(self).mapper.relationships.items():
+            related_objects = getattr(self, name)
+            if relation.uselist:
+                data[name] = [self.object_as_dict(o) for o in related_objects] if related_objects else []
+            else:
+                data[name] = self.object_as_dict(related_objects) if related_objects else None
+
+        return data
+
 
 class PreviousPublicOfficeHolder(Base):
     __tablename__ = 'previous_public_office_holder'
@@ -29,7 +47,6 @@ class PreviousPublicOfficeHolder(Base):
     Position: Mapped[str] = mapped_column()
     PositionProgramName: Mapped[str] = mapped_column()
     HoldLastDate: Mapped[str] = mapped_column()
-
 
 class BusinessAddress(Base): # Find where the null address is coming from
     __tablename__ = 'business_address'
@@ -56,6 +73,7 @@ class RegistrantPrefix(Base):
     __tablename__ = 'registrant_prefix'
     id = Column(Integer, primary_key=True)
     Prefix = Column(String)
+
 class Registrant(Base):
     __tablename__ = 'registrant'
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -89,6 +107,7 @@ class CommunicationMethod(Base):
     __tablename__ = 'communication_method'
     id = Column(Integer, primary_key=True)
     Method = Column(String)
+
 class Communication(Base):
     __tablename__ = 'communication'
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -110,6 +129,7 @@ class Communication(Base):
 
     LobbyistBussinessAddress_id: Mapped[int] = mapped_column(ForeignKey('business_address.id'), nullable=True)
     LobbyistBussinessAddress: Mapped["BusinessAddress"] = relationship()
+
 class FirmType(Base):
     __tablename__ = 'firm_type'
     id = Column(Integer, primary_key=True)
@@ -224,14 +244,17 @@ class SubjectMatterStatuses(Base):
     __tablename__ = 'subject_matter_statuses'
     id = Column(Integer, primary_key=True)
     Status = Column(String)
+
 class SubjectMatterTypes(Base):
     __tablename__ = 'subject_matter_types'
     id = Column(Integer, primary_key=True)
     Type = Column(String)
+
 class SubjectMatterGroup(Base):
     __tablename__ = 'subject_matter_group'
     id = Column(Integer, primary_key=True)
     Group = Column(String)
+
 class SubjectMatterDefinition(Base):
     __tablename__ = 'subject_matter_definition'
     id = Column(Integer, primary_key=True)
@@ -271,10 +294,12 @@ subjectMatter_gmt_funding_association_table = Table('subject_matter_to_gmt_fundi
     Column('subject_matter_smnumber', Integer, ForeignKey('subject_matter.SMNumber')),
     Column('gmt_funding_id', Integer, ForeignKey('gmt_funding.id'))
 )
+
 subjectmatter_meeting_association_table = Table('subject_matter_to_meeting', Base.metadata,
     Column('subject_matter_smnumber', Integer, ForeignKey('subject_matter.SMNumber')),
     Column('meeting_id', Integer, ForeignKey('meeting.id'))
 )
+
 class SubjectMatter(Base):
     __tablename__ = 'subject_matter'
     SMNumber: Mapped[String] =  mapped_column(String,primary_key=True)
@@ -312,7 +337,8 @@ class SubjectMatter(Base):
     GmtFundings: Mapped[List[GmtFunding]] = relationship(secondary=subjectMatter_gmt_funding_association_table)
 
     Meetings: Mapped[List[Meeting]] = relationship(secondary=subjectmatter_meeting_association_table)
-
+   
+    
 def get_firm_types(results):
     firm_types = set()
     isNone = False
@@ -390,18 +416,32 @@ def clean_PreviousPublicOfficeHolder(val):
         return True
     raise ValueError(f"Unexpected value for PreviousPublicOfficeHolder: {val.PreviousPublicOfficeHolder}")
 
-if __name__ == "__main__":
-    import os
-    if os.path.exists("TorontoLobbyistRegistry.db"):
-        os.remove("TorontoLobbyistRegistry.db")
-        pass
 
+def delete_db():
+    if os.path.exists("TorontoLobbyistRegistry.db"): 
+        os.remove("TorontoLobbyistRegistry.db")
+    
+def setup_db():
     engine = create_engine("sqlite:///TorontoLobbyistRegistry.db", echo=False, future=True)
     Base.metadata.create_all(engine)
+    return engine
 
-    lobbyactivity_xml = downloader.Downloader().download_lobbyactivity_xml()
-    results = parser.Parse(lobbyactivity_xml).get_results_dataclasses()
+def get_data():
+    downloader = Downloader()
+    lobbyactivity_xml = downloader.lobbyactivity_xml()
+    downloader.extract_files()
+    results = LobbyParser(lobbyactivity_xml).get_results_dataclasses()
+    return results
 
+def get_existing_data():
+    FILE_NAMES = ["lobbyactivity-active.xml","lobbyactivity-closed.xml"]
+    lobbyactivity_xml = {}
+    for file_name in FILE_NAMES:
+        lobbyactivity_xml[file_name] = open(file_name, "rb")
+    results = LobbyParser(lobbyactivity_xml).get_results_dataclasses()
+    return results
+
+def add_key_value_tables(engine, results):
     with Session(engine) as (session):
         for status in sorted(list(set(result.Status for result in results))):
             session.add(SubjectMatterStatuses(Status=status))
@@ -438,7 +478,8 @@ if __name__ == "__main__":
             session.add(BeneficiaryType(Type=beneficiaryType))
         
         session.commit()
-
+    
+def add_data_to_db(engine,results):
     with Session(engine) as (session):
         
         for idx,result in enumerate(results):
@@ -670,3 +711,33 @@ if __name__ == "__main__":
             session.add(subjectMatter)
             session.flush()    
         session.commit()
+
+
+class Uploader():
+    def __init__(self) -> None:
+        pass
+
+    def generate_db_file(self, use_existing_data=True):
+        print("Deletes TorontoLobbyistRegistry.db if it exists ...")
+        delete_db()
+
+        print("Setup db ...")
+        engine = setup_db()
+
+        if use_existing_data:
+            print("Geting existing data ...")
+            results = get_existing_data()
+        else:
+            print("Geting new data ...")
+            results = get_data()
+
+        print("Generate key value tables ...")
+        add_key_value_tables(engine,results)
+
+        print("Add data to db ...")
+        add_data_to_db(engine,results)
+
+        print("Created db ...")
+
+if __name__ == "__main__":
+    Uploader().generate_db_file()

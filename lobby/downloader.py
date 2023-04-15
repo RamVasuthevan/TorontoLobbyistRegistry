@@ -81,7 +81,7 @@ class Downloader:
     
     @cache
     def lobbyactivity_xml(self)->Dict[str, zipfile.ZipExtFile]:
-        return {memberName: self.lobbyactivity_zip.open(memberName) for memberName in self.lobbyactivity_zip.namelist()} 
+        return {memberName: self.lobbyactivity_zip().open(memberName) for memberName in self.lobbyactivity_zip().namelist()} 
     
     @cache
     def extract_files(self):

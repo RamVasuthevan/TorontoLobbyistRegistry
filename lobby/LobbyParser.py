@@ -2,7 +2,7 @@ import inspect
 import sys
 import xmltodict
 import yaml
-from util import *
+from .util import *
 from functools import cache
 import dataclasses
 

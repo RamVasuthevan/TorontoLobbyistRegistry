@@ -1,6 +1,9 @@
-from lobby import parser, downloader
+from lobby import *
 import pprint as pp
 import json
+import lobby.generator as generator
 
-result = downloader.Downloader().extract_files()
-pp.pprint(result)
+
+
+Uploader().generate_db_file()
+Generator().generate_markdown()
