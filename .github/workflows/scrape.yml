@@ -51,7 +51,10 @@ jobs:
         run: |-
           git config user.name "Automated"
           git config user.email "actions@users.noreply.github.com"
-          git add -A
+          git add lobbyactivity-active.xml
+          git add lobbyactivity-closed.xml
+          git add lobbyist-registry-readme.xls
+          git add Open_Data_Response.json
           timestamp=$(date -u)
           git commit -m "Dowloaded: ${timestamp}: TorontoLobbyistRegistry commit ${TorontoLobbyistRegistry_commit_hash}" || exit 0
           git push
