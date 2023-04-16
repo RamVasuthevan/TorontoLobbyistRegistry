@@ -22,7 +22,7 @@ jobs:
         run: |
           cd TorontoLobbyistRegistry
           TorontoLobbyistRegistry_commit_hash=$(git rev-parse HEAD)
-          echo "Commit hash: ${TorontoLobbyistRegistry_commit_hash}"
+          echo "TorontoLobbyistRegistry_commit_hash=${TorontoLobbyistRegistry_commit_hash}" >> $GITHUB_ENV
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
@@ -55,5 +55,5 @@ jobs:
           git add lobbyist-registry-readme.xls
           git add Open_Data_Response.json
           timestamp=$(date -u)
-          git commit -m "Dowloaded: ${timestamp}: TorontoLobbyistRegistry commit ${TorontoLobbyistRegistry_commit_hash}" || exit 0
+          git commit -m "Dowloaded: ${timestamp}: TorontoLobbyistRegistry commit: ${env.TorontoLobbyistRegistry_commit_hash}" || exit 0
           git push
