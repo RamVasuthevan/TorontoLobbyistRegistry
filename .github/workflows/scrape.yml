@@ -39,6 +39,8 @@ jobs:
         run: |
           cd TorontoLobbyistRegistry
           python download_and_extract.py 
+          cd ..
+          rm -rf
       - name: Commit and push if files changed
         run: |-
           git config user.name "Automated"
