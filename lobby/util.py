@@ -62,7 +62,7 @@ class Communication:
     LobbyistPreviousPublicOfficeHoldPosition: str = None
     LobbyistPreviousPublicOfficePositionProgramName: str = None
     LobbyistPreviousPublicOfficeHoldLastDate: str = None
-    LobbyistBusinessAddress: str = None  # This is not in the README
+    LobbyistBusinessAddress: BusinessAddress = None
 
 
 @dataclass
@@ -111,6 +111,7 @@ class POH:
     Type: str
 
 
+
 @dataclass
 class Lobbyist:
     Number: str
@@ -132,14 +133,14 @@ class Meeting:
     Lobbyists: Optional[List[Lobbyist]] = None
 
 
-@dataclass
+@dataclass(eq=True, frozen=True)
 class Gmtfunding:
     GMTName: str
     Program: str
 
 
 @dataclass
-class SubjectMatter:  # This is SM in the XML, i renamed it to SubjectMatter
+class SubjectMatter:  # This is SM in the XML,
     SMNumber: str
     Status: str
     Type: str
@@ -158,5 +159,5 @@ class SubjectMatter:  # This is SM in the XML, i renamed it to SubjectMatter
     Beneficiaries: Optional[List[Beneficiary]] = None
     Privatefundings: Optional[List[Privatefunding]] = None
     # XML says GMTFUNDINGS, but GMTFUNDINGS and Gmtfundings are both in the XML
-    Gmtfundings: Optional[dict] = None
+    Gmtfundings: Optional[Gmtfunding] = None
     Meetings: Optional[List[Meeting]] = None

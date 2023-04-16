@@ -1,3 +1,4 @@
+import json
 import requests
 import zipfile
 from io import BytesIO
@@ -7,13 +8,17 @@ from datetime import datetime
 
 
 class Downloader:
-
-    def __init__(self):
+    LOBBY_ACTIVITY_FILE_NAME = "Lobbyist Registry Activity.zip"
+    README_FILE_NAME = "lobbyist-registry-readme.xls"
+    def __init__(self, load_from_url=True):
         self._called = False
         self.package = self._get_package()
-        self.metadata = self._get_metadata()
+        self.metadata_dates = self._get_metadata_metadata_dates()
 
-    def _get_package(self):
+
+    @cache
+    def _get_package(self)-> Dict:
+        """Returns response from Toronto Open Data CKAN API"""
         if self._called:
             raise Exception("This method should only be called once")
 
@@ -34,54 +39,57 @@ class Downloader:
         self._called = True
         return package
 
-    def _get_metadata(self) -> Dict[str, Dict[str, str]]:
+    @cache
+    def _get_metadata_metadata_dates(self) -> Dict[str, Dict[str, str]]:
+        """Returns last modified dates for lobbying registry and readme"""
         package = self.package
-        metadata = {'package': {
+        metadata_dates = {'package': {
             'last_refreshed': package['result']['last_refreshed'],
             'metadata_modified': package['result']['metadata_modified']},
             'lobbyist-registry-readme': {
                 'last_modified': package['result']['resources'][0]['last_modified'],
                 'metadata_modified': package['result']['resources'][0]['metadata_modified'],
-                'url': package['result']['resources'][0]['url'],
         },
             'lobbyist-registry': {
                 'last_modified': package['result']['resources'][1]['last_modified'],
                 'metadata_modified': package['result']['resources'][1]['metadata_modified'],
-                'url': package['result']['resources'][1]['url'],
         }
         }
-        return metadata
-
-    @cache
-    def download_lobbyactivity_zip(self, url) -> bytes:
-        lobbyist_data = requests.get(url)
-        lobbyist_data_zip = lobbyist_data.content
-        return lobbyist_data_zip
-
-    @cache
-    def unzip_lobbyactivity_files(self, lobbyist_data_zip: bytes) -> Dict[str, zipfile.ZipExtFile]:
-        zf = zipfile.ZipFile(BytesIO(lobbyist_data_zip))
-        return {memberName: zf.open(memberName) for memberName in zf.namelist()}
-
-    @cache
-    def download_lobbyactivity_xml(self):
-        lobbyist_data_zip: bytes = self.download_lobbyactivity_zip(self.metadata['lobbyist-registry']['url'])
-        self.files: Dict[str, zipfile.ZipExtFile] = self.unzip_lobbyactivity_files(lobbyist_data_zip)
-        return self.files
-
-    @cache
-    def download_readme(self) -> str:
-        lobbyist_readme = requests.get(self.metadata['lobbyist-registry-readme']['url'])
-        return lobbyist_readme
+        return metadata_dates
 
     @cache
     def last_modified(self):
+        """Returns the most recent last_modified date from the package metadata"""
         datetimes = [
-            self.metadata['package']['last_refreshed'],
-            self.metadata['package']['metadata_modified'],
-            self.metadata['lobbyist-registry']['last_modified'],
-            self.metadata['lobbyist-registry']['metadata_modified'],
-            self.metadata['lobbyist-registry-readme']['last_modified'],
-            self.metadata['lobbyist-registry-readme']['metadata_modified'],
+            self.package['package']['last_refreshed'],
+            self.package['package']['metadata_modified'],
+            self.package['lobbyist-registry']['last_modified'],
+            self.package['lobbyist-registry']['metadata_modified'],
+            self.package['lobbyist-registry-readme']['last_modified'],
+            self.package['lobbyist-registry-readme']['metadata_modified'],
         ]
         return max(datetime.strptime((val.split(".")[0] if "." in val else val).replace("T", " "), '%Y-%m-%d %H:%M:%S') for val in datetimes)
+
+    @cache
+    def lobbyactivity_zip(self) -> zipfile.ZipFile:
+        lobbyist_data_response: requests.models.Response = requests.get(self.package['result']['resources'][1]['url'])
+        return  zipfile.ZipFile(BytesIO(lobbyist_data_response.content))
+    
+    @cache
+    def readme_bytes(self):
+        readme_response: requests.models.Response = requests.get(self.package['result']['resources'][0]['url'])
+        return  readme_response.content
+    
+    @cache
+    def lobbyactivity_xml(self)->Dict[str, zipfile.ZipExtFile]:
+        return {memberName: self.lobbyactivity_zip().open(memberName) for memberName in self.lobbyactivity_zip().namelist()} 
+    
+    @cache
+    def extract_files(self):
+        self.lobbyactivity_zip().extractall()
+
+        with open(self.README_FILE_NAME, "wb") as binary_file:
+            binary_file.write(self.readme_bytes())
+        
+        with open("Open_Data_Response.json", "w") as json_file:
+            json_file.write(json.dumps(self.package, indent=4))

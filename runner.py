@@ -1,11 +1,9 @@
-from lobby import parser, downloader
+from lobby import *
 import pprint as pp
 import json
+import lobby.generator as generator
 
-lobbyactivity_xml = downloader.Downloader().download_lobbyactivity_xml()
-results = parser.Parse(lobbyactivity_xml).get_results_json()
-print(f"{len(results)} SubjectMatters found")
 
-with open('lobbyactivity.json', 'w') as outfile:
-    json.dump(results, outfile)
 
+Uploader().generate_db_file()
+Generator().generate_markdown()

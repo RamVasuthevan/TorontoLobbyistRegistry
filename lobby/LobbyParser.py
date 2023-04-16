@@ -6,7 +6,7 @@ from .util import *
 from functools import cache
 import dataclasses
 
-class Parse:
+class LobbyParser:
     
     def __init__(self,lobbyactivity_xml):
         self.lobbyactivity_xml_documents = lobbyactivity_xml
@@ -26,8 +26,8 @@ class Parse:
                 del ROW['SMXML']['SM']['GMTFUNDINGS']
 
             subjectMatter = SubjectMatter(**ROW['SMXML']['SM'])
-            subjectMatter.SubjectMatter = list(val if len(val.replace(":",",").split(','))==1 else list(val.replace(":",",").split(',')) for val in list(subjectMatter.SubjectMatter.split(";")))
-            subjectMatter.Particulars = subjectMatter.Particulars.split(';')
+            subjectMatter.SubjectMatter = subjectMatter.SubjectMatter.split(';')
+            subjectMatter.Particulars = subjectMatter.Particulars
 
             subjectMatter.Registrant = Registrant(**subjectMatter.Registrant)
             subjectMatter.Registrant.BusinessAddress = BusinessAddress(**subjectMatter.Registrant.BusinessAddress)
@@ -39,7 +39,8 @@ class Parse:
                     subjectMatter.Communications = [Communication(**communication) for communication in subjectMatter.Communications['Communication']]
                 for communication in subjectMatter.Communications:
                     communication.CommunicationMethod = None if communication.CommunicationMethod is None else communication.CommunicationMethod.split(';')
-                    communication.LobbyistBusinessAddress = BusinessAddress(**communication.LobbyistBusinessAddress)
+                    if communication.LobbyistBusinessAddress:
+                        communication.LobbyistBusinessAddress = BusinessAddress(**communication.LobbyistBusinessAddress)
             
             if type(subjectMatter.Firms['Firm']) == dict:
                 subjectMatter.Firms = [Firm(**subjectMatter.Firms['Firm'])]
@@ -80,7 +81,7 @@ class Parse:
                     subjectMatter.Meetings = [Meeting(**subjectMatter.Meetings['Meeting'])]
                 else:
                     subjectMatter.Meetings = [Meeting(**meeting) for meeting in subjectMatter.Meetings['Meeting']]
-                
+
                 for meeting in subjectMatter.Meetings:
                     if meeting.POHS:
                         if type(meeting.POHS['POH']) == dict:
