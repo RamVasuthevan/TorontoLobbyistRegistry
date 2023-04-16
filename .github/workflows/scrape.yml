@@ -1,0 +1,50 @@
+name: Download, Unzip and Save Lobbyist Registry Data
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'
+jobs:
+  download_lobby_data:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current repo
+        uses: actions/checkout@v2
+      - name: Checkout TorontoLobbyistRegistry
+        uses: actions/checkout@v2
+        with:
+          repository: 'RamVasuthevan/TorontoLobbyistRegistry'
+          token: ${{ secrets.PAT }}
+          path: TorontoLobbyistRegistry
+      - name: Echo commit hash of TorontoLobbyistRegistry
+        run: |
+          cd TorontoLobbyistRegistry
+          TorontoLobbyistRegistry_commit_hash=$(git rev-parse HEAD)
+          echo "Commit hash: ${TorontoLobbyistRegistry_commit_hash}"
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.10'
+      - name: Create and activate virtual environment
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+      - name: Install dependencies
+        run: |
+          source venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run Python script to download and unzip files
+        run: |
+          python download_and_extract.py 
+      - name: Commit and push if files changed
+        run: |-
+          git config user.name "Automated"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          timestamp=$(date -u)
+          git commit -m "Dowloaded: ${timestamp}: TorontoLobbyistRegistry commit ${TorontoLobbyistRegistry_commit_hash}" || exit 0
+          git push
