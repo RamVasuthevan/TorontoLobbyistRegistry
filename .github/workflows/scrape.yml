@@ -46,7 +46,6 @@ jobs:
           mv TorontoLobbyistRegistry/lobbyist-registry-readme.xls lobbyist-registry-readme.xls
           mv TorontoLobbyistRegistry/Open_Data_Response.json Open_Data_Response.json
           rm -rf TorontoLobbyistRegistry
-
       - name: Commit and push if files changed
         run: |-
           git config user.name "Automated"
