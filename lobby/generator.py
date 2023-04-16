@@ -45,7 +45,7 @@ class Generator:
     def __init__(self):
         pass
 
-    
+    @staticmethod
     def generate_markdown():
         print('start')
 
