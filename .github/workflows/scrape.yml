@@ -42,6 +42,10 @@ jobs:
           cd TorontoLobbyistRegistry
           python download_and_extract.py 
           cd ..
+          cd lobbyactivity-active.xml TorontoLobbyistRegistry/lobbyactivity-active.xml 
+          cd lobbyactivity-closed.xml TorontoLobbyistRegistry/lobbyactivity-closed.xml
+          cd lobbyist-registry-readme.xls TorontoLobbyistRegistry/lobbyist-registry-readme.xls
+          cd Open_Data_Response.json TorontoLobbyistRegistry/Open_Data_Response.json
           rm -rf
       - name: Commit and push if files changed
         run: |-
