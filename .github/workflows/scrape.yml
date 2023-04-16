@@ -1,6 +1,7 @@
 name: Download, Unzip and Save Lobbyist Registry Data
 
 on:
+  push:
   workflow_dispatch:
   schedule:
     - cron: '0 0 * * *'
@@ -31,11 +32,12 @@ jobs:
           source venv/bin/activate
       - name: Install dependencies
         run: |
-          source venv/bin/activate
+          cd TorontoLobbyistRegistry
           pip install --upgrade pip
           pip install -r requirements.txt
       - name: Run Python script to download and unzip files
         run: |
+          cd TorontoLobbyistRegistry
           python download_and_extract.py 
       - name: Commit and push if files changed
         run: |-
