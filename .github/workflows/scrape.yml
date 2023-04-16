@@ -11,6 +11,8 @@ jobs:
     steps:
       - name: Checkout current repo
         uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.PAT_TORONTOLOBBYISTREGISTRYDATA }}
       - name: Checkout TorontoLobbyistRegistry
         uses: actions/checkout@v2
         with:
