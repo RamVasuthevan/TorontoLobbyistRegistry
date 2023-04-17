@@ -44,7 +44,7 @@ jobs:
           mv TorontoLobbyistRegistry/lobbyactivity-active.xml lobbyactivity-active.xml
           mv TorontoLobbyistRegistry/lobbyactivity-closed.xml lobbyactivity-closed.xml
           mv TorontoLobbyistRegistry/lobbyist-registry-readme.xls lobbyist-registry-readme.xls
-          mv TorontoLobbyistRegistry/open-data-response.json.json open-data-response.json
+          mv TorontoLobbyistRegistry/open-data-response.json open-data-response.json
           rm -rf TorontoLobbyistRegistry
       - name: Commit and push if files changed
         run: |-
