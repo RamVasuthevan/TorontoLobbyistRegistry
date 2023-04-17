@@ -44,7 +44,7 @@ jobs:
           mv TorontoLobbyistRegistry/lobbyactivity-active.xml lobbyactivity-active.xml
           mv TorontoLobbyistRegistry/lobbyactivity-closed.xml lobbyactivity-closed.xml
           mv TorontoLobbyistRegistry/lobbyist-registry-readme.xls lobbyist-registry-readme.xls
-          mv TorontoLobbyistRegistry/Open_Data_Response.json Open_Data_Response.json
+          mv TorontoLobbyistRegistry/open-data-response.json.json open-data-response.json
           rm -rf TorontoLobbyistRegistry
       - name: Commit and push if files changed
         run: |-
@@ -53,7 +53,7 @@ jobs:
           git add lobbyactivity-active.xml
           git add lobbyactivity-closed.xml
           git add lobbyist-registry-readme.xls
-          git add Open_Data_Response.json
+          git add open-data-response.json
           timestamp=$(date -u)
           git commit -m "Dowloaded: ${timestamp}: commit: ${{env.TorontoLobbyistRegistry_commit_hash}}" || exit 0
           git push
