@@ -91,5 +91,5 @@ class Downloader:
         with open(self.README_FILE_NAME, "wb") as binary_file:
             binary_file.write(self.readme_bytes())
         
-        with open("Open_Data_Response.json", "w") as json_file:
+        with open("open-data-response.json", "w") as json_file:
             json_file.write(json.dumps(self.package, indent=4))
