@@ -65,9 +65,10 @@ class Generator:
                     # Write the YAML content to a file
                     with open(val.SMNumber + '.markdown', 'w') as outfile:
                         outfile.write("---\n")
-                        outfile.write(yaml_content)
                         outfile.write("layout: subjectmatter")
-                        outfile.write("---")
+                        outfile.write("\n---")
+                        outfile.write(yaml_content)
+
                     # Add the YAML file to the zip file
                     zipf.write(val.SMNumber + '.markdown')
 
