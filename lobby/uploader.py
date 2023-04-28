@@ -21,6 +21,7 @@ from .downloader import *
 from .lobbyParser import *
 from itertools import chain
 import os
+from dataclasses import astuple
 
 class Base(DeclarativeBase):
     @staticmethod
@@ -127,8 +128,8 @@ class Communication(Base):
     communicationMethod_id: Mapped[int] = mapped_column(ForeignKey('communication_method.id'), nullable=True)
     communicationMethod: Mapped["CommunicationMethod"] = relationship()
 
-    LobbyistBussinessAddress_id: Mapped[int] = mapped_column(ForeignKey('business_address.id'), nullable=True)
-    LobbyistBussinessAddress: Mapped["BusinessAddress"] = relationship()
+    LobbyistBusinessAddress_id: Mapped[int] = mapped_column(ForeignKey('business_address.id'), nullable=True)
+    LobbyistBusinesAddress: Mapped["BusinessAddress"] = relationship()
 
 class FirmType(Base):
     __tablename__ = 'firm_type'
@@ -337,15 +338,27 @@ class SubjectMatter(Base):
     GmtFundings: Mapped[List[GmtFunding]] = relationship(secondary=subjectMatter_gmt_funding_association_table)
 
     Meetings: Mapped[List[Meeting]] = relationship(secondary=subjectmatter_meeting_association_table)
-   
+
+from functools import wraps
+import time
+
+def timeit(func):
+    @wraps(func)
+    def timeit_wrapper(*args, **kwargs):
+        start_time = time.perf_counter()
+        result = func(*args, **kwargs)
+        end_time = time.perf_counter()
+        total_time = end_time - start_time
+        print(f'Function {func.__name__} Took {total_time:.4f} seconds')
+        return result
+    return timeit_wrapper   
 
 class Uploader:
 
     def __init__(self) -> None:
-        pass
+        self.key_value_tables_cache = {}
 
-    @staticmethod
-    def generate_db_file(use_existing_data=True):
+    def generate_db_file(self,use_existing_data=True):
         print("Deletes TorontoLobbyistRegistry.db if it exists ...")
         Uploader.delete_db()
 
@@ -362,22 +375,28 @@ class Uploader:
         print("Generate key value tables ...")
         Uploader.add_key_value_tables(engine,results)
 
+        print("Cache key value tables ...")
+        self.cache_key_value_tables(engine)
+
         print("Add data to db ...")
-        Uploader.add_data_to_db(engine,results)
+        self.add_data_to_db(engine,results)
 
         print("Created db ...")
 
+    @timeit
     @staticmethod
     def delete_db():
         if os.path.exists("TorontoLobbyistRegistry.db"): 
             os.remove("TorontoLobbyistRegistry.db")
 
+    @timeit
     @staticmethod 
     def setup_db():
         engine = create_engine("sqlite:///TorontoLobbyistRegistry.db", echo=False, future=True)
         Base.metadata.create_all(engine)
         return engine
     
+    @timeit
     @staticmethod 
     def get_data():
         downloader = Downloader()
@@ -386,6 +405,7 @@ class Uploader:
         results = LobbyParser(lobbyactivity_xml).get_results_dataclasses()
         return results
 
+    @timeit
     @staticmethod 
     def get_existing_data():
         FILE_NAMES = ["lobbyactivity-active.xml","lobbyactivity-closed.xml"]
@@ -395,6 +415,7 @@ class Uploader:
         results = LobbyParser(lobbyactivity_xml).get_results_dataclasses()
         return results
 
+    @timeit
     @staticmethod
     def get_firm_types(results):
         firm_types = set()
@@ -410,6 +431,7 @@ class Uploader:
             firm_types.append(None)
         return firm_types
     
+    @timeit
     @staticmethod
     def get_firm_bussiness_type(results):
         firm_bussiness_type = set()
@@ -426,6 +448,7 @@ class Uploader:
             firm_bussiness_type.append(None)
         return firm_bussiness_type
 
+    @timeit
     @staticmethod
     def get_lobbist_types(results):
         lobbyist_types = set()
@@ -450,6 +473,7 @@ class Uploader:
             lobbyist_types.append(None)
         return lobbyist_types
     
+    @timeit
     @staticmethod
     def get_beneficiary_types(results):
         beneficiary_types = set()
@@ -466,6 +490,33 @@ class Uploader:
             beneficiary_types.append(None)
         return beneficiary_types
 
+    def get_business_address(results):
+        business_address = set()
+        isNone = False
+        for result in results:
+            if result.Firms is not None:
+                for firm in result.Firms:
+                    if firm.BusinessAddress is None:
+                        isNone = True
+                    else:
+                        business_address.add(astuple(firm.BusinessAddress))
+            if result.Registrant is not None:
+                if result.Registrant.BusinessAddress is None:
+                    isNone = True
+                else:
+                    business_address.add(astuple( result.Registrant.BusinessAddress))
+            if result.Communications is not None:
+                for communication in result.Communications:
+                    if communication.LobbyistBusinessAddress is None:
+                        isNone = True
+                    else:
+                        business_address.add(astuple(communication.LobbyistBusinessAddress))
+        business_address = sorted(list(business_address), key=lambda t: tuple('' if item is None else item for item in t))
+
+        if isNone:
+            business_address.append(None)
+        return business_address
+        
     @staticmethod
     def clean_PreviousPublicOfficeHolder(val):
         if val.PreviousPublicOfficeHolder in  [None,"No","no"]: 
@@ -477,6 +528,7 @@ class Uploader:
             return True
         raise ValueError(f"Unexpected value for PreviousPublicOfficeHolder: {val.PreviousPublicOfficeHolder}")
 
+    @timeit
     @staticmethod
     def add_key_value_tables(engine, results):
         with Session(engine) as (session):
@@ -488,7 +540,6 @@ class Uploader:
             
             for group in sorted(list(set(chain.from_iterable(result.SubjectMatter for result in results)))):
                 session.add(SubjectMatterGroup(Group=group))
-            
 
             for definition in sorted(list(set(result.SubjectMatterDefinition for result in results)), key=lambda x: (x is None, x)):
                 session.add(SubjectMatterDefinition(Definition=definition))
@@ -513,31 +564,47 @@ class Uploader:
             
             for beneficiaryType in Uploader.get_beneficiary_types(results):
                 session.add(BeneficiaryType(Type=beneficiaryType))
-            
             session.commit()
-        
-    @staticmethod 
-    def add_data_to_db(engine,results):
+
+    @timeit
+    def cache_key_value_tables(self, engine):
+        with Session(engine) as session:
+            for key_value_class in [SubjectMatterStatuses, SubjectMatterTypes, SubjectMatterGroup, SubjectMatterDefinition, RegistrantStatus, RegistrantType, RegistrantPrefix, FirmType, FirmBusinessType, LobbyistType, BeneficiaryType]:
+                # Get the columns of the class
+                columns = sqlalchemy_inspect(key_value_class).columns
+
+                # Find the columns not named 'id'
+                non_id_columns = [col for col in columns if col.name != 'id']
+
+                # Cache the key-value pairs
+                if len(non_id_columns) == 1:
+                    key_column = non_id_columns[0]
+                    self.key_value_tables_cache[key_value_class] = {getattr(val, key_column.name): val for val in session.query(key_value_class).all()}
+                else:
+                    self.key_value_tables_cache[key_value_class] = {tuple(getattr(val, col.name) for col in non_id_columns): val for val in session.query(key_value_class).all()}
+
+    @timeit
+    def add_data_to_db(self,engine,results):
         with Session(engine) as (session):
-            
             for idx,result in enumerate(results):
-                print(f"{idx+1}/{len(results)}")
+                #print(f"{idx+1}/{len(results)}")
                 
                 subjectMatter = SubjectMatter()
                 subjectMatter.SMNumber = result.SMNumber
                 
-                subjectMatter.Status = session.query(SubjectMatterStatuses).filter(SubjectMatterStatuses.Status == result.Status).one()
+                subjectMatter.Status = self.key_value_tables_cache[SubjectMatterStatuses][result.Status]
                 subjectMatter.Status_id = subjectMatter.Status.id
                 
-                subjectMatter.Type = session.query(SubjectMatterTypes).filter(SubjectMatterTypes.Type == result.Type).one()
+                subjectMatter.Type = self.key_value_tables_cache[SubjectMatterTypes][result.Type]
                 subjectMatter.Type_id = subjectMatter.Type.id
 
                 for group in result.SubjectMatter:
-                    group = session.query(SubjectMatterGroup).filter(SubjectMatterGroup.Group == group).one()
+                    group = self.key_value_tables_cache[SubjectMatterGroup][group]
                     session.add(group)
                     subjectMatter.Groups.append(group)
+                session.flush #DELETE THIS
                 
-                subjectMatter.Definition = session.query(SubjectMatterDefinition).filter(SubjectMatterDefinition.Definition == result.SubjectMatterDefinition).one()
+                subjectMatter.Definition = self.key_value_tables_cache[SubjectMatterDefinition][result.SubjectMatterDefinition]
                 subjectMatter.Definition_id = subjectMatter.Definition.id
                 
                 subjectMatter.Particulars = result.Particulars
@@ -550,15 +617,15 @@ class Uploader:
                 registrant.RegistrationNUmber = result.Registrant.RegistrationNUmber
                 registrant.RegistrationNUmberWithSoNum = result.Registrant.RegistrationNUmberWithSoNum
 
-                registrant.Status = session.query(RegistrantStatus).filter(RegistrantStatus.Status == result.Registrant.Status).one()
+                registrant.Status = self.key_value_tables_cache[RegistrantStatus][result.Registrant.Status]
                 registrant.Status_id = registrant.Status.id
 
                 registrant.EffectiveDate = result.Registrant.EffectiveDate
 
-                registrant.Type = session.query(RegistrantType).filter(RegistrantType.Type == result.Registrant.Type).one()
+                registrant.Type = self.key_value_tables_cache[RegistrantType][result.Registrant.Type]
                 registrant.Type_id = registrant.Type.id
 
-                registrant.Prefix = session.query(RegistrantPrefix).filter(RegistrantPrefix.Prefix == result.Registrant.Prefix).one()
+                registrant.Prefix = self.key_value_tables_cache[RegistrantPrefix][result.Registrant.Prefix]
                 registrant.Prefix_id = registrant.Prefix.id
 
                 registrant.FirstName = result.Registrant.FirstName
@@ -585,24 +652,17 @@ class Uploader:
 
                 subjectMatter.Registrant = registrant
                 subjectMatter.Registrant_id = subjectMatter.Registrant.id
-                
-                businessAddress = session.query(BusinessAddress).filter(BusinessAddress.AddressLine1 == result.Registrant.BusinessAddress.AddressLine1).first()  
-                if businessAddress is None:
-                    businessAddress = BusinessAddress(AddressLine1=result.Registrant.BusinessAddress.AddressLine1,AddressLine2=result.Registrant.BusinessAddress.AddressLine2,City=result.Registrant.BusinessAddress.City,Province=result.Registrant.BusinessAddress.Province,Country=result.Registrant.BusinessAddress.Country,PostalCode=result.Registrant.BusinessAddress.PostalCode,Phone=result.Registrant.BusinessAddress.Phone)
-                    session.add(businessAddress)
-                    session.flush()
-                registrant.BusinessAddress_id = businessAddress.id  
 
                 for val in result.Firms:            
                     firm = Firm()
-                    firm.Type = session.query(FirmType).filter(FirmType.Type == val.Type).one()
+                    firm.Type = self.key_value_tables_cache[FirmType][val.Type]
                     firm.Type_id = firm.Type.id
                     firm.Name = val.Name
                     firm.TradeName = val.TradeName
                     firm.FiscalStart = val.FiscalStart
                     firm.FiscalEnd = val.FiscalEnd
                     firm.Description = val.Description
-                    firm.BusinessType = session.query(FirmBusinessType).filter(FirmBusinessType.Type == val.BusinessType).one()
+                    firm.BusinessType = self.key_value_tables_cache[FirmBusinessType][val.BusinessType]
                     firm.BusinessType_id = firm.BusinessType.id
                     firm.BusinessAddress = session.query(BusinessAddress).filter(BusinessAddress.AddressLine1 == val.BusinessAddress.AddressLine1).first()
                     if firm.BusinessAddress is None:
@@ -640,7 +700,7 @@ class Uploader:
 
                         communication.Lobbyist = Lobbyist()
                         communication.Lobbyist.Number = val.LobbyistNumber
-                        communication.Lobbyist.Type = session.query(LobbyistType).filter(LobbyistType.Type == val.LobbyistType).one()
+                        communication.Lobbyist.Type = self.key_value_tables_cache[LobbyistType][val.LobbyistType]
                         communication.Lobbyist.Prefix = val.LobbyistPrefix
                         communication.Lobbyist.LobbyistFirstName = val.LobbyistFirstName
                         communication.Lobbyist.LobbyistMiddleInitials = val.LobbyistMiddleInitials
@@ -661,6 +721,7 @@ class Uploader:
                         communication.LobbyistBusinessAddress.Country = val.LobbyistBusinessAddress.Country
                         communication.LobbyistBusinessAddress.PostalCode = val.LobbyistBusinessAddress.PostalCode
                         communication.LobbyistBusinessAddress.Phone = val.LobbyistBusinessAddress.Phone
+
                         session.add(communication.LobbyistBusinessAddress)
                         session.flush()
                         communication.LobbyistBusinessAddress_id = communication.LobbyistBusinessAddress.id
@@ -681,7 +742,7 @@ class Uploader:
                 if result.Beneficiaries is not None:
                     for val in result.Beneficiaries:
                         beneficiary = Beneficiary()
-                        beneficiary.Type = session.query(BeneficiaryType).filter(BeneficiaryType.Type == val.Type).one()
+                        beneficiary.Type = self.key_value_tables_cache[BeneficiaryType][val.Type]
                         beneficiary.Type.id = beneficiary.Type.id
                         beneficiary.Name = val.Name
                         beneficiary.TradeName = val.TradeName
@@ -739,7 +800,7 @@ class Uploader:
                                 lobbyist.LastName = val.LastName
                                 lobbyist.Suffix = val.Suffix
                                 lobbyist.Business = val.Business
-                                lobbyist.Type = session.query(LobbyistType).filter(LobbyistType.Type == val.Type).one()
+                                lobbyist.Type = self.key_value_tables_cache[LobbyistType][val.Type]
                                 lobbyist.Type_id = lobbyist.Type.id
 
                                 session.add(lobbyist)
