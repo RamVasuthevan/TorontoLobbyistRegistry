@@ -8,3 +8,6 @@ Do not trust their:
 Todo:
     - Clean up Pipfile
     - Update files need for Github Action
+    - Clean up .gitignore
+
+

@@ -140,3 +140,4 @@ TorontoLobbyistRegistry.db-journal
 yaml_documents.zip
 
 logs/
+app.sqlite
