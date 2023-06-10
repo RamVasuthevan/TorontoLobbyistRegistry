@@ -1,7 +1,6 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
 {% block content %}
-    {% for user in users %}
-    <div><p>{{user.username}}</p></div>
-    {% endfor %}
+<h1>Welcome to Toronto Lobbying Report!</h1>
+<a href="{{ url_for('lobbying_reports') }}">View Lobbying Reports</a>
 {% endblock %}
