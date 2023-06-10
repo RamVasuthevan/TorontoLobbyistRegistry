@@ -11,6 +11,17 @@ def get_type_error_message(variable_name: str, expected_type: str, variable_valu
 def get_enum_error_message(variable_name: str, enum_name: str, variable_value) -> str:
     return f"{variable_name} must be one of {', '.join([e.value for e in enum_name])}, got {variable_value}"
 
+class Prefix(Enum):
+    NONE = ""
+    MR = "Mr"
+    MRS = "Mrs"
+    MS = "Ms"
+    MISS = "Miss"
+    DR = "Dr"
+    PROFESSOR = "Professor"
+    HON = "Hon"
+    MME = "Mme"
+    ERROR = "Error"
 
 class LobbyingReportStatus(Enum):
     ACTIVE = 'Active'
@@ -35,6 +46,8 @@ class LobbyingReport(db.Model):
     proposed_end_date = db.Column(db.Date, nullable=True)
     initial_approval_date = db.Column(db.Date)
     effective_date = db.Column(db.Date)
+    registrant_id = db.Column(db.Integer, db.ForeignKey('registrant.id'))
+    registrant = db.relationship('Registrant', back_populates='lobbying_reports')
 
     @validates('smnumber')
     def validate_smnumber(self, key, smnumber):
@@ -99,3 +112,59 @@ class LobbyingReport(db.Model):
             raise ValueError(f"effective_date {effective_date} must be on or after initial_approval_date {self.initial_approval_date}")
 
         return effective_date
+
+class RegistrantStatus(Enum):
+    ACTIVE = 'Active'
+    SUPERSEDED = 'Superseded'
+    NOT_ACCEPTED = 'Not Accepted'
+    FORCE_CLOSED = 'Force Closed'
+
+class RegistrantType(Enum):
+    CONSULTANT = 'Consultant'
+    IN_HOUSE = 'In-house'
+
+class Registrant(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    registration_number = db.Column(db.String)
+    lobbying_reports = db.relationship('LobbyingReport', back_populates='registrant')
+    status = db.Column(db.Enum(RegistrantStatus))
+    effective_date = db.Column(db.Date, nullable=True)
+    type = db.Column(db.Enum(RegistrantType))
+    prefix = db.Column(db.Enum(Prefix))
+    first_name = db.Column(db.String)
+    middle_initial = db.Column(db.String)
+    last_name = db.Column(db.String)
+    suffix = db.Column(db.String)
+
+    @validates('registration_number')
+    def validate_registration_number(self, key, registration_number):
+        if not isinstance(registration_number, str):
+            raise ValueError(get_type_error_message(registration_number, str.__name__, registration_number))
+
+        if len(registration_number) != 6 or not registration_number[:5].isdigit() or registration_number[5] not in ['S', 'C','V']:
+            raise ValueError(f"registration_number must have 5 digits followed by either 'S', 'C' or 'V' , got {registration_number}")
+
+        return registration_number
+
+    @validates('status')
+    def validate_status(self, key, status):
+        if not isinstance(status, RegistrantStatus):
+            raise ValueError(get_enum_error_message("status", RegistrantStatus, status))
+
+        return status
+
+    @validates('effective_date')
+    def validate_effective_date(self, key, effective_date):
+        if effective_date is not None and not isinstance(effective_date, date):
+            raise ValueError(get_type_error_message('effective_date', date.__name__, effective_date))
+        
+        return effective_date
+
+    @validates('type')
+    def validate_type(self, key, type):
+        if not isinstance(type, RegistrantType):
+            raise ValueError(get_enum_error_message("type", RegistrantType, type))
+
+        return type
+
+    
