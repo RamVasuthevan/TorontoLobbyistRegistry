@@ -43,19 +43,18 @@ def run():
     subject_matters = list()
     with app.app_context():
         db = setup_db(app_db)
-        print(DATA_FILES)
         for data_file in DATA_FILES:
             start_time = time.time()
             D = xml_to_dict(data_file)
-            #rows = process_file(D)
-            #for row in rows:
-                #subject_matters += process_row(row, db)
-                #process_row(row, db)
-                #pass
+            rows = process_file(D)
+            for row in rows:
+                subject_matters += process_row(row, db)
+                process_row(row, db)
             db.session.commit()
             end_time = time.time()
             print(f"Processing time for {data_file}: {end_time - start_time} seconds")
-            #print(len(subject_matters))
+        for val in sorted(list(set(subject_matters))):
+            print(val)
 
 
 if __name__ == '__main__':
