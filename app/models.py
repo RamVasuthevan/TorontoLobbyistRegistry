@@ -1,12 +1,24 @@
 from datetime import datetime
 from app import db
 from sqlalchemy.orm import validates
+from enum import Enum
+
+class LobbyingReportStatus(Enum):
+    ACTIVE = 'Active'
+    CLOSED = 'Closed'
+    CLOSED_BY_LRO = 'Closed by LRO'
+
+class LobbyingReportType(Enum):
+    IN_HOUSE = 'In-house'
+    CONSULTANT = 'Consultant'
+    VOLUNTARY = 'Voluntary'
 
 class LobbyingReport(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     smnumber = db.Column(db.String)
-    status = db.Column(db.String)
-    type = db.Column(db.String)
+    status = db.Column(db.Enum(LobbyingReportStatus))
+    type = db.Column(db.Enum(LobbyingReportType))
+    subject_matter = db.Column(db.String)
 
     @validates('smnumber')
     def validate_smnumber(self, key, smnumber):
@@ -20,10 +32,15 @@ class LobbyingReport(db.Model):
 
     @validates('status')
     def validate_status(self, key, status):
-        valid_statuses = ['Active', 'Closed', 'Closed by LRO']
-        if not isinstance(status, str):
-            raise ValueError("status must be a string")
+        if not isinstance(status, LobbyingReportStatus):
+            raise ValueError("status must be a LobbyingReportStatus enum value")
         
-        if status not in valid_statuses:
-            raise ValueError(f"Invalid status '{status}', should be one of {valid_statuses}")
         return status
+
+    @validates('type')
+    def validate_type(self, key, type):
+        if not isinstance(type, LobbyingReportType):
+            print(f"Invalid type '{type}', should be one of {[t.value for t in LobbyingReportType]}")
+            raise ValueError("type must be a LobbyingReportType enum value")
+        
+        return type

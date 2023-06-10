@@ -4,10 +4,12 @@ import xmltodict
 import time
 import pprint
 from app import db as app_db
-from app.models import LobbyingReport
+from app.models import LobbyingReport, LobbyingReportStatus, LobbyingReportType
 
 DATA_PATH = 'data'
 DATA_FILES = ['lobbyactivity-active.xml','lobbyactivity-closed.xml']
+
+
 
 def xml_to_dict(data_file: str) -> Dict:
     with open(os.path.join(DATA_PATH, data_file)) as fd:
@@ -22,28 +24,38 @@ def process_file(file_dict: Dict)->List[Dict]:
     rows = [val['SMXML']['SM'] for val in  file_dict['ROWSET']['ROW']]
     return rows
 
-def process_row(row:Dict, db):
+def process_row(row: Dict, db):
     smnumber = row['SMNumber']
-    status = row['Status']   
-    report = LobbyingReport(smnumber=smnumber, status=status)  
-    db.session.add(report) 
+    status = LobbyingReportStatus(row['Status'])
+    _type = LobbyingReportType(row['Type'])
+    subject_matter = row['SubjectMatter']
+    report = LobbyingReport(smnumber=smnumber, status=status, type=_type,subject_matter=subject_matter)
+    db.session.add(report)
+    if ";" in row['SubjectMatter']:
+        return row['SubjectMatter'].split(';')
+    else:
+        return [row['SubjectMatter']]
 
 
 from app import app, db  # Import the Flask and SQLAlchemy instances
 
 def run():
+    subject_matters = list()
     with app.app_context():
         db = setup_db(app_db)
-
+        print(DATA_FILES)
         for data_file in DATA_FILES:
             start_time = time.time()
             D = xml_to_dict(data_file)
-            rows = process_file(D)
-            for row in rows:
-                process_row(row, db)  # Pass row and db to process_row function
+            #rows = process_file(D)
+            #for row in rows:
+                #subject_matters += process_row(row, db)
+                #process_row(row, db)
+                #pass
             db.session.commit()
             end_time = time.time()
             print(f"Processing time for {data_file}: {end_time - start_time} seconds")
+            #print(len(subject_matters))
 
 
 if __name__ == '__main__':
