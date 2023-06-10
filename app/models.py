@@ -17,7 +17,7 @@ class LobbyingReport(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     smnumber = db.Column(db.String)
     status = db.Column(db.Enum(LobbyingReportStatus))
-    _type = db.Column(db.Enum(LobbyingReportType))
+    type = db.Column(db.Enum(LobbyingReportType))
     subject_matter = db.Column(db.String)
     particulars = db.Column(db.String)
     proposed_start_date = db.Column(db.Date, nullable=True)

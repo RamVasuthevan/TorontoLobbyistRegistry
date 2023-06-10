@@ -40,7 +40,7 @@ def process_row(row: Dict, db):
         report = LobbyingReport(
             smnumber=smnumber,
             status=status,
-            _type=_type,
+            type=_type,
             subject_matter=subject_matter,
             particulars=particulars,
             proposed_start_date=proposed_start_date,
