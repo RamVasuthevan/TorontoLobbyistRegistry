@@ -1,22 +1,19 @@
 {
     "name": "Python-Flask env",
-    "customizations": {
-        "vscode": {
-            "extensions": [
-                "yy0931.vscode-sqlite3-editor",
-                "ms-python.python",
-                "ms-python.vscode-pylance"
-            ],
-            "settings": {
-                "python.venvPath": "/home/codespace/.local/share/virtualenvs/TorontoLobbyistRegistry-D0CpAm_q"
-            },
-            "postCreateCommand": "pipenv install --dev",
-            "terminal.integrated.shell.linux": "/bin/bash",
-            "terminal.integrated.shellArgs.linux": [
-                "-l",
-                "-c",
-                "pipenv shell"
-            ]
-        }
+    "extensions": [
+        "yy0931.vscode-sqlite3-editor",
+        "ms-python.python",
+        "ms-python.vscode-pylance"
+    ],
+    "postCreateCommand": "pipenv && pipenv install --dev",
+    "postStartCommand": "pipenv shell",
+    "settings": {
+        "terminal.integrated.shell.linux": "/bin/bash",
+        "terminal.integrated.shellArgs.linux": [
+            "-l",
+            "-c",
+            "pipenv shell"
+        ],
+        "python.venvPath": "/home/codespace/.local/share/virtualenvs/TorontoLobbyistRegistry-D0CpAm_q"
     }
 }
