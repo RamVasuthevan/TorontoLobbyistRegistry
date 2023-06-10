@@ -4,9 +4,16 @@
     "customizations": {
 		"vscode": {
 			"extensions": [
-                "yy0931.vscode-sqlite3-editor"
+                "yy0931.vscode-sqlite3-editor",
+				"ms-python.python",
+				"ms-python.vscode-pylance"
 			]
-		}
-	},
+		},
+	"settings": {
+        "python.venvPath": "/home/codespace/.local/share/virtualenvs/TorontoLobbyistRegistry-D0CpAm_q"
+    },
+    "postCreateCommand": "pipenv install --dev",
+    "postStartCommand": "pipenv shell"
+	}
 	
 }
