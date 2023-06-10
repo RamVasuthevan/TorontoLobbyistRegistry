@@ -26,7 +26,7 @@ class LobbyingReportType(Enum):
 
 class LobbyingReport(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    smnumber = db.Column(db.String)
+    smnumber = db.Column(db.String, unique=True)
     status = db.Column(db.Enum(LobbyingReportStatus))
     type = db.Column(db.Enum(LobbyingReportType))
     subject_matter = db.Column(db.String)
