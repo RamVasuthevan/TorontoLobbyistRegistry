@@ -5,7 +5,8 @@ Do not trust their:
     - Data validation
     - Data Cleaning
 
-Enum vs lookup table
+- Enum vs lookup table
+- Enum should be in a coherent order or alphabetical
 
 Todo:
     - Clean up Pipfile

@@ -21,11 +21,11 @@ def setup_db(db):
     db.create_all()  # Create all tables in the database
     return db
 
-def process_file(file_dict: Dict)->List[Dict]:
+def get_rows(file_dict: Dict)->List[Dict]:
     rows = [val['SMXML']['SM'] for val in  file_dict['ROWSET']['ROW']]
     return rows
 
-def process_row(row: Dict, db):
+def process_lobbying_report(row: Dict, db):
     smnumber = row['SMNumber']
     status = LobbyingReportStatus(row['Status'])
     _type = LobbyingReportType(row['Type'])
@@ -48,24 +48,21 @@ def process_row(row: Dict, db):
             initial_approval_date=initial_approval_date,
             effective_date=effective_date
         )
-    except:
+    except Exception as e:
         pprint.pprint(row)
-        exit()
+        raise e
     db.session.add(report)
 
 
 from app import app, db 
 
 def run():
-    subject_matters = list()
     with app.app_context():
         db = setup_db(app_db)
         for data_file in DATA_FILES:
             start_time = time.time()
-            D = xml_to_dict(data_file)
-            rows = process_file(D)
-            for row in rows:
-                process_row(row, db)
+            for row in get_rows(xml_to_dict(data_file)):
+                process_lobbying_report(row, db)
             db.session.commit()
             end_time = time.time()
             print(f"Processing time for {data_file}: {end_time - start_time} seconds")
