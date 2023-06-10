@@ -141,3 +141,5 @@ yaml_documents.zip
 
 logs/
 app.sqlite
+out.txt
+test.txt
