@@ -33,7 +33,6 @@ def process_row(row: Dict, db):
     particulars = row['Particulars']
     proposed_start_date = datetime.strptime(row['ProposedStartDate'], '%Y-%m-%d').date() if row.get('ProposedStartDate', None) is not None else None
     proposed_end_date = datetime.strptime(row['ProposedEndDate'], '%Y-%m-%d').date() if row.get('ProposedEndDate', None) is not None else None
-    
     initial_approval_date = datetime.strptime(row['InitialApprovalDate'], '%Y-%m-%d').date()
     effective_date = datetime.strptime(row['EffectiveDate'], '%Y-%m-%d').date()
 
@@ -55,7 +54,7 @@ def process_row(row: Dict, db):
     db.session.add(report)
 
 
-from app import app, db  # Import the Flask and SQLAlchemy instances
+from app import app, db 
 
 def run():
     subject_matters = list()

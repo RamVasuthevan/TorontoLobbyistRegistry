@@ -69,3 +69,23 @@ class LobbyingReport(db.Model):
             raise ValueError(f"proposed_end_date {proposed_end_date} must be on or after proposed_start_date {self.proposed_start_date}")
 
         return proposed_end_date
+
+    @validates('initial_approval_date')
+    def validate_initial_approval_date(self, key, initial_approval_date):
+        if not isinstance(initial_approval_date, date):
+            raise ValueError(f"initial_approval_date must be a date object, got {initial_approval_date} of type {type(initial_approval_date).__name__}")
+
+        if self.effective_date is not None and initial_approval_date > self.effective_date:
+            raise ValueError(f"initial_approval_date {initial_approval_date} must be before or the same as effective_date {self.effective_date}")
+
+        return initial_approval_date
+
+    @validates('effective_date')
+    def validate_effective_date(self, key, effective_date):
+        if not isinstance(effective_date, date):
+            raise ValueError(f"effective_date must be a date object, got {effective_date} of type {type(effective_date).__name__}")
+
+        if self.initial_approval_date is not None and effective_date < self.initial_approval_date:
+            raise ValueError(f"effective_date {effective_date} must be on or after initial_approval_date {self.initial_approval_date}")
+
+        return effective_date
