@@ -29,7 +29,13 @@ Registrant
         - For now I will be setting puting dummy registrant with registration_number="00000S"
     - Deal with suffix
     
+Person
+    - Some people spill their name with all uppercase 
+    - One looks like this Terence (Terry)
+    - More dedup is needed
 
+TRUST
+    - We need to trust that RegistrationNumber is unique
 
 
 Todo:
@@ -38,5 +44,7 @@ Todo:
     - Clean up .gitignore
     - Deal with devcontainer.json warnings
     - Think about this: [Basic Relationship Patterns](https://docs.sqlalchemy.org/en/20/orm/basic_relationships.html)
+    - SQL is default nullable
+    - Update get_enum_error_message for null values
 
 

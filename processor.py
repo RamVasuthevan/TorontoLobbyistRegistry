@@ -4,15 +4,12 @@ import xmltodict
 import time
 import pprint
 from app import db as app_db
-from app.models import LobbyingReport, LobbyingReportStatus, LobbyingReportType, Registrant, RegistrantStatus, RegistrantType, get_enum_error_message, Prefix
+from app.models import LobbyingReport, LobbyingReportStatus, LobbyingReportType, Registrant, RegistrantStatus, RegistrantType, get_enum_error_message, PersonPrefix, Person
 from datetime import datetime, date
 from enum import Enum
 
-
 DATA_PATH = 'data'
 DATA_FILES = ['lobbyactivity-active.xml','lobbyactivity-closed.xml']
-
-
 
 def xml_to_dict(data_file: str) -> Dict:
     with open(os.path.join(DATA_PATH, data_file)) as fd:
@@ -57,18 +54,39 @@ def process_lobbying_report(row: Dict, db):
         raise e
     db.session.add(report)
 
-def process_prefix(raw_prefix: str) -> Prefix:
+def process_prefix(raw_prefix: str) -> PersonPrefix:
     if raw_prefix is None:
         return None
     prefix = raw_prefix.strip().lower().replace('.', '').replace(',', '')
     try:
-        return Prefix[prefix.upper()]
+        return PersonPrefix[prefix.upper()]
     except KeyError:
         #print(raw_prefix)
         #raise ValueError(get_enum_error_message("raw_prefix", Prefix, raw_prefix))
         pass
-    return Prefix.ERROR
+    return PersonPrefix.ERROR
     
+def process_person(prefix, first_name, middle_initial, last_name, suffix):
+    prefix = process_prefix(prefix)
+    person = Person.query.filter_by(
+        prefix=prefix, 
+        first_name=first_name, 
+        middle_initial=middle_initial, 
+        last_name=last_name, 
+        suffix=suffix
+    ).first()
+
+    if person is None:
+        person = Person(
+            prefix=prefix, 
+            first_name=first_name, 
+            middle_initial=middle_initial, 
+            last_name=last_name, 
+            suffix=suffix
+        )
+        db.session.add(person)
+
+    return person
 
 def process_registrant(registrant_dict,db):
     REGISTRANT_WITH_INCONSISTENT  = {
@@ -78,30 +96,26 @@ def process_registrant(registrant_dict,db):
     }
 
     if registrant_dict['RegistrationNUmber'] in REGISTRANT_WITH_INCONSISTENT:
-         return Registrant(
-            registration_number="00000S",
-            status=RegistrantStatus.SUPERSEDED,
-            effective_date=date.fromisoformat('1970-01-01'),
-            type=RegistrantType.CONSULTANT,
-            prefix=Prefix.MR,
-            first_name="ERROR",
-            middle_initial=None,
-            last_name="ERROR"
-        )
+         return None
     
     registration_number = registrant_dict['RegistrationNUmber']
-    #print(registrant_dict['RegistrationNUmberWithSoNum'])
+    registration_number_with_senior_officer_number = registrant_dict['RegistrationNUmberWithSoNum']
     status = RegistrantStatus(registrant_dict['Status'])
     effective_date = datetime.strptime(registrant_dict['EffectiveDate'] , '%Y-%m-%d').date() if registrant_dict.get('EffectiveDate', None) is not None else None
     _type = RegistrantType(registrant_dict['Type'])
-    prefix = process_prefix(registrant_dict['Prefix'])
+
+    prefix = registrant_dict['Prefix']
     first_name = registrant_dict['FirstName']
     middle_initial = registrant_dict['MiddleInitials']
     last_name = registrant_dict['LastName']
     suffix = registrant_dict['Suffix']
+    person = process_person(prefix,first_name,middle_initial,last_name,suffix)
+
+    if person is None:
+        ValueError(registrant_dict)
 
     try:
-        registrant = Registrant(registration_number=registration_number,status=status,effective_date=effective_date,type=_type,prefix=prefix, first_name=first_name,middle_initial=middle_initial,last_name=last_name,suffix=suffix)
+        registrant = Registrant(registration_number=registration_number,registration_number_with_senior_officer_number=registration_number_with_senior_officer_number, status=status,effective_date=effective_date,type=_type,person=person)
     except Exception as e:
         pprint.pprint(registrant_dict)
         raise e

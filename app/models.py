@@ -11,7 +11,7 @@ def get_type_error_message(variable_name: str, expected_type: str, variable_valu
 def get_enum_error_message(variable_name: str, enum_name: str, variable_value) -> str:
     return f"{variable_name} must be one of {', '.join([e.value for e in enum_name])}, got {variable_value}"
 
-class Prefix(Enum):
+class PersonPrefix(Enum):
     NONE = ""
     MR = "Mr"
     MRS = "Mrs"
@@ -23,6 +23,21 @@ class Prefix(Enum):
     MME = "Mme"
     ERROR = "Error"
 
+class Person(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    prefix = db.Column(db.Enum(PersonPrefix))
+    first_name = db.Column(db.String)
+    middle_initial = db.Column(db.String)
+    last_name = db.Column(db.String)
+    suffix = db.Column(db.String)
+
+    @validates('prefix')
+    def validate_status(self, key, prefix):
+        if prefix is not None and not isinstance(prefix, PersonPrefix):
+            raise ValueError(get_enum_error_message("prefix", PersonPrefix, prefix))
+
+        return prefix
+    
 class LobbyingReportStatus(Enum):
     ACTIVE = 'Active'
     CLOSED = 'Closed'
@@ -126,16 +141,14 @@ class RegistrantType(Enum):
 class Registrant(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     registration_number = db.Column(db.String)
+    registration_number_with_senior_officer_number = db.Column(db.String)
     lobbying_reports = db.relationship('LobbyingReport', back_populates='registrant')
     status = db.Column(db.Enum(RegistrantStatus))
     effective_date = db.Column(db.Date, nullable=True)
     type = db.Column(db.Enum(RegistrantType))
-    prefix = db.Column(db.Enum(Prefix))
-    first_name = db.Column(db.String)
-    middle_initial = db.Column(db.String)
-    last_name = db.Column(db.String)
-    suffix = db.Column(db.String)
-
+    person_id = db.Column(db.Integer, db.ForeignKey('person.id'))
+    person = db.relationship('Person', backref=db.backref('registrant'))
+    
     @validates('registration_number')
     def validate_registration_number(self, key, registration_number):
         if not isinstance(registration_number, str):
