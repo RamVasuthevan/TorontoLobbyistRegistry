@@ -4,12 +4,16 @@ from sqlalchemy.orm import validates
 from enum import Enum
 
 
-def get_type_error_message(variable_name: str, expected_type: str, variable_value) -> str:
+def get_type_error_message(variable_name: str, expected_type, variable_value) -> str:
     return f"{variable_name} must be {expected_type}, got {variable_value} of type {type(variable_value).__name__}"
 
 
-def get_enum_error_message(variable_name: str, enum_name: str, variable_value) -> str:
-    return f"{variable_name} must be one of {', '.join([e.value for e in enum_name])}, got {variable_value}"
+def get_enum_error_message(variable_name: str, enum:Enum, variable_value) -> str:
+    return f"{variable_name} must be one of {', '.join([e.value for e in enum])}, got {variable_value}"
+
+class DataSource(Enum):
+    ACTIVE = "lobbyactivity-active.xml"
+    CLOSED = "lobbyactivity-closed.xml"
 
 class PersonPrefix(Enum):
     NONE = ""
@@ -30,6 +34,7 @@ class Person(db.Model):
     middle_initial = db.Column(db.String)
     last_name = db.Column(db.String)
     suffix = db.Column(db.String)
+    position_titles = db.Column(db.JSON, default=list)
 
     @validates('prefix')
     def validate_status(self, key, prefix):
@@ -37,6 +42,37 @@ class Person(db.Model):
             raise ValueError(get_enum_error_message("prefix", PersonPrefix, prefix))
 
         return prefix
+
+class AddressCountry(Enum): #ISO 3166-1 alpha-3
+    AUS = 'Australia'
+    ARE = 'United Arab Emirates'
+    CAN = 'Canada'
+    CHE = 'Switzerland'
+    DEU = 'Germany'
+    DNK = 'Denmark'
+    ESP = 'Spain'
+    FIN = 'Finland'
+    FRA = 'France'
+    GBR = 'United Kingdom'
+    ISR = 'Israel'
+    ITA = 'Italy'
+    NLD = 'Netherlands'
+    NZL = 'New Zealand'
+    SGP = 'Singapore'
+    USA = 'United States'
+    ZAF = 'South Africa'
+    Error = 'Error'
+
+class Address(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    address_line1 = db.Column(db.String)
+    address_line2 = db.Column(db.String)
+    city = db.Column(db.String)
+    province = db.Column(db.String)
+    country = db.Column(db.Enum(AddressCountry))
+    postal_code = db.Column(db.String)
+    phone = db.Column(db.String)
+
     
 class LobbyingReportStatus(Enum):
     ACTIVE = 'Active'
@@ -140,14 +176,8 @@ class RegistrantType(Enum):
 
 class Registrant(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    registration_number_with_senior_officer_number = db.Column(db.String, unique=True)
     registration_number = db.Column(db.String)
-    registration_number_with_senior_officer_number = db.Column(db.String)
-    lobbying_reports = db.relationship('LobbyingReport', back_populates='registrant')
-    status = db.Column(db.Enum(RegistrantStatus))
-    effective_date = db.Column(db.Date, nullable=True)
-    type = db.Column(db.Enum(RegistrantType))
-    person_id = db.Column(db.Integer, db.ForeignKey('person.id'))
-    person = db.relationship('Person', backref=db.backref('registrant'))
     
     @validates('registration_number')
     def validate_registration_number(self, key, registration_number):
@@ -179,5 +209,3 @@ class Registrant(db.Model):
             raise ValueError(get_enum_error_message("type", RegistrantType, type))
 
         return type
-
-    
