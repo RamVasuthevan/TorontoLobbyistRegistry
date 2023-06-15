@@ -21,6 +21,8 @@ LobbyingReport
 Registrant
     - Look likes RegistrationNUmberWithSoNum is per person
     - Should be though of as the RegistrationNUmberWithSoNum same
+    - This is Rakr
+        - https://www.linkedin.com/in/moyaghi/
     
 Address 
     - Deal with person who put there country as toronto

@@ -4,11 +4,18 @@ import xmltodict
 import time
 import pprint
 from app import db as app_db
-from app.models import LobbyingReport, LobbyingReportStatus, LobbyingReportType, Registrant, RegistrantStatus, RegistrantType, get_enum_error_message, PersonPrefix, Person, Address, AddressCountry, DataSource
+from app.models import LobbyingReport, LobbyingReportStatus, LobbyingReportType, RegistrantSeniorOfficer, RegistrantStatus, RegistrantType, get_enum_error_message, PersonPrefix, Person, Address, AddressCountry, DataSource
 from app.processor_models import RawRegistrant
 from datetime import datetime, date
 from enum import Enum
 from dataclasses import dataclass
+from sqlalchemy.orm import joinedload,sessionmaker
+from sqlalchemy import delete
+from sqlalchemy.orm.session import make_transient
+
+
+
+
 
 DATA_PATH = 'data'
 
@@ -62,20 +69,16 @@ def process_lobbying_report(row: Dict, db):
     db.session.add(report)
 
 def process_prefix(raw_prefix: str) -> PersonPrefix:
-    if raw_prefix is None:
+    if raw_prefix is None or raw_prefix in ['M','M.','Aubrey Dan','matt kosoy','4252222','5874595','Rakr']:
         return None
-
-    prefix = raw_prefix.strip().lower().replace('.', '').replace(',', '')
-
-    if prefix == "mrm": # Data Cleaning
+    elif raw_prefix in ["Mr.M","MrM."]:
         prefix = "mr"
-    
-    if prefix in ['m']: # Data Cleaning
-        return None
+    else:
+        prefix = raw_prefix.strip().lower().replace('.', '').replace(',', '')
 
     try:
         return PersonPrefix[prefix.upper()]
-    except KeyError:
+    except KeyError: 
         raise ValueError(get_enum_error_message("raw_prefix", PersonPrefix, raw_prefix))
     #return PersonPrefix.ERROR
     
@@ -241,21 +244,40 @@ def process_registrants(data_registrants: list[Data], db):
             PreviousPublicOfficeHoldLastDate=raw_registrant_dict['PreviousPublicOfficeHoldLastDate'],
             DataSource = data_registrant.source 
         )
+    
+        if process_prefix(raw_registrant.Prefix) is not None:
+            raw_registrant.Prefix = process_prefix(raw_registrant.Prefix).value
+        else:
+            raw_registrant.Prefix = None
         
+        if raw_registrant.PreviousPublicOfficeHolder == 'no':
+            raw_registrant.PreviousPublicOfficeHolder = 'No'
+        elif raw_registrant.PreviousPublicOfficeHolder == 'yes':
+            raw_registrant.PreviousPublicOfficeHolder = 'Yes'
+
+        if raw_registrant.RegistrationNUmberWithSoNum == '33003C': raw_registrant.FirstName = 'Bradley'
+        if raw_registrant.RegistrationNUmberWithSoNum == '29745S-1': raw_registrant.LastName = 'Fatehi'
+
+        #Got Married
+        if raw_registrant.RegistrationNUmberWithSoNum == '17769C': raw_registrant.LastName = 'Tomasella'
+
+
         db.session.add(raw_registrant)
-        
     db.session.commit()
 
-    # Select all raw_registrant records
-    raw_registrants = RawRegistrant.query.all()
-    
-    # Add raw_registrant records to the Registrant table
-    for raw_registrant in raw_registrants:
-        registrant = Registrant(
-            registration_number_with_senior_officer_number=raw_registrant.RegistrationNUmberWithSoNum,
-            registration_number=raw_registrant.RegistrationNUmber
-        )
-        db.session.add(registrant)
+    #raw_registrants = RawRegistrant.query \
+    #    .with_entities(RawRegistrant.RegistrationNUmberWithSoNum, RawRegistrant.RegistrationNUmber, RawRegistrant.Status,RawRegistrant.EffectiveDate) \
+    #    .filter(RawRegistrant.Status != 'Superseded') \
+    #    .distinct() \
+    #    .all()    
+    #for raw_registrant in raw_registrants:
+    #    registrant_senior_officer = RegistrantSeniorOfficer(
+    #        registration_number_with_senior_officer_number=raw_registrant.RegistrationNUmberWithSoNum,
+    #        registration_number=raw_registrant.RegistrationNUmber,
+    #        status = RegistrantStatus(raw_registrant.Status),
+    #        effective_date = datetime.strptime(raw_registrant.EffectiveDate , '%Y-%m-%d').date() if raw_registrant.EffectiveDate is not None else None
+    #    )
+    #    db.session.add(registrant_senior_officer)
     
     db.session.commit()
 

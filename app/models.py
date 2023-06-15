@@ -97,8 +97,8 @@ class LobbyingReport(db.Model):
     proposed_end_date = db.Column(db.Date, nullable=True)
     initial_approval_date = db.Column(db.Date)
     effective_date = db.Column(db.Date)
-    registrant_id = db.Column(db.Integer, db.ForeignKey('registrant.id'))
-    registrant = db.relationship('Registrant', back_populates='lobbying_reports')
+    #registrant_id = db.Column(db.Integer, db.ForeignKey('registrant.id'))
+    #registrant = db.relationship('Registrant', back_populates='lobbying_reports')
 
     @validates('smnumber')
     def validate_smnumber(self, key, smnumber):
@@ -174,38 +174,14 @@ class RegistrantType(Enum):
     CONSULTANT = 'Consultant'
     IN_HOUSE = 'In-house'
 
-class Registrant(db.Model):
+class Registrant(db.Model): #TDB
+    id = db.Column(db.Integer, primary_key=True)
+    registration_number = db.Column(db.String,unique=True)
+
+
+class RegistrantSeniorOfficer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     registration_number_with_senior_officer_number = db.Column(db.String, unique=True)
     registration_number = db.Column(db.String)
-    
-    @validates('registration_number')
-    def validate_registration_number(self, key, registration_number):
-        if not isinstance(registration_number, str):
-            raise ValueError(get_type_error_message(registration_number, str.__name__, registration_number))
-
-        if len(registration_number) != 6 or not registration_number[:5].isdigit() or registration_number[5] not in ['S', 'C','V']:
-            raise ValueError(f"registration_number must have 5 digits followed by either 'S', 'C' or 'V' , got {registration_number}")
-
-        return registration_number
-
-    @validates('status')
-    def validate_status(self, key, status):
-        if not isinstance(status, RegistrantStatus):
-            raise ValueError(get_enum_error_message("status", RegistrantStatus, status))
-
-        return status
-
-    @validates('effective_date')
-    def validate_effective_date(self, key, effective_date):
-        if effective_date is not None and not isinstance(effective_date, date):
-            raise ValueError(get_type_error_message('effective_date', date.__name__, effective_date))
-        
-        return effective_date
-
-    @validates('type')
-    def validate_type(self, key, type):
-        if not isinstance(type, RegistrantType):
-            raise ValueError(get_enum_error_message("type", RegistrantType, type))
-
-        return type
+    status = db.Column(db.Enum(RegistrantStatus))
+    effective_date = effective_date = db.Column(db.Date, nullable=False)
