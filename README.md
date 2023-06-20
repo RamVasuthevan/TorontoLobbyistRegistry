@@ -23,6 +23,7 @@ Registrant
     - Should be though of as the RegistrationNUmberWithSoNum same
     - This is Rakr
         - https://www.linkedin.com/in/moyaghi/
+    - Deal with PositionTitle
     
 Address 
     - Deal with person who put there country as toronto

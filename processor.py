@@ -5,14 +5,14 @@ import time
 import pprint
 from app import db as app_db
 from app.models import LobbyingReport, LobbyingReportStatus, LobbyingReportType, RegistrantSeniorOfficer, RegistrantStatus, RegistrantType, get_enum_error_message, PersonPrefix, Person, Address, AddressCountry, DataSource
-from app.processor_models import RawRegistrant
+from app.processor_models import TempRawRegistrant
 from datetime import datetime, date
 from enum import Enum
 from dataclasses import dataclass
 from sqlalchemy.orm import joinedload,sessionmaker
 from sqlalchemy import delete
 from sqlalchemy.orm.session import make_transient
-
+from sqlalchemy import update
 
 
 
@@ -226,7 +226,7 @@ def process_registrant_old(registrant_dict, db):
 def process_registrants(data_registrants: list[Data], db):
     for data_registrant in data_registrants:
         raw_registrant_dict = data_registrant.data_value
-        raw_registrant = RawRegistrant(
+        raw_registrant = TempRawRegistrant(
             RegistrationNUmber=raw_registrant_dict['RegistrationNUmber'],
             RegistrationNUmberWithSoNum=raw_registrant_dict['RegistrationNUmberWithSoNum'],
             Status=raw_registrant_dict['Status'],
@@ -255,31 +255,41 @@ def process_registrants(data_registrants: list[Data], db):
         elif raw_registrant.PreviousPublicOfficeHolder == 'yes':
             raw_registrant.PreviousPublicOfficeHolder = 'Yes'
 
-        if raw_registrant.RegistrationNUmberWithSoNum == '33003C': raw_registrant.FirstName = 'Bradley'
-        if raw_registrant.RegistrationNUmberWithSoNum == '29745S-1': raw_registrant.LastName = 'Fatehi'
+        if raw_registrant.PreviousPublicOfficeHolder == 'No' and raw_registrant.PreviousPublicOfficeHoldPosition is not None:
+            raw_registrant.PreviousPublicOfficeHolder = 'Yes'
+            
+        if raw_registrant.RegistrationNUmberWithSoNum == '33003C': raw_registrant.FirstName = 'Bradley' # Sometimes FirstName == Brad Nickname?
+        if raw_registrant.RegistrationNUmberWithSoNum == '29745S-1': raw_registrant.LastName = 'Fatehi' # Sometimes LastName == Fatehi Somee IDK
+        if raw_registrant.RegistrationNUmberWithSoNum == '17769C': raw_registrant.LastName = 'Tomasella' # Sometimes LastName == Loiacono Married?
+        if raw_registrant.RegistrationNUmberWithSoNum == '19772C':  raw_registrant.MiddleInitials = 'C' # Once MiddleInitials == M Typo?
+        if raw_registrant.RegistrationNUmberWithSoNum == '18590C':  raw_registrant.LastName = 'Bassani' # Sometimes LastName == Chien Married?
+        if raw_registrant.RegistrationNUmberWithSoNum == '12126C':  raw_registrant.FirstName = 'Leslie' # Sometimes FirstName == Leslie M  Typo?
 
-        #Got Married
-        if raw_registrant.RegistrationNUmberWithSoNum == '17769C': raw_registrant.LastName = 'Tomasella'
-
-
+        if raw_registrant.RegistrationNUmberWithSoNum == '14409C': # Sometimes PreviousPublicOfficeHolder == 'No'
+            raw_registrant.PreviousPublicOfficeHolder = 'Yes'
+            raw_registrant.PreviousPublicOfficeHoldPosition = 'Commissioner'
+            raw_registrant.PreviousPublicOfficePositionProgramName = 'Toronto Transit Commission'
+            raw_registrant.PreviousPublicOfficeHoldLastDate = '2014-03-06'
         db.session.add(raw_registrant)
     db.session.commit()
 
-    #raw_registrants = RawRegistrant.query \
-    #    .with_entities(RawRegistrant.RegistrationNUmberWithSoNum, RawRegistrant.RegistrationNUmber, RawRegistrant.Status,RawRegistrant.EffectiveDate) \
-    #    .filter(RawRegistrant.Status != 'Superseded') \
-    #    .distinct() \
-    #    .all()    
-    #for raw_registrant in raw_registrants:
-    #    registrant_senior_officer = RegistrantSeniorOfficer(
-    #        registration_number_with_senior_officer_number=raw_registrant.RegistrationNUmberWithSoNum,
-    #        registration_number=raw_registrant.RegistrationNUmber,
-    #        status = RegistrantStatus(raw_registrant.Status),
-    #        effective_date = datetime.strptime(raw_registrant.EffectiveDate , '%Y-%m-%d').date() if raw_registrant.EffectiveDate is not None else None
-    #    )
-    #    db.session.add(registrant_senior_officer)
-    
+    # Get all unique RegistrationNUmberWithSoNum where Prefix is not null
+    registrants_with_prefix = db.session.query(TempRawRegistrant.RegistrationNUmberWithSoNum).filter(TempRawRegistrant.Prefix.isnot(None)).distinct().all()
+
+    # For each unique RegistrationNUmberWithSoNum, update Prefix
+    for registrant in registrants_with_prefix:
+        non_null_prefixes = db.session.query(TempRawRegistrant.Prefix).filter(TempRawRegistrant.RegistrationNUmberWithSoNum==registrant.RegistrationNUmberWithSoNum, TempRawRegistrant.Prefix.isnot(None)).distinct().all()
+
+        if len(non_null_prefixes) > 1:
+            raise ValueError(f"Multiple non-null prefixes found for RegistrationNUmberWithSoNum: {registrant.RegistrationNUmberWithSoNum}")
+
+        elif non_null_prefixes:
+            db.session.query(TempRawRegistrant).filter(TempRawRegistrant.RegistrationNUmberWithSoNum==registrant.RegistrationNUmberWithSoNum).update({TempRawRegistrant.Prefix: non_null_prefixes[0][0]})
     db.session.commit()
+
+    # Handle PositionTitle
+
+    
 
 
 def get_non_superseded_registrants(rows:List[Dict]):

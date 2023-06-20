@@ -178,10 +178,19 @@ class Registrant(db.Model): #TDB
     id = db.Column(db.Integer, primary_key=True)
     registration_number = db.Column(db.String,unique=True)
 
-
 class RegistrantSeniorOfficer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     registration_number_with_senior_officer_number = db.Column(db.String, unique=True)
-    registration_number = db.Column(db.String)
-    status = db.Column(db.Enum(RegistrantStatus))
-    effective_date = effective_date = db.Column(db.Date, nullable=False)
+    #status = db.Column(db.Enum(RegistrantStatus))
+    #effective_date = db.Column(db.Date, nullable=False)
+    #type = db.Column(db.Enum(RegistrantType))
+    #prefix = db.Column(db.String(PersonPrefix))
+    #first_name = db.Column(db.String)
+    #middle_initials = db.Column(db.String)
+    #last_name = db.Column(db.String)
+    #suffix = db.Column(db.String)
+    ##position_title = db.Column(db.String)
+    #previous_public_office_holder = db.Column(db.String)
+    #previous_public_office_hold_position = db.Column(db.String)
+    #previous_public_office_position_program_name = db.Column(db.String)
+    #previous_public_office_hold_last_date = db.Column(db.Date)
