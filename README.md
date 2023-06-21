@@ -38,6 +38,20 @@ TRUST
 
 My promblem last time was that I introduced too much bad data. I won't proceed past  Registrant until I get it work as expected
 
+Schema
+- Not POH_Ty it's POH_Type
+- Not CommunicationsMethod it's CommunicationMethod
+- Not CommunicationGroupid it's CommunicationGroupId
+- Not LobbyistPublicOfficeHolder it's PreviousPublicOfficeHolder
+- Not LobbyistPreviousPublicOfficeHoldPosition it's PreviousPublicOfficeHoldPosition
+- Not LobbyistPreviousPublicOfficeHoldPosition it's PreviousPublicOfficePositionProgramName
+- Not LobbyistPreviousPublicOfficePositionProgramName it's PreviousPublicOfficeHoldLastDate
+- Not LobbyistPreviousPublicOfficeHoldLastDate it's PreviousPublicOfficeHoldLastDate
+
+
+
+
+
 Todo:
     - Clean up Pipfile
     - Update files need for Github Action

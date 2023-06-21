@@ -5,7 +5,9 @@ import time
 import pprint
 from app import db as app_db
 from app.models import LobbyingReport, LobbyingReportStatus, LobbyingReportType, RegistrantSeniorOfficer, RegistrantStatus, RegistrantType, get_enum_error_message, PersonPrefix, Person, Address, AddressCountry, DataSource
-from app.processor_models import TempRawRegistrant
+from app.processor_models import TempRawRegistrant,RawAddress, RawRegistrant,RawCommunications
+from app.processor_models import RawLobbyingReport
+
 from datetime import datetime, date
 from enum import Enum
 from dataclasses import dataclass
@@ -301,6 +303,107 @@ def get_data_registrants(data_rows:List[Data])->List[Data]:
         data_registrants.append(Data(data_value=data_row.data_value['Registrant'],source=data_row.source))
     return data_registrants
 
+
+def create_raw_tables(data_rows: List[Data]):
+    for data_row in data_rows:
+        data_value = data_row.data_value
+        print(data_value['SMNumber'])
+
+        registrant_data = data_value['Registrant']
+        registrant_address_data = registrant_data['BusinessAddress']
+
+        address = RawAddress(
+            DataSource = data_row.source,
+            address_line_1 = registrant_address_data['AddressLine1'],
+            address_line_2 = registrant_address_data.get('AddressLine2'),
+            city = registrant_address_data['City'],
+            country = registrant_address_data['Country'],
+            phone = registrant_address_data['Phone'],
+            postal_code = registrant_address_data['PostalCode'],
+            province = registrant_address_data['Province']
+        )
+
+        db.session.add(address)
+        db.session.commit()
+
+        raw_registrant = RawRegistrant(
+            DataSource = data_row.source,
+            RegistrationNUmber = registrant_data['RegistrationNUmber'],
+            RegistrationNUmberWithSoNum = registrant_data['RegistrationNUmberWithSoNum'],
+            Status = registrant_data['Status'],
+            EffectiveDate = registrant_data['EffectiveDate'],
+            Type = registrant_data['Type'],
+            Prefix = registrant_data['Prefix'],
+            FirstName = registrant_data['FirstName'],
+            MiddleInitials = registrant_data['MiddleInitials'],
+            LastName = registrant_data['LastName'],
+            Suffix = registrant_data['Suffix'],
+            PositionTitle = registrant_data['PositionTitle'],
+            PreviousPublicOfficeHolder = registrant_data['PreviousPublicOfficeHolder'],
+            PreviousPublicOfficeHoldPosition = registrant_data['PreviousPublicOfficeHoldPosition'],
+            PreviousPublicOfficePositionProgramName = registrant_data['PreviousPublicOfficePositionProgramName'],
+            PreviousPublicOfficeHoldLastDate = registrant_data['PreviousPublicOfficeHoldLastDate'],
+        )
+
+        db.session.add(raw_registrant)
+        db.session.commit()
+
+        raw_lobbying_report = RawLobbyingReport(
+            DataSource = data_row.source,
+            SMNumber = data_value['SMNumber'],
+            Status = data_value['Status'],
+            Type = data_value['Type'],
+            SubjectMatter = data_value['SubjectMatter'],
+            Particulars = data_value['Particulars'],
+            InitialApprovalDate = data_value['InitialApprovalDate'],
+            EffectiveDate = data_value['EffectiveDate'],
+            ProposedStartDate = data_value['ProposedStartDate'],
+            ProposedEndDate = data_value['ProposedEndDate']
+        )
+
+        db.session.add(raw_lobbying_report)
+        db.session.commit()
+
+        if 'Communications' in data_value:
+            if type(data_value['Communications']['Communication'])==dict:
+                raw_communications = [data_value['Communications']['Communication']]
+            else:
+                raw_communications = data_value['Communications']['Communication']
+
+            for communication_data in raw_communications:
+                try:
+                    raw_communication = RawCommunications(
+                        DataSource = data_row.source,
+                        POH_Office = communication_data['POH_Office'],
+                        POH_Type = communication_data['POH_Type'],
+                        POH_Position = communication_data['POH_Position'],
+                        POH_Name = communication_data['POH_Name'],
+                        CommunicationsMethod = communication_data['CommunicationMethod'],
+                        CommunicationDate = communication_data['CommunicationDate'],
+                        CommunicationGroupId = communication_data['CommunicationGroupId'],
+                        LobbyistNumber = communication_data['LobbyistNumber'],
+                        LobbyistType = communication_data['LobbyistType'],
+                        LobbyistPrefix = communication_data['LobbyistPrefix'],
+                        LobbyistFirstName = communication_data['LobbyistFirstName'],
+                        LobbyistMiddleInitials = communication_data['LobbyistMiddleInitials'],
+                        LobbyistLastName = communication_data['LobbyistLastName'],
+                        LobbyistSuffix = communication_data['LobbyistSuffix'],
+                        LobbyistBusiness = communication_data['LobbyistBusiness'],
+                        LobbyistPositionTitle = communication_data['LobbyistPositionTitle'],
+                        PreviousPublicOfficeHolder = communication_data['PreviousPublicOfficeHolder'],
+                        PreviousPublicOfficePositionProgramName = communication_data['PreviousPublicOfficePositionProgramName'],
+                        PreviousPublicOfficeHoldLastDate = communication_data['PreviousPublicOfficeHoldLastDate'],
+                        report_id = raw_lobbying_report.id
+                    )
+                except Exception as e:
+                    pprint.pprint(communication_data)
+                    raise e
+                db.session.add(raw_communication)
+                db.session.commit()
+    db.session.commit()
+
+
+
 from app import app, db 
 
 def run():
@@ -312,12 +415,17 @@ def run():
             data_rows += get_data_rows(xml_to_dict(data_source), data_source)
             end_time = time.time()
             print(f"Parse {data_source.value}: {end_time - start_time} seconds")
-
+            
         start_time = time.time()
-        process_registrants(get_data_registrants(data_rows),db)
-        db.session.commit()
+        create_raw_tables(data_rows)
         end_time = time.time()
-        print(f"Create all Registrant: {end_time - start_time} seconds")
+        print(f"Create all Raw Tables: {end_time - start_time} seconds")
+        
+        #start_time = time.time()
+        #process_registrants(get_data_registrants(data_rows),db)
+        #db.session.commit()
+        #end_time = time.time()
+        #print(f"Create all Registrant: {end_time - start_time} seconds")
 
         
         #start_time = time.time()
