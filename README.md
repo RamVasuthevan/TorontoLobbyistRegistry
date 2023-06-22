@@ -47,10 +47,11 @@ Schema
 - Not LobbyistPreviousPublicOfficeHoldPosition it's PreviousPublicOfficePositionProgramName
 - Not LobbyistPreviousPublicOfficePositionProgramName it's PreviousPublicOfficeHoldLastDate
 - Not LobbyistPreviousPublicOfficeHoldLastDate it's PreviousPublicOfficeHoldLastDate
+- Beneficiaries.BusinessAddress doesn't always have phone?
 
 
-
-
+Lessons learnt
+- Commits are expensive
 
 Todo:
     - Clean up Pipfile
