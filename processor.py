@@ -4,9 +4,9 @@ import xmltodict
 import time
 import pprint
 from app import db as app_db
-from app.models import LobbyingReport, LobbyingReportStatus, LobbyingReportType, RegistrantSeniorOfficer, RegistrantStatus, RegistrantType, get_enum_error_message, PersonPrefix, Person, Address, AddressCountry, DataSource
-from app.processor_models import TempRawRegistrant,RawAddress, RawRegistrant,RawCommunication, RawGrassroot, RawBeneficiary, RawFirm, RawPrivateFunding, RawGmtFunding, RawMeeting, RawPOH, RawLobbyist
-from app.processor_models import RawLobbyingReport
+from app.models.models import LobbyingReport, LobbyingReportStatus, LobbyingReportType, RegistrantSeniorOfficer, RegistrantStatus, RegistrantType, get_enum_error_message, PersonPrefix, Person, Address, DataSource, Grassroot, Beneficiary,BeneficiaryType, Firm, FirmType, FirmBusinessType, GovernmentFunding, PrivateFunding
+from app.models.processor_models import TempRawRegistrant,RawAddress, RawRegistrant,RawCommunication, RawGrassroot, RawBeneficiary, RawFirm, RawPrivateFunding, RawGmtFunding, RawMeeting, RawPOH, RawLobbyist, RawPrivateFunding, RawGmtFunding
+from app.models.processor_models import RawLobbyingReport
 
 from datetime import datetime, date
 from enum import Enum
@@ -15,8 +15,7 @@ from sqlalchemy.orm import joinedload,sessionmaker
 from sqlalchemy import delete
 from sqlalchemy.orm.session import make_transient
 from sqlalchemy import update
-
-
+from datetime import datetime
 
 
 DATA_PATH = 'data'
@@ -114,32 +113,12 @@ def process_person(raw_prefix:str, first_name:str, middle_initial:str, last_name
 
     return person
 
-def process_address_country(raw_country: str) -> AddressCountry:
-    country_mapping = {e.value: e for e in AddressCountry}
-
-    raw_country = raw_country.lower()
-    if raw_country in ["canadá","canda","can","canad","ca"]:
-        return country_mapping["Canada"]
-    elif raw_country in ["United States","united-states","usa","us","u.s.a.","united states of america"]:
-        return country_mapping["United States"]
-    elif raw_country in ["nederland", "the netherlands"]:
-        return country_mapping["Netherlands"]
-    else:
-        for key, value in country_mapping.items():
-            if key.lower() == raw_country:
-                return value
-    
-    if raw_country in ['toronto']:
-        return AddressCountry.Error
-
-    raise ValueError(get_enum_error_message("country",AddressCountry,raw_country))
-
 def process_address(address_dict, db):
     address_line1 = address_dict['AddressLine1']
     address_line2 = address_dict['AddressLine2']
     city = address_dict['City']
     province = address_dict['Province']
-    country = process_address_country(address_dict['Country'])
+    country = address_dict['Country']
     postal_code = address_dict['PostalCode']
     phone = address_dict['Phone']
 
@@ -499,6 +478,7 @@ def create_raw_tables(data_rows: List[Data]):
                     Description = firm_data['Description'],
                     BusinessType = firm_data['BusinessType'],
                     address_id = raw_firm_address.id,
+                    address = raw_firm_address,
                     report_id = raw_lobbying_report.id
                 )
 
@@ -594,9 +574,163 @@ def create_raw_tables(data_rows: List[Data]):
 
         raw_lobbying_report.registrant_id = raw_registrant.id        
         db.session.add(raw_lobbying_report)
+    db.session.flush()
+
+def create_lobbying_reports(raw_lobbying_reports:List[RawLobbyingReport])->List[LobbyingReport]:
+    lobbying_reports = []
+
+    for raw_lobbying_report in raw_lobbying_reports:
+        proposed_start_date = datetime.strptime(raw_lobbying_report.ProposedStartDate, '%Y-%m-%d').date() if raw_lobbying_report.ProposedStartDate else None
+        proposed_end_date = datetime.strptime(raw_lobbying_report.ProposedEndDate, '%Y-%m-%d').date() if raw_lobbying_report.ProposedEndDate else None
+        initial_approval_date = datetime.strptime(raw_lobbying_report.InitialApprovalDate, '%Y-%m-%d').date()
+        effective_date = datetime.strptime(raw_lobbying_report.EffectiveDate, '%Y-%m-%d').date()
+
+        lobbying_report = LobbyingReport(
+            smnumber=raw_lobbying_report.SMNumber,
+            status=LobbyingReportStatus(raw_lobbying_report.Status),
+            type=LobbyingReportType(raw_lobbying_report.Type),
+            subject_matter=raw_lobbying_report.SubjectMatter,
+            particulars=raw_lobbying_report.Particulars,
+            proposed_start_date=proposed_start_date,
+            proposed_end_date=proposed_end_date,
+            initial_approval_date=initial_approval_date,
+            effective_date=effective_date
+        )
+        lobbying_reports.append(lobbying_report)
+
+    db.session.bulk_save_objects(lobbying_reports)
+    db.session.flush()
+    return lobbying_reports
+
+def create_grassroots(raw_grassroots:List[RawGrassroot])->List[Grassroot]:
+    grassroots = []
+
+    for raw_grassroot in raw_grassroots:
+        start_date = datetime.strptime(raw_grassroot.StartDate, '%Y-%m-%d').date()
+        end_date = datetime.strptime(raw_grassroot.EndDate, '%Y-%m-%d').date()
+
+        grassroots_entry = Grassroot(
+            community=raw_grassroot.Community,
+            start_date=start_date,
+            end_date=end_date,
+            target=raw_grassroot.Target,
+            report_id=raw_grassroot.report_id
+        )
+        grassroots.append(grassroots_entry)
+
+    db.session.bulk_save_objects(grassroots)
+    db.session.flush()
+    return grassroots
+
+def create_beneficiaries(raw_beneficiaries: List[RawBeneficiary]) -> List[Beneficiary]:
+    beneficiaries = []
+    address_dict = {raw_beneficiary.address: address for raw_beneficiary, address in zip(raw_beneficiaries, create_addresses(raw_beneficiary.address for raw_beneficiary in raw_beneficiaries))}
+
+    for raw_beneficiary in raw_beneficiaries:
+        beneficiary_type = BeneficiaryType(raw_beneficiary.Type)
+        fiscal_start = None if raw_beneficiary.FiscalStart is None else datetime.strptime(raw_beneficiary.FiscalStart, '%Y-%m-%d').date()
+        fiscal_end = None if raw_beneficiary.FiscalEnd is None else datetime.strptime(raw_beneficiary.FiscalEnd, '%Y-%m-%d').date()
+        address = address_dict[raw_beneficiary.address]
+        beneficiary = Beneficiary(
+            type=beneficiary_type,
+            name=raw_beneficiary.Name,
+            trade_name=raw_beneficiary.TradeName,
+            fiscal_start=fiscal_start,
+            fiscal_end=fiscal_end,
+            address_id=address.id,
+            address=address,
+            report_id=raw_beneficiary.report_id
+        )
+        beneficiaries.append(beneficiary)
+
+    db.session.bulk_save_objects(beneficiaries)
+    db.session.flush()
+
+    return beneficiaries
+
+
+def create_addresses(raw_addresses: List[RawAddress]) -> List[Address]:
+    addresses = []
     db.session.commit()
+    for raw_address in raw_addresses:
+        address = Address(
+            address_line1=raw_address.address_line_1,
+            address_line2=raw_address.address_line_2,
+            city=raw_address.city,
+            province=raw_address.province,
+            country=raw_address.country,
+            postal_code=raw_address.postal_code,
+            phone=raw_address.phone
+        )
+        addresses.append(address)
+
+    db.session.add_all(addresses)
+    db.session.flush()
+    return addresses
+
+def create_firms(raw_firms):
+    firms = []
+    address_dict = {raw_firm.address: address for raw_firm, address in zip(raw_firms, create_addresses(raw_firm.address for raw_firm in raw_firms))}
+
+    for raw_firm in raw_firms:
+        firm_type = FirmType(raw_firm.Type)
+        fiscal_start = None if raw_firm.FiscalStart is None else datetime.strptime(raw_firm.FiscalStart, '%Y-%m-%d').date()
+        fiscal_end = None if raw_firm.FiscalEnd is None else datetime.strptime(raw_firm.FiscalEnd, '%Y-%m-%d').date()
+        business_type = None if raw_firm.BusinessType is None else FirmBusinessType(raw_firm.BusinessType)
+        address = address_dict[raw_firm.address]
+        firm = Firm(
+            type=firm_type,
+            name=raw_firm.Name,
+            trade_name=raw_firm.TradeName,
+            fiscal_start=fiscal_start,
+            fiscal_end=fiscal_end,
+            description=raw_firm.Description,
+            business_type=business_type,
+            address_id=address.id,
+            address=address,
+            report_id=raw_firm.report_id
+        )
+        firms.append(firm)
+
+    db.session.bulk_save_objects(firms)
+    db.session.flush()
+
+    return firms
+
+def create_government_funding(raw_fundings: List[RawGmtFunding]) -> List[GovernmentFunding]:
+    fundings = []
+
+    for raw_funding in raw_fundings:
+        funding = GovernmentFunding(
+            government_name=raw_funding.GMTName,
+            program=raw_funding.Program,
+            report_id=raw_funding.report_id
+        )
+        fundings.append(funding)
+
+    db.session.bulk_save_objects(fundings)
+    db.session.flush()
+
+    return fundings
 
 
+def create_private_funding(raw_fundings: List[RawPrivateFunding]) -> List[PrivateFunding]:
+    fundings = []
+
+    for raw_funding in raw_fundings:
+        funding = PrivateFunding(
+            funding=raw_funding.Funding,
+            contact=raw_funding.Contact,
+            agent=raw_funding.Agent,
+            agent_contact=raw_funding.AgentContact,
+            report_id=raw_funding.report_id
+        )
+        fundings.append(funding)
+
+    db.session.bulk_save_objects(fundings)
+    db.session.flush()
+
+    return fundings
 
 from app import app, db 
 
@@ -609,11 +743,47 @@ def run():
             data_rows += get_data_rows(xml_to_dict(data_source), data_source)
             end_time = time.time()
             print(f"Parse {data_source.value}: {end_time - start_time} seconds")
-            
+        
         start_time = time.time()
         create_raw_tables(data_rows)
         end_time = time.time()
         print(f"Create all Raw Tables: {end_time - start_time} seconds")
+
+        LobbyingReport.query.delete()
+        Grassroot.query.delete()
+        Beneficiary.query.delete()
+        Address.query.delete()
+        Firm.query.delete()
+
+        start_time = time.time()
+        create_lobbying_reports(RawLobbyingReport.query.all())
+        end_time = time.time()
+        print(f"Create all Lobbying Reports: {end_time - start_time} seconds")
+
+        start_time = time.time()
+        create_grassroots(RawGrassroot.query.all())
+        end_time = time.time()
+        print(f"Create all Grassroot: {end_time - start_time} seconds")
+
+        start_time = time.time()
+        create_beneficiaries(RawBeneficiary.query.all())
+        end_time = time.time()
+        print(f"Create all Beneficiary: {end_time - start_time} seconds")
+
+        start_time = time.time()
+        create_firms(RawFirm.query.all())
+        end_time = time.time()
+        print(f"Create all Firm: {end_time - start_time} seconds")
+
+        start_time = time.time()
+        create_government_funding(RawGmtFunding.query.all())
+        end_time = time.time()
+        print(f"Create all Government Funding: {end_time - start_time} seconds")
+
+        start_time = time.time()
+        create_private_funding(RawPrivateFunding.query.all())
+        end_time = time.time()
+        print(f"Create all Private Funding: {end_time - start_time} seconds")
         
         #start_time = time.time()
         #process_registrants(get_data_registrants(data_rows),db)
@@ -621,7 +791,6 @@ def run():
         #end_time = time.time()
         #print(f"Create all Registrant: {end_time - start_time} seconds")
 
-        
         #start_time = time.time()
         #for registrant_dict in get_non_superseded_registrants(rows):
         #    process_registrant(registrant_dict,db)
@@ -635,6 +804,7 @@ def run():
         #db.session.commit()
         #end_time = time.time()
         #print(f"Create all Lobbying Reports: {end_time - start_time} seconds")
+        db.session.commit()
 
 if __name__ == '__main__':
     run()

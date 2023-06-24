@@ -1,7 +1,7 @@
 from flask import render_template, flash, redirect, url_for, request
 from datetime import datetime
 from app import app, db
-from app.models import LobbyingReport, LobbyingReportStatus, LobbyingReportType
+from app.models.models import LobbyingReport, LobbyingReportStatus, LobbyingReportType, Grassroot
 
 @app.route('/')
 @app.route('/index')
@@ -16,3 +16,7 @@ def lobbying_reports():
 def lobbying_report(id):
     report = LobbyingReport.query.get(id)
     return render_template('lobbying_report.html', title='Lobbying Report', report=report)
+
+@app.route('/grassroots')
+def grassroots():
+    return render_template('grassroots.html', title='Grassroots', grassroots=Grassroot.query.all())

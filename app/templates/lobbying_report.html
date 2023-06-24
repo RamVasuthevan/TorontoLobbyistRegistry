@@ -11,4 +11,10 @@
 <p><strong>Proposed End Date:</strong> {{ report.proposed_end_date }}</p>
 <p><strong>Initial Approval Date:</strong> {{ report.initial_approval_date }}</p>
 <p><strong>Effective Date:</strong> {{ report.effective_date }}</p>
+
+<h2>Grassroots</h2>
+{% set grassroots = report.grassroots %}
+{% if grassroots %}
+  {% include 'tables/grassroots_table.html' %}
+{% endif %}
 {% endblock %}

@@ -8,6 +8,7 @@ from config import Config
 
 app = Flask(__name__)
 app.config.from_object(Config)
+app.run(debug=True)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
@@ -37,5 +38,5 @@ if not app.debug:
     app.logger.setLevel(logging.INFO)
     app.logger.info('Microblog startup')
 
-
-from app import routes, models, errors
+from app.models import models
+from app import routes, errors

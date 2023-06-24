@@ -1,5 +1,5 @@
 import unittest
-from app.models import LobbyingReport, LobbyingReportStatus, LobbyingReportType
+from app.models.models import LobbyingReport, LobbyingReportStatus, LobbyingReportType
 from app import app, db
 from datetime import date
 

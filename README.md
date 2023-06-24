@@ -33,6 +33,12 @@ Person
     - More dedup is needed
     - process_person clean up O(N) operation
 
+Grassroot
+    - Target can be made more structured
+
+beneficiary
+    - Should 'Controlling Interest','Controlling interest holder' be megered
+    
 TRUST
     - We need to trust that RegistrationNumber is unique
 

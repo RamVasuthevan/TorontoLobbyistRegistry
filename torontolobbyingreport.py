@@ -1,5 +1,5 @@
 from app import app, db
-from app.models import LobbyingReport
+from app.models.models import LobbyingReport
 
 @app.shell_context_processor
 def make_shell_context():

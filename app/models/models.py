@@ -2,30 +2,9 @@ from datetime import date
 from app import db
 from sqlalchemy.orm import validates
 from enum import Enum
+from .errors import get_type_error_message, get_enum_error_message
+from .enums import DataSource, LobbyingReportStatus,LobbyingReportType,RegistrantStatus,RegistrantType,BeneficiaryType, FirmType, FirmBusinessType,PersonPrefix
 
-
-def get_type_error_message(variable_name: str, expected_type, variable_value) -> str:
-    return f"{variable_name} must be {expected_type}, got {variable_value} of type {type(variable_value).__name__}"
-
-
-def get_enum_error_message(variable_name: str, enum:Enum, variable_value) -> str:
-    return f"{variable_name} must be one of {', '.join([e.value for e in enum])}, got {variable_value}"
-
-class DataSource(Enum):
-    ACTIVE = "lobbyactivity-active.xml"
-    CLOSED = "lobbyactivity-closed.xml"
-
-class PersonPrefix(Enum):
-    NONE = ""
-    MR = "Mr"
-    MRS = "Mrs"
-    MS = "Ms"
-    MISS = "Miss"
-    DR = "Dr"
-    PROFESSOR = "Professor"
-    HON = "Hon"
-    MME = "Mme"
-    ERROR = "Error"
 
 class Person(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -43,48 +22,15 @@ class Person(db.Model):
 
         return prefix
 
-class AddressCountry(Enum): #ISO 3166-1 alpha-3
-    AUS = 'Australia'
-    ARE = 'United Arab Emirates'
-    CAN = 'Canada'
-    CHE = 'Switzerland'
-    DEU = 'Germany'
-    DNK = 'Denmark'
-    ESP = 'Spain'
-    FIN = 'Finland'
-    FRA = 'France'
-    GBR = 'United Kingdom'
-    ISR = 'Israel'
-    ITA = 'Italy'
-    NLD = 'Netherlands'
-    NZL = 'New Zealand'
-    SGP = 'Singapore'
-    USA = 'United States'
-    ZAF = 'South Africa'
-    Error = 'Error'
-
 class Address(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     address_line1 = db.Column(db.String)
     address_line2 = db.Column(db.String)
     city = db.Column(db.String)
     province = db.Column(db.String)
-    country = db.Column(db.Enum(AddressCountry))
+    country = db.Column(db.String)
     postal_code = db.Column(db.String)
     phone = db.Column(db.String)
-
-    
-class LobbyingReportStatus(Enum):
-    ACTIVE = 'Active'
-    CLOSED = 'Closed'
-    CLOSED_BY_LRO = 'Closed by LRO'
-
-
-class LobbyingReportType(Enum):
-    CONSULTANT = 'Consultant'
-    IN_HOUSE = 'In-house'
-    VOLUNTARY = 'Voluntary'
-
 
 class LobbyingReport(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -164,16 +110,6 @@ class LobbyingReport(db.Model):
 
         return effective_date
 
-class RegistrantStatus(Enum):
-    ACTIVE = 'Active'
-    SUPERSEDED = 'Superseded'
-    NOT_ACCEPTED = 'Not Accepted'
-    FORCE_CLOSED = 'Force Closed'
-
-class RegistrantType(Enum):
-    CONSULTANT = 'Consultant'
-    IN_HOUSE = 'In-house'
-
 class Registrant(db.Model): #TDB
     id = db.Column(db.Integer, primary_key=True)
     registration_number = db.Column(db.String,unique=True)
@@ -194,3 +130,80 @@ class RegistrantSeniorOfficer(db.Model):
     #previous_public_office_hold_position = db.Column(db.String)
     #previous_public_office_position_program_name = db.Column(db.String)
     #previous_public_office_hold_last_date = db.Column(db.Date)
+
+class Grassroot(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    community = db.Column(db.String)
+    start_date = db.Column(db.Date, nullable=True)
+    end_date = db.Column(db.Date, nullable=True)
+    target = db.Column(db.String)
+    report_id = db.Column(db.Integer, db.ForeignKey('lobbying_report.id'))
+    report = db.relationship('LobbyingReport', backref='grassroots', lazy=True)
+
+    @validates('start_date')
+    def validate_start_date(self, key, start_date):
+        if self.end_date and start_date > self.end_date:
+            raise ValueError(f"start_date {start_date} must be before or equal to end_date {self.end_date}")
+
+        return start_date
+
+    @validates('end_date')
+    def validate_end_date(self, key, end_date):
+        if self.start_date and end_date < self.start_date:
+            raise ValueError(f"end_date {end_date} must be after or equal to start_date {self.start_date}")
+
+        return end_date
+
+class Beneficiary(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    type = db.Column(db.Enum(BeneficiaryType))
+    name = db.Column(db.String)
+    trade_name = db.Column(db.String)
+    fiscal_start = db.Column(db.String, nullable=True)
+    fiscal_end = db.Column(db.String, nullable=True)
+    address_id = db.Column(db.Integer, db.ForeignKey('address.id'))
+    address = db.relationship('Address')
+    report_id = db.Column(db.Integer, db.ForeignKey('lobbying_report.id'))
+    report = db.relationship('LobbyingReport', backref='beneficiaries', lazy=True)
+
+    @validates('fiscal_start')
+    def validate_fiscal_start(self, key, fiscal_start):
+        if self.fiscal_end and fiscal_start > self.end_date:
+            raise ValueError(f"fiscal_start {fiscal_start} must be before or equal to fiscal_end {self.fiscal_end}")
+
+        return fiscal_start
+
+    @validates('end_date')
+    def validate_end_date(self, key, fiscal_end):
+        if self.fiscal_start and fiscal_end < self.fiscal_start:
+            raise ValueError(f"fiscal_start {self.fiscal_start} must be after or equal to fiscal_start {self.fiscal_start}")
+
+        return fiscal_end
+
+class Firm(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    type = db.Column(db.Enum(FirmType))
+    name = db.Column(db.String)
+    trade_name = db.Column(db.String)
+    fiscal_start = db.Column(db.Date)
+    fiscal_end = db.Column(db.Date)
+    description = db.Column(db.String)
+    business_type = db.Column(db.Enum(FirmBusinessType))
+    address_id = db.Column(db.Integer, db.ForeignKey('address.id'))
+    address = db.relationship('Address', backref='firm')
+    report_id = db.Column(db.Integer, db.ForeignKey('lobbying_report.id'))
+    report = db.relationship('LobbyingReport', backref='firms')
+
+class GovernmentFunding(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    government_name = db.Column(db.String)
+    program = db.Column(db.String)
+    report_id = db.Column(db.Integer, db.ForeignKey('raw_lobbying_report.id'))
+
+class PrivateFunding(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    funding = db.Column(db.String)
+    contact = db.Column(db.String)
+    agent = db.Column(db.String)
+    agent_contact = db.Column(db.String)
+    report_id = db.Column(db.Integer, db.ForeignKey('raw_lobbying_report.id'))

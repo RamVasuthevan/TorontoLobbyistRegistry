@@ -2,7 +2,7 @@ from datetime import date
 from app import db
 from sqlalchemy.orm import validates
 from enum import Enum
-from app.models import DataSource
+from app.models.models import DataSource
 
 class TempRawRegistrant(db.Model):
     DataSource = db.Column(db.Enum(DataSource))
@@ -109,6 +109,7 @@ class RawBeneficiary(db.Model):
     FiscalStart = db.Column(db.String)
     FiscalEnd = db.Column(db.String)
     address_id = db.Column(db.Integer, db.ForeignKey('raw_address.id'))
+    address = db.relationship('RawAddress', backref='raw_beneficiary')
     report_id = db.Column(db.Integer, db.ForeignKey('raw_lobbying_report.id'))
 
 class RawFirm(db.Model):
@@ -122,6 +123,7 @@ class RawFirm(db.Model):
     Description = db.Column(db.String)
     BusinessType = db.Column(db.String)
     address_id = db.Column(db.Integer, db.ForeignKey('raw_address.id'))
+    address = db.relationship('RawAddress', backref='raw_firm')
     report_id = db.Column(db.Integer, db.ForeignKey('raw_lobbying_report.id'))
 
 class RawPrivateFunding(db.Model):
@@ -147,7 +149,6 @@ class RawMeeting(db.Model):
     Desc = db.Column(db.String)
     Date = db.Column(db.String)
     report_id = db.Column(db.Integer, db.ForeignKey('raw_lobbying_report.id'), nullable=False)
-
 
 class RawPOH(db.Model):
     DataSource = db.Column(db.Enum(DataSource))
