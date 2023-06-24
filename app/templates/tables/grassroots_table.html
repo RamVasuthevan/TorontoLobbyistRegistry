@@ -1,0 +1,20 @@
+<table>
+  <thead>
+    <tr>
+      <th style="white-space: nowrap;">Start Date</th>
+      <th style="white-space: nowrap;" >End Date</th>
+      <th>Groups asked to participate</th>
+      <th>Public office holders targeted</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for grassroot in grassroots %}
+      <tr>
+        <td style="white-space: nowrap;">{{ grassroot.start_date }}</td>
+        <td style="white-space: nowrap;">{{ grassroot.end_date }}</td>
+        <td>{{ grassroot.community }}</td>
+        <td>{{ grassroot.target }}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>

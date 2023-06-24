@@ -138,3 +138,8 @@ open-data-response.json
 TorontoLobbyistRegistry.db
 TorontoLobbyistRegistry.db-journal
 yaml_documents.zip
+
+logs/
+app.sqlite
+out.txt
+test.txt

@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>Lobbying Reports</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>SM Number</th>
+        <th>Status</th>
+        <th>Type</th>
+        <th>Proposed Start Date</th>
+        <th>Proposed End Date</th>
+        <th>Particulars</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for lobbying_report in lobbying_reports %}
+        <tr>
+          <td><a href="{{ url_for('lobbying_report', id=lobbying_report.id) }}">{{ lobbying_report.smnumber }}</a></td>
+          <td>{{ lobbying_report.status.value }}</td>
+          <td>{{ lobbying_report.type.value }}</td>
+          <td>{{ lobbying_report.proposed_start_date }}</td>
+          <td>{{ lobbying_report.proposed_end_date }}</td>
+          <td>{{ lobbying_report.particulars }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}
