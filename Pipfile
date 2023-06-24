@@ -11,6 +11,7 @@ Flask-Migrate = "4.0.4"
 xmltodict = "0.13"
 
 [dev-packages]
+black = "23.3"
 
 [requires]
-python_version = "3.10"
+python_version = "3.11"
