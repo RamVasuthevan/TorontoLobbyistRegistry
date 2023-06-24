@@ -7,19 +7,7 @@
                 "ms-python.python",
                 "GitHub.copilot",
                 "ms-python.black-formatter"
-            ],
-            "settings": {
-                "terminal.integrated.profiles.linux": {
-                    "pipenv": {
-                        "path": "/bin/bash",
-                        "args": ["-l", "-c", "pipenv shell"]
-                    }
-                },
-                "terminal.integrated.defaultProfile.linux": "pipenv",
-                "python.venvPath": "/home/codespace/.local/share/virtualenvs/TorontoLobbyistRegistry-D0CpAm_q"
-            }
+            ]
         }
-    },
-    "postCreateCommand": "pipenv && pipenv install --dev",
-    "postStartCommand": "pipenv shell",
+    }
 }
