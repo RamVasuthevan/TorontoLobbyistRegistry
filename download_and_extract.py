@@ -1,7 +1,7 @@
 from lobby import *
 import pprint as pp
 import json
-import lobby.generator as generator
+from lobby.downloader import Downloader
 
 
 print("Starting Lobbyist Registry Downloader")
