@@ -2,35 +2,8 @@ from datetime import date
 from app import db
 from sqlalchemy.orm import validates
 from enum import Enum
-from .errors import get_type_error_message, get_enum_error_message
+from .errors import get_type_error_message, get_enum_error_message, get_enum_date_must_be_before_or_equal, get_enum_date_must_be_after_or_equal
 from .enums import DataSource, LobbyingReportStatus,LobbyingReportType,RegistrantStatus,RegistrantType,BeneficiaryType, FirmType, FirmBusinessType,PersonPrefix
-
-
-class Person(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    prefix = db.Column(db.Enum(PersonPrefix))
-    first_name = db.Column(db.String)
-    middle_initial = db.Column(db.String)
-    last_name = db.Column(db.String)
-    suffix = db.Column(db.String)
-    position_titles = db.Column(db.JSON, default=list)
-
-    @validates('prefix')
-    def validate_status(self, key, prefix):
-        if prefix is not None and not isinstance(prefix, PersonPrefix):
-            raise ValueError(get_enum_error_message("prefix", PersonPrefix, prefix))
-
-        return prefix
-
-class Address(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    address_line1 = db.Column(db.String)
-    address_line2 = db.Column(db.String)
-    city = db.Column(db.String)
-    province = db.Column(db.String)
-    country = db.Column(db.String)
-    postal_code = db.Column(db.String)
-    phone = db.Column(db.String)
 
 class LobbyingReport(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -76,8 +49,7 @@ class LobbyingReport(db.Model):
             raise ValueError(get_type_error_message('proposed_start_date', date.__name__, proposed_start_date))
 
         if self.proposed_end_date is not None and proposed_start_date is not None and proposed_start_date > self.proposed_end_date:
-            raise ValueError(f"proposed_start_date {proposed_start_date} must be on or before proposed_end_date {self.proposed_end_date}")
-
+            raise ValueError(get_enum_date_must_be_before_or_equal("proposed_start_date",proposed_start_date,"proposed_end_date",self.proposed_end_date))
         return proposed_start_date
 
     @validates('proposed_end_date')
@@ -86,7 +58,7 @@ class LobbyingReport(db.Model):
             raise ValueError(get_type_error_message('proposed_end_date', date.__name__, proposed_end_date))
 
         if self.proposed_start_date is not None and proposed_end_date is not None and proposed_end_date < self.proposed_start_date:
-            raise ValueError(f"proposed_end_date {proposed_end_date} must be on or after proposed_start_date {self.proposed_start_date}")
+            raise ValueError(get_enum_date_must_be_after_or_equal("proposed_end_date",proposed_end_date,"proposed_start_date",self.proposed_start_date))
 
         return proposed_end_date
 
@@ -96,7 +68,7 @@ class LobbyingReport(db.Model):
             raise ValueError(get_type_error_message('initial_approval_date', date.__name__, initial_approval_date))
 
         if self.effective_date is not None and initial_approval_date > self.effective_date:
-            raise ValueError(f"initial_approval_date {initial_approval_date} must be before or the same as effective_date {self.effective_date}")
+            raise ValueError(get_enum_date_must_be_before_or_equal('initial_approval_date',initial_approval_date,'effective_date',self.effective_date))
 
         return initial_approval_date
 
@@ -106,30 +78,9 @@ class LobbyingReport(db.Model):
             raise ValueError(get_type_error_message('effective_date', date.__name__, effective_date))
 
         if self.initial_approval_date is not None and effective_date < self.initial_approval_date:
-            raise ValueError(f"effective_date {effective_date} must be on or after initial_approval_date {self.initial_approval_date}")
+            raise ValueError(get_enum_date_must_be_after_or_equal("effective_date",effective_date,"initial_approval_date",self.initial_approval_date))
 
         return effective_date
-
-class Registrant(db.Model): #TDB
-    id = db.Column(db.Integer, primary_key=True)
-    registration_number = db.Column(db.String,unique=True)
-
-class RegistrantSeniorOfficer(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    registration_number_with_senior_officer_number = db.Column(db.String, unique=True)
-    #status = db.Column(db.Enum(RegistrantStatus))
-    #effective_date = db.Column(db.Date, nullable=False)
-    #type = db.Column(db.Enum(RegistrantType))
-    #prefix = db.Column(db.String(PersonPrefix))
-    #first_name = db.Column(db.String)
-    #middle_initials = db.Column(db.String)
-    #last_name = db.Column(db.String)
-    #suffix = db.Column(db.String)
-    ##position_title = db.Column(db.String)
-    #previous_public_office_holder = db.Column(db.String)
-    #previous_public_office_hold_position = db.Column(db.String)
-    #previous_public_office_position_program_name = db.Column(db.String)
-    #previous_public_office_hold_last_date = db.Column(db.Date)
 
 class Grassroot(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -143,14 +94,14 @@ class Grassroot(db.Model):
     @validates('start_date')
     def validate_start_date(self, key, start_date):
         if self.end_date and start_date > self.end_date:
-            raise ValueError(f"start_date {start_date} must be before or equal to end_date {self.end_date}")
+            raise ValueError(get_enum_date_must_be_before_or_equal("start_date",start_date,"end_date",self.end_date))
 
         return start_date
 
     @validates('end_date')
     def validate_end_date(self, key, end_date):
         if self.start_date and end_date < self.start_date:
-            raise ValueError(f"end_date {end_date} must be after or equal to start_date {self.start_date}")
+            raise ValueError(get_enum_date_must_be_after_or_equal("end_date",end_date,"start_date",self.start_date))
 
         return end_date
 
@@ -169,14 +120,15 @@ class Beneficiary(db.Model):
     @validates('fiscal_start')
     def validate_fiscal_start(self, key, fiscal_start):
         if self.fiscal_end and fiscal_start > self.end_date:
-            raise ValueError(f"fiscal_start {fiscal_start} must be before or equal to fiscal_end {self.fiscal_end}")
+            raise ValueError(get_enum_date_must_be_before_or_equal("fiscal_start",fiscal_start,"fiscal_end",self.fiscal_end))
+
 
         return fiscal_start
 
     @validates('end_date')
     def validate_end_date(self, key, fiscal_end):
         if self.fiscal_start and fiscal_end < self.fiscal_start:
-            raise ValueError(f"fiscal_start {self.fiscal_start} must be after or equal to fiscal_start {self.fiscal_start}")
+            raise ValueError(get_enum_date_must_be_after_or_equal("fiscal_end",fiscal_end,"fiscal_start",self.fiscal_start))
 
         return fiscal_end
 
@@ -207,3 +159,13 @@ class PrivateFunding(db.Model):
     agent = db.Column(db.String)
     agent_contact = db.Column(db.String)
     report_id = db.Column(db.Integer, db.ForeignKey('raw_lobbying_report.id'))
+
+class Address(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    address_line1 = db.Column(db.String)
+    address_line2 = db.Column(db.String)
+    city = db.Column(db.String)
+    province = db.Column(db.String)
+    country = db.Column(db.String)
+    postal_code = db.Column(db.String)
+    phone = db.Column(db.String)

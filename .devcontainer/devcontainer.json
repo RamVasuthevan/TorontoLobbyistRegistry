@@ -1,10 +1,10 @@
 {
     "name": "Python-Flask env",
-    "extensions": [
-        "yy0931.vscode-sqlite3-editor",
-        "ms-python.python",
-        "ms-python.vscode-pylance"
-    ],
+    "customizations":{
+        "vscode": {
+            "extensions":["yy0931.vscode-sqlite3-editor", "ms-python.python"]
+        }
+    },
     "postCreateCommand": "pipenv && pipenv install --dev",
     "postStartCommand": "pipenv shell",
     "settings": {
