@@ -11,8 +11,7 @@
             "settings": {
                 "terminal.integrated.profiles.linux": {
                     "pipenv": {
-                        "path": "/bin/bash",
-                        "args": ["-l", "-c", "pipenv shell"]
+                        "path": "/usr/bin/bash"
                     }
                 },
                 "terminal.integrated.defaultProfile.linux": "pipenv",
