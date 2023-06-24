@@ -2,22 +2,18 @@ from datetime import date
 from app import db
 from sqlalchemy.orm import validates
 from enum import Enum
-from .errors import (
+from app.models.errors import (
     get_type_error_message,
     get_enum_error_message,
     get_enum_date_must_be_before_or_equal,
     get_enum_date_must_be_after_or_equal,
 )
-from .enums import (
-    DataSource,
+from app.models.enums import (
     LobbyingReportStatus,
     LobbyingReportType,
-    RegistrantStatus,
-    RegistrantType,
     BeneficiaryType,
     FirmType,
     FirmBusinessType,
-    PersonPrefix,
 )
 
 

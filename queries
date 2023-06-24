@@ -1,14 +1,84 @@
 -- database: /workspaces/TorontoLobbyistRegistry/app.sqlite
 
--- Use the ▷ button in the top right corner to run the entire file.
+-- RegistrationNUmberWithSoNum with more than one first name
+SELECT *
+FROM "raw_registrant"
+WHERE RegistrationNUmberWithSoNum IN (
+    SELECT RegistrationNUmberWithSoNum
+    FROM (
+        SELECT DISTINCT RegistrationNUmberWithSoNum, FirstName
+        FROM "raw_registrant"
+    ) AS subquery
+    GROUP BY RegistrationNUmberWithSoNum
+    HAVING COUNT(*) > 1
+)
+ORDER BY RegistrationNUmberWithSoNum, FirstName, DataSource;
 
--- SELECT DISTINCT registration_number, prefix, first_name, middle_initial, last_name, suffix FROM registrant ORDER BY registration_number;
+-- 
 
--- SELECT * FROM (SELECT COUNT(registration_number) as count, * FROM (SELECT DISTINCT registration_number, status, effective_date, type, prefix, first_name, middle_initial, last_name, suffix FROM registrant WHERE STATUS != "SUPERSEDED") GROUP BY registration_number) WHERE count>1  ;
+-- RegistrationNUmber with more than one RegistrationNUmberWithSoNum
 
---SELECT DISTINCT registrant.registration_number, prefix, first_name, middle_initial, last_name, suffix FROM registrant INNER JOIN (SELECT registration_number FROM (SELECT DISTINCT registration_number, prefix, first_name, middle_initial, last_name, suffix FROM registrant) GROUP BY registration_number HAVING COUNT(registration_number)>2 ORDER BY COUNT(registration_number),registration_number) t ON registrant.registration_number = t.registration_number;
+SELECT *
+FROM "raw_registrant"
+WHERE RegistrationNUmber IN (
+    SELECT RegistrationNUmber
+    FROM (
+        SELECT DISTINCT RegistrationNUmber, RegistrationNUmberWithSoNum FROM "raw_registrant"
+    ) AS subquery
+    GROUP BY RegistrationNUmber
+    HAVING COUNT(*) > 1
+)
+ORDER BY RegistrationNUmber, RegistrationNUmberWithSoNum, FirstName, DataSource;
 
 
---SELECT DISTINCT registrant.registration_number FROM registrant INNER JOIN (SELECT registration_number FROM (SELECT DISTINCT registration_number, prefix, first_name, middle_initial, last_name, suffix FROM registrant) GROUP BY registration_number HAVING COUNT(registration_number)>2 ORDER BY COUNT(registration_number),registration_number) t ON registrant.registration_number = t.registration_number;
 
-SELECT * FROM registrant;
+SELECT DISTINCT RegistrationNUmberWithSoNum,RegistrationNUmber, Status FROM "raw_registrant" WHERE Status != "Superseded" ORDER BY RegistrationNUmberWithSoNum;
+
+
+-- Rows are diff values
+SELECT RegistrationNUmber, RegistrationNUmberWithSoNum, Type, Prefix, FirstName, MiddleInitials, LastName, Suffix, PositionTitle, PreviousPublicOfficeHolder, PreviousPublicOfficeHoldPosition, PreviousPublicOfficePositionProgramName
+FROM (
+    SELECT DISTINCT RegistrationNUmber, RegistrationNUmberWithSoNum, Type, Prefix, FirstName, MiddleInitials, LastName, Suffix, PositionTitle, PreviousPublicOfficeHolder, PreviousPublicOfficeHoldPosition, PreviousPublicOfficePositionProgramName
+    FROM "raw_registrant"
+) AS distinct_rows
+WHERE RegistrationNUmberWithSoNum IN (
+    SELECT RegistrationNUmberWithSoNum
+    FROM (
+        SELECT RegistrationNUmberWithSoNum, COUNT(*) AS count
+        FROM (
+            SELECT DISTINCT RegistrationNUmber, RegistrationNUmberWithSoNum, Type, Prefix, FirstName, MiddleInitials, LastName, Suffix, PositionTitle, PreviousPublicOfficeHolder, PreviousPublicOfficeHoldPosition, PreviousPublicOfficePositionProgramName
+            FROM "raw_registrant"
+        ) AS subquery
+        GROUP BY RegistrationNUmberWithSoNum
+    ) AS count_rows
+    WHERE count > 1
+)
+ORDER BY RegistrationNUmberWithSoNum;
+
+SELECT DISTINCT RegistrationNUmber, RegistrationNUmberWithSoNum, Type, Prefix,FirstName, MiddleInitials, LastName, Suffix, PreviousPublicOfficeHolder, PreviousPublicOfficeHoldPosition, PreviousPublicOfficePositionProgramName, PreviousPublicOfficeHoldLastDate
+FROM (
+    SELECT DISTINCT RegistrationNUmber, RegistrationNUmberWithSoNum, Type, Prefix,FirstName, MiddleInitials, LastName, Suffix, PreviousPublicOfficeHolder, PreviousPublicOfficeHoldPosition, PreviousPublicOfficePositionProgramName, PreviousPublicOfficeHoldLastDate
+    FROM "raw_registrant"
+) AS distinct_rows
+WHERE RegistrationNUmberWithSoNum IN (
+    SELECT RegistrationNUmberWithSoNum
+    FROM (
+        SELECT RegistrationNUmberWithSoNum, COUNT(*) AS count
+        FROM (
+            SELECT DISTINCT RegistrationNUmber, RegistrationNUmberWithSoNum, Type, Prefix, FirstName, MiddleInitials, LastName, Suffix, PreviousPublicOfficeHolder, PreviousPublicOfficeHoldPosition, PreviousPublicOfficePositionProgramName, PreviousPublicOfficeHoldLastDate
+            FROM "raw_registrant"
+        ) AS subquery
+        GROUP BY RegistrationNUmberWithSoNum
+    ) AS count_rows
+    WHERE count > 1
+)
+ORDER BY RegistrationNUmberWithSoNum;
+
+
+SELECT * FROM(SELECT distinct RegistrationNUmberWithSoNum, Type FROM "raw_registrant") GROUP BY RegistrationNUmberWithSoNum  HAVING COUNT(*)>0 ORDER BY  RegistrationNUmberWithSoNum; 
+
+
+SELECT COUNT(*) FROM raw_communications;
+
+
+SELECT * from beneficiary
