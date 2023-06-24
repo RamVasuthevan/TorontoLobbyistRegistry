@@ -3,18 +3,18 @@
     "customizations": {
         "vscode": {
             "extensions": [
-                "yy0931.vscode-sqlite3-editor",
-                "ms-python.python",
-                "GitHub.copilot",
-                "ms-python.black-formatter"
-            ],
+				"yy0931.vscode-sqlite3-editor",
+				"ms-python.python",
+				"GitHub.copilot",
+				"ms-python.black-formatter"
+			],
             "settings": {
-                "terminal.integrated.profiles.linux": {
-                    "pipenv": {
-                        "path": "/usr/bin/bash"
-                    }
-                },
-                "terminal.integrated.defaultProfile.linux": "pipenv",
+                "terminal.integrated.shell.linux": "/bin/bash",
+                "terminal.integrated.shellArgs.linux": [
+                    "-l",
+                    "-c",
+                    "pipenv shell"
+                ],
                 "python.venvPath": "/home/codespace/.local/share/virtualenvs/TorontoLobbyistRegistry-D0CpAm_q"
             }
         }
