@@ -12,15 +12,16 @@
 <p><strong>Initial Approval Date:</strong> {{ report.initial_approval_date }}</p>
 <p><strong>Effective Date:</strong> {{ report.effective_date }}</p>
 
-<h2>Grassroots</h2>
 {% set grassroots = report.grassroots %}
 {% if grassroots %}
+<h2>Grassroots</h2>
   {% include 'tables/grassroots_table.html' %}
 {% endif %}
 
-<h2>Beneficiaries</h2>
+
 {% set beneficiaries = report.beneficiaries %}
 {% if beneficiaries %}
+<h2>Beneficiaries</h2>
   {% include 'tables/beneficiaries_table.html' %}
 {% endif %}
 {% endblock %}
