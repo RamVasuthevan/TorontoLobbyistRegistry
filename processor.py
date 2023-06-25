@@ -499,7 +499,7 @@ def create_addresses(raw_addresses: List[RawAddress]) -> List[Address]:
         )
         addresses.append(address)
 
-    db.session.bulk_save_objects(addresses)
+    db.session.add_all(addresses)
     db.session.flush()
     return addresses
 
