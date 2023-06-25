@@ -141,3 +141,6 @@ logs/
 app.sqlite
 out.txt
 test.txt
+
+lobbyactivity-active.xml
+lobbyactivity-closed.xml

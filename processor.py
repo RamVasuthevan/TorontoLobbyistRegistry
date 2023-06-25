@@ -1,7 +1,9 @@
 from typing import List, Dict
 import os
+import shutil
 import xmltodict
 import time
+import zipfile
 import pprint
 from app import db as app_db
 from app.models.models import (
@@ -594,6 +596,17 @@ from app import app, db
 
 def run():
     with app.app_context():
+        zip_file = os.path.join(DATA_PATH, 'lobbyactivity.zip')
+        with zipfile.ZipFile(zip_file, 'r') as zip_ref:
+            for member in zip_ref.namelist():
+                filename = os.path.basename(member)
+                if not filename:
+                    continue
+                source = zip_ref.open(member)
+                target = open(os.path.join(DATA_PATH, filename), "wb")
+                with source, target:
+                    shutil.copyfileobj(source, target)
+
         db = setup_db(app_db)
         data_rows = []
         for data_source in DataSource:
