@@ -6,6 +6,7 @@
       <th>Other Trade Names</th>
       <th>Fiscal Year Start</th>
       <th>Fiscal Year End</th>
+      <th>Address</th> 
     </tr>
   </thead>
   <tbody>
@@ -16,6 +17,7 @@
         <td>{{ beneficiary.trade_name }}</td>
         <td>{{ beneficiary.fiscal_start }}</td>
         <td>{{ beneficiary.fiscal_end }}</td>
+        <td>{{ beneficiary.address.address_line1 }}, {{ beneficiary.address.city }}, {{ beneficiary.address.province }}, {{ beneficiary.address.country }}, {{ beneficiary.address.postal_code }}</td>
       </tr>
     {% endfor %}
   </tbody>

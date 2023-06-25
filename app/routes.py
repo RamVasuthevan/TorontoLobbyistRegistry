@@ -6,6 +6,7 @@ from app.models.models import (
     LobbyingReportStatus,
     LobbyingReportType,
     Grassroot,
+    Beneficiary,
 )
 
 
@@ -39,3 +40,11 @@ def grassroots():
     return render_template(
         "grassroots.html", title="Grassroots", grassroots=Grassroot.query.all()
     )
+
+@app.route("/beneficiaries")
+def beneficiaries():
+    return render_template(
+        "beneficiaries.html", title="beneficiaries", beneficiaries=Beneficiary.query.all()
+    )
+
+
