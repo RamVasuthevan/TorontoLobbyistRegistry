@@ -18,10 +18,15 @@
   {% include 'tables/grassroots_table.html' %}
 {% endif %}
 
-
 {% set beneficiaries = report.beneficiaries %}
 {% if beneficiaries %}
 <h2>Beneficiaries</h2>
   {% include 'tables/beneficiaries_table.html' %}
+{% endif %}
+
+{% set firms = report.firms %}
+{% if firms %}
+<h2>Firms</h2>
+  {% include 'tables/firms_table.html' %}
 {% endif %}
 {% endblock %}

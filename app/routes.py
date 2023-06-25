@@ -7,6 +7,7 @@ from app.models.models import (
     LobbyingReportType,
     Grassroot,
     Beneficiary,
+    Firm
 )
 
 
@@ -47,4 +48,9 @@ def beneficiaries():
         "beneficiaries.html", title="beneficiaries", beneficiaries=Beneficiary.query.all()
     )
 
+@app.route("/firms")
+def firms():
+    return render_template(
+        "firms.html", title="Firms", firms=Firm.query.all()
+    )
 
