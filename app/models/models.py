@@ -243,21 +243,21 @@ class Firm(db.Model):
     report = db.relationship("LobbyingReport", backref="firms")
 
 
-class GovernmentFunding(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    government_name = db.Column(db.String)
-    program = db.Column(db.String)
-    report_id = db.Column(db.Integer, db.ForeignKey("raw_lobbying_report.id"))
-
-
 class PrivateFunding(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     funding = db.Column(db.String)
     contact = db.Column(db.String)
     agent = db.Column(db.String)
     agent_contact = db.Column(db.String)
-    report_id = db.Column(db.Integer, db.ForeignKey("raw_lobbying_report.id"))
+    report_id = db.Column(db.Integer, db.ForeignKey("lobbying_report.id"))
+    report = db.relationship("LobbyingReport", backref="private_fundings", lazy=True)
 
+class GovernmentFunding(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    government_name = db.Column(db.String)
+    program = db.Column(db.String)
+    report_id = db.Column(db.Integer, db.ForeignKey("lobbying_report.id"))
+    report = db.relationship("LobbyingReport", backref="government_fundings", lazy=True)
 
 class Address(db.Model):
     id = db.Column(db.Integer, primary_key=True)

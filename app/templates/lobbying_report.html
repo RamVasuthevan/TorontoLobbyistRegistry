@@ -29,4 +29,18 @@
 <h2>Firms</h2>
   {% include 'tables/firms_table.html' %}
 {% endif %}
+
+{% set private_fundings = report.private_fundings %}
+{% if private_fundings %}
+<h2>Private Funding</h2>
+  {% include 'tables/privatefundings_table.html' %}
+{% endif %}
+
+{% set governmentfundings = report.government_fundings %}
+{% if governmentfundings %}
+<h2>Government Funding</h2>
+  {% include 'tables/governmentfundings_table.html' %}
+{% endif %}
+
+
 {% endblock %}

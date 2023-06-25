@@ -1,0 +1,20 @@
+<table>
+    <thead>
+      <tr>
+        <th>Funding</th>
+        <th>Contact</th>
+        <th>Agent</th>
+        <th>Agent Contact</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for private_funding in private_fundings %}
+        <tr>
+          <td>{{ private_funding.funding }}</td>
+          <td>{{ private_funding.contact }}</td>
+          <td>{{ private_funding.agent }}</td>
+          <td>{{ private_funding.agent_contact }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>

@@ -7,7 +7,9 @@ from app.models.models import (
     LobbyingReportType,
     Grassroot,
     Beneficiary,
-    Firm
+    Firm,
+    PrivateFunding,
+    GovernmentFunding
 )
 
 
@@ -54,3 +56,14 @@ def firms():
         "firms.html", title="Firms", firms=Firm.query.all()
     )
 
+@app.route("/privatefunding")
+def privatefunding():
+    return render_template(
+        "privatefunding.html", title="Private Funding", privatefundings=PrivateFunding.query.all()
+    )
+
+@app.route("/governmentfunding")
+def governmentfunding():
+    return render_template(
+        "governmentfunding.html", title="Government Funding", governmentfundings=GovernmentFunding.query.all()
+    )
