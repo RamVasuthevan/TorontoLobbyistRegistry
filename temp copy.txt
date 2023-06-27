@@ -1,28 +1,40 @@
-from datetime import date
-from app import db
-from sqlalchemy.orm import validates
-from enum import Enum
-from app.models.errors import (
-    get_type_error_message,
-    get_enum_error_message,
-    get_enum_date_must_be_before_or_equal,
-    get_enum_date_must_be_after_or_equal,
-)
-from app.models.enums import (
-    LobbyingReportStatus,
-    LobbyingReportType,
-    BeneficiaryType,
-    FirmType,
-    FirmBusinessType,
-)
+Here is Beneficiary:
 
-report_beneficiary_association = db.Table(
-    "report_beneficiary",
-    db.Column("report_id", db.Integer, db.ForeignKey("lobbying_report.id")),
-    db.Column("beneficiary_id", db.Integer, db.ForeignKey("beneficiary.id")),
-)
+class Beneficiary(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    type = db.Column(db.Enum(BeneficiaryType))
+    name = db.Column(db.String)
+    trade_name = db.Column(db.String)
+    fiscal_start = db.Column(db.String, nullable=True)
+    fiscal_end = db.Column(db.String, nullable=True)
+    address_id = db.Column(db.Integer, db.ForeignKey("address.id"))
+    address = db.relationship("Address")
+    report_id = db.Column(db.Integer, db.ForeignKey("lobbying_report.id"))
+    report = db.relationship("LobbyingReport", backref="beneficiaries", lazy=True)
 
+    @validates("fiscal_start")
+    def validate_fiscal_start(self, key, fiscal_start):
+        if self.fiscal_end and fiscal_start > self.end_date:
+            raise ValueError(
+                get_enum_date_must_be_before_or_equal(
+                    "fiscal_start", fiscal_start, "fiscal_end", self.fiscal_end
+                )
+            )
 
+        return fiscal_start
+
+    @validates("end_date")
+    def validate_end_date(self, key, fiscal_end):
+        if self.fiscal_start and fiscal_end < self.fiscal_start:
+            raise ValueError(
+                get_enum_date_must_be_after_or_equal(
+                    "fiscal_end", fiscal_end, "fiscal_start", self.fiscal_start
+                )
+            )
+
+        return fiscal_end
+
+Here is LobbyingReport:
 class LobbyingReport(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     smnumber = db.Column(db.String, unique=True)
@@ -34,11 +46,6 @@ class LobbyingReport(db.Model):
     proposed_end_date = db.Column(db.Date, nullable=True)
     initial_approval_date = db.Column(db.Date)
     effective_date = db.Column(db.Date)
-    #beneficiaries = db.relationship(
-    #    "Beneficiary",
-    #    secondary=report_beneficiary_association,
-    #    backref=db.backref("reports", lazy="dynamic"),
-    #)
     # registrant_id = db.Column(db.Integer, db.ForeignKey('registrant.id'))
     # registrant = db.relationship('Registrant', back_populates='lobbying_reports')
 
@@ -171,116 +178,4 @@ class LobbyingReport(db.Model):
 
         return effective_date
 
-
-class Grassroot(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    community = db.Column(db.String)
-    start_date = db.Column(db.Date, nullable=True)
-    end_date = db.Column(db.Date, nullable=True)
-    target = db.Column(db.String)
-    report_id = db.Column(db.Integer, db.ForeignKey("lobbying_report.id"))
-    report = db.relationship("LobbyingReport", backref="grassroots", lazy=True)
-
-    @validates("start_date")
-    def validate_start_date(self, key, start_date):
-        if self.end_date and start_date > self.end_date:
-            raise ValueError(
-                get_enum_date_must_be_before_or_equal(
-                    "start_date", start_date, "end_date", self.end_date
-                )
-            )
-
-        return start_date
-
-    @validates("end_date")
-    def validate_end_date(self, key, end_date):
-        if self.start_date and end_date < self.start_date:
-            raise ValueError(
-                get_enum_date_must_be_after_or_equal(
-                    "end_date", end_date, "start_date", self.start_date
-                )
-            )
-
-        return end_date
-
-
-class Beneficiary(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    type = db.Column(db.Enum(BeneficiaryType))
-    name = db.Column(db.String)
-    trade_name = db.Column(db.String)
-    fiscal_start = db.Column(db.String, nullable=True)
-    fiscal_end = db.Column(db.String, nullable=True)
-    address_id = db.Column(db.Integer, db.ForeignKey("address.id"))
-    address = db.relationship("Address")
-    reports = db.relationship(
-        "LobbyingReport",
-        secondary=report_beneficiary_association,
-        backref=db.backref("beneficiaries", lazy="dynamic"),
-    )
-
-    @validates("fiscal_start")
-    def validate_fiscal_start(self, key, fiscal_start):
-        if self.fiscal_end and fiscal_start > self.end_date:
-            raise ValueError(
-                get_enum_date_must_be_before_or_equal(
-                    "fiscal_start", fiscal_start, "fiscal_end", self.fiscal_end
-                )
-            )
-
-        return fiscal_start
-
-    @validates("end_date")
-    def validate_end_date(self, key, fiscal_end):
-        if self.fiscal_start and fiscal_end < self.fiscal_start:
-            raise ValueError(
-                get_enum_date_must_be_after_or_equal(
-                    "fiscal_end", fiscal_end, "fiscal_start", self.fiscal_start
-                )
-            )
-
-        return fiscal_end
-
-
-class Firm(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    type = db.Column(db.Enum(FirmType))
-    name = db.Column(db.String)
-    trade_name = db.Column(db.String)
-    fiscal_start = db.Column(db.Date)
-    fiscal_end = db.Column(db.Date)
-    description = db.Column(db.String)
-    business_type = db.Column(db.Enum(FirmBusinessType))
-    address_id = db.Column(db.Integer, db.ForeignKey("address.id"))
-    address = db.relationship("Address", backref="firm")
-    report_id = db.Column(db.Integer, db.ForeignKey("lobbying_report.id"))
-    report = db.relationship("LobbyingReport", backref="firms")
-
-
-class PrivateFunding(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    funding = db.Column(db.String)
-    contact = db.Column(db.String)
-    agent = db.Column(db.String)
-    agent_contact = db.Column(db.String)
-    report_id = db.Column(db.Integer, db.ForeignKey("lobbying_report.id"))
-    report = db.relationship("LobbyingReport", backref="private_fundings", lazy=True)
-
-
-class GovernmentFunding(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    government_name = db.Column(db.String)
-    program = db.Column(db.String)
-    report_id = db.Column(db.Integer, db.ForeignKey("lobbying_report.id"))
-    report = db.relationship("LobbyingReport", backref="government_fundings", lazy=True)
-
-
-class Address(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    address_line1 = db.Column(db.String)
-    address_line2 = db.Column(db.String)
-    city = db.Column(db.String)
-    province = db.Column(db.String)
-    country = db.Column(db.String)
-    postal_code = db.Column(db.String)
-    phone = db.Column(db.String)
+I want a many to many relationship between LobbyingReport and  Beneficiary

@@ -5,6 +5,7 @@ import xmltodict
 import time
 import zipfile
 import pprint
+from collections import defaultdict
 from app import db as app_db
 from app.models.models import (
     LobbyingReport,
@@ -34,9 +35,10 @@ from app.models.processor_models import (
     RawLobbyist,
     RawPrivateFunding,
     RawGmtFunding,
-    RawLobbyingReport
+    RawLobbyingReport,
 )
 from app.models.enums import DataSource
+from util.sqlalchemy_helpers import get_one_or_create
 
 from datetime import datetime, date
 from dataclasses import dataclass
@@ -58,7 +60,7 @@ def xml_to_dict(data_source: DataSource) -> Dict:
 
 
 def setup_db(db):
-    db.drop_all()  
+    db.drop_all()
     db.create_all()
     return db
 
@@ -443,7 +445,6 @@ def create_grassroots(raw_grassroots: List[RawGrassroot]) -> List[Grassroot]:
 
 
 def create_beneficiaries(raw_beneficiaries: List[RawBeneficiary]) -> List[Beneficiary]:
-    beneficiaries = []
     address_dict = {
         raw_beneficiary.address: address
         for raw_beneficiary, address in zip(
@@ -454,7 +455,22 @@ def create_beneficiaries(raw_beneficiaries: List[RawBeneficiary]) -> List[Benefi
         )
     }
 
+    raw_beneficiaries_dict = defaultdict(list)
     for raw_beneficiary in raw_beneficiaries:
+        raw_beneficiaries_dict[
+            (
+                raw_beneficiary.Type,
+                raw_beneficiary.Name,
+                raw_beneficiary.TradeName,
+                raw_beneficiary.FiscalStart,
+                raw_beneficiary.FiscalEnd,
+                raw_beneficiary.address_id,
+            )
+        ].append(raw_beneficiary)
+
+    beneficiaries_dict = defaultdict(list)
+    for raw_beneficiary_key, raw_beneficiary_group in raw_beneficiaries_dict.values():
+        raw_beneficiary = raw_beneficiary_group[0]
         beneficiary_type = BeneficiaryType(raw_beneficiary.Type)
         fiscal_start = (
             None
@@ -467,25 +483,59 @@ def create_beneficiaries(raw_beneficiaries: List[RawBeneficiary]) -> List[Benefi
             else datetime.strptime(raw_beneficiary.FiscalEnd, "%Y-%m-%d").date()
         )
         address = address_dict[raw_beneficiary.address]
-        beneficiary = Beneficiary(
-            type=beneficiary_type,
-            name=raw_beneficiary.Name,
-            trade_name=raw_beneficiary.TradeName,
-            fiscal_start=fiscal_start,
-            fiscal_end=fiscal_end,
-            address_id=address.id,
-            address=address,
-            report_id=raw_beneficiary.report_id,
-        )
-        beneficiaries.append(beneficiary)
 
-    db.session.bulk_save_objects(beneficiaries)
+        beneficiary = Beneficiary.query.filter(
+            Beneficiary.type == beneficiary_type,
+            Beneficiary.name == raw_beneficiary.Name,
+            Beneficiary.trade_name == raw_beneficiary.TradeName,
+            Beneficiary.fiscal_start == fiscal_start,
+            Beneficiary.fiscal_end == fiscal_end,
+            Beneficiary.address_id == address.id,
+        ).one_or_none()
+
+        if beneficiary is not None:
+            beneficiary.resports.append(
+                LobbyingReport.query.get(raw_beneficiary.report_id)
+            )
+        else:
+            beneficiary = Beneficiary(
+                type=beneficiary_type,
+                name=raw_beneficiary.Name,
+                trade_name=raw_beneficiary.TradeName,
+                fiscal_start=fiscal_start,
+                fiscal_end=fiscal_end,
+                address_id=address.id,
+                address=address,
+                reports=[
+                    db.session.get(LobbyingReport, raw_beneficiary.report_id)
+                    for raw_beneficiary in raw_beneficiary_group
+                ],
+            )
+
+        beneficiaries_dict[raw_beneficiary_key].append(beneficiary)
+        db.session.add(beneficiary)
+        db.session.flush()
+
+    beneficiaries = [
+        beneficiaries_dict[
+            (
+                raw_beneficiary.Type,
+                raw_beneficiary.Name,
+                raw_beneficiary.TradeName,
+                raw_beneficiary.FiscalStart,
+                raw_beneficiary.FiscalEnd,
+                raw_beneficiary.address_id,
+            )
+        ]
+        for raw_beneficiary in raw_beneficiaries
+    ]
+    # db.session.bulk_save_objects(beneficiaries)
     db.session.flush()
 
     return beneficiaries
 
 
-def create_addresses(raw_addresses: List[RawAddress]) -> List[Address]:
+def create_addresses_old(raw_addresses: List[RawAddress]) -> List[Address]:
     addresses = []
     for raw_address in raw_addresses:
         address = Address(
@@ -500,6 +550,27 @@ def create_addresses(raw_addresses: List[RawAddress]) -> List[Address]:
         addresses.append(address)
 
     db.session.add_all(addresses)
+    db.session.flush()
+    return addresses
+
+
+def create_addresses(raw_addresses: List[RawAddress]) -> List[Address]:
+    addresses = []
+    for raw_address in raw_addresses:
+        address, created = get_one_or_create(
+            db.session,
+            Address,
+            address_line1=raw_address.address_line_1,
+            address_line2=raw_address.address_line_2,
+            city=raw_address.city,
+            province=raw_address.province,
+            country=raw_address.country,
+            postal_code=raw_address.postal_code,
+            phone=raw_address.phone,
+        )
+        addresses.append(address)
+
+    # db.session.add_all(addresses)
     db.session.flush()
     return addresses
 
@@ -596,8 +667,8 @@ from app import app, db
 
 def run():
     with app.app_context():
-        zip_file = os.path.join(DATA_PATH, 'lobbyactivity.zip')
-        with zipfile.ZipFile(zip_file, 'r') as zip_ref:
+        zip_file = os.path.join(DATA_PATH, "lobbyactivity.zip")
+        with zipfile.ZipFile(zip_file, "r") as zip_ref:
             for member in zip_ref.namelist():
                 filename = os.path.basename(member)
                 if not filename:
@@ -620,7 +691,15 @@ def run():
         end_time = time.time()
         print(f"Create all Raw Tables: {end_time - start_time} seconds")
 
-        for model in [LobbyingReport,Grassroot,Beneficiary,Address,Firm,PrivateFunding,GovernmentFunding]:
+        for model in [
+            LobbyingReport,
+            Grassroot,
+            Beneficiary,
+            Address,
+            Firm,
+            PrivateFunding,
+            GovernmentFunding,
+        ]:
             db.session.execute(delete(model))
 
         start_time = time.time()
