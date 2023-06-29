@@ -16,7 +16,8 @@ from app.models.enums import (
     BeneficiaryType,
     FirmType,
     FirmBusinessType,
-    AddressType
+    AddressType,
+    CanadianProvincesTerritories
 )
 
 report_beneficiary_association = db.Table(
@@ -268,7 +269,7 @@ class CanadianAddress(Address):
     address_line1 = db.Column(db.String)
     address_line2 = db.Column(db.String)
     city = db.Column(db.String)
-    province = db.Column(db.String)
+    province = db.Column(db.Enum(CanadianProvincesTerritories))
     country = db.Column(db.String)
     postal_code = db.Column(db.String)
     phone = db.Column(db.String)
