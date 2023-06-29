@@ -38,7 +38,7 @@ from app.models.processor_models import (
     RawLobbyingReport,
 )
 from app.models.enums import DataSource
-from util.sqlalchemy_helpers import get_one_or_create
+from util.sqlalchemy_helpers import get_one_or_create, get_one_or_create_all
 from util.address_helper import is_postal_code
 
 
@@ -447,7 +447,6 @@ def create_grassroots(raw_grassroots: List[RawGrassroot]) -> List[Grassroot]:
 
 
 def create_beneficiaries(raw_beneficiaries: List[RawBeneficiary]) -> List[Beneficiary]:
-    beneficiaries = []
     start_time = time.time()
     address_dict = {
         raw_beneficiary.address: address
@@ -459,79 +458,36 @@ def create_beneficiaries(raw_beneficiaries: List[RawBeneficiary]) -> List[Benefi
         )
     }
     end_time = time.time()
-    print(f"Create addresses for create_beneficiaries took {end_time - start_time} seconds")
+    
+    print(
+        f"Create addresses for create_beneficiaries took {end_time - start_time} seconds"
+    )
 
-    for raw_beneficiary in raw_beneficiaries:
-        beneficiary_type = BeneficiaryType(raw_beneficiary.Type)
-        address = address_dict[raw_beneficiary.address]
+    beneficiaries_data = [
+        {
+            "type": BeneficiaryType(raw_beneficiary.Type),
+            "name": raw_beneficiary.Name,
+            "trade_name": raw_beneficiary.TradeName,
+            "address_id": address_dict[raw_beneficiary.address].id,
+            "address": address_dict[raw_beneficiary.address],
+        }
+        for raw_beneficiary in raw_beneficiaries
+    ]
 
-        if False:
-            if raw_beneficiary.name == ".Yellow Pages Digital & Media Solution Ltd.":
-                "Yellow Pages Digital & Media Solutions Ltd."
-            if raw_beneficiary.name == "Yellow Pages Digital & Media Solution Ltd.":
-                "Yellow Pages Digital & Media Solutions Ltd."
-
-            if (
-                raw_beneficiary.name
-                == "1. James Gault Holdings Inc , 2. 1175484 Ontario Inc. 3. 1606077 Ontario Inc."
-            ):
-                pass
-            if raw_beneficiary.name == "101 St. Clair Building Group":
-                "101 St. Clair Building Group Inc."  # ??
-            if (
-                raw_beneficiary.trade_name
-                == "Holding Company: Military Trail and Kingston Road development"
-            ):
-                pass
-            if raw_beneficiary.trade_name == "Rietz<":
-                raw_beneficiary.trade_name = "Rietz"
-            if raw_beneficiary.name == "1095- 1111 Danforth Project GP Inc.":
-                "1095-1111 Danforth Project GP Inc."
-            if (
-                raw_beneficiary.name
-                == "117051 Ontario Ltd., Cabo Three Investments Inc."
-            ):
-                pass
-            if raw_beneficiary.name == "1213763 Ontario Incorporated":
-                raw_beneficiary.name = "1213763 Ontario Inc."
-            if raw_beneficiary.name == "1245 Dundas Inc":
-                raw_beneficiary.TradeName = "Abacus"
-            if raw_beneficiary.name == "1245 Dundas St W Inc":
-                raw_beneficiary.name = "1245 Dundas Inc"
-            if (
-                raw_beneficiary.TradeName
-                == "Holding Company: Jane Street and Elmira Dr."
-            ):
-                pass
-            if raw_beneficiary.name == "14 Prince Arthur Avenue Limited":
-                raw_beneficiary.TradeName = None
-            if (
-                raw_beneficiary.trade_name
-                == "Holding Co.; Spadina and Front area development"
-            ):
-                pass
-            if (
-                raw_beneficiary.name
-                == "1579661 Ontario Inc., Claireville Holdings Ltd., Frances Danyliw"
-            ):
-                pass
-            if raw_beneficiary.name == "1597181 Ontario Inc":
-                pass
-
-        beneficiary, created = get_one_or_create(
-            db.session,
-            Beneficiary,
-            type=beneficiary_type,
-            name=raw_beneficiary.Name,
-            trade_name=raw_beneficiary.TradeName,
-            address_id=address.id,
-            address=address,
+    start_time
+    beneficiaries = [
+        beneficiary_result[0]
+        for beneficiary_result in get_one_or_create_all(
+            db.session, Beneficiary, beneficiaries_data
         )
+    ]
+    end_time = time.time()
+    print(f"get_one_or_create_all took {end_time - start_time} seconds")
+
+    for beneficiary, raw_beneficiary in zip(beneficiaries, raw_beneficiaries):
         beneficiary.reports.append(
             db.session.get(LobbyingReport, raw_beneficiary.report_id)
         )
-
-        beneficiaries.append(beneficiary)
 
     db.session.bulk_save_objects(beneficiaries)
     db.session.flush()
@@ -540,10 +496,54 @@ def create_beneficiaries(raw_beneficiaries: List[RawBeneficiary]) -> List[Benefi
 
 
 def create_addresses(raw_addresses: List[RawAddress]) -> List[Address]:
-    CANADA_SPELLING = {s.lower() for s in ["Canada", "canada", "CANADA","candada","can.","can","ca","cANADA","VCanada","Toronto","Cnd","Cdn","Candad","Canda","Canaxa","Cananda","Canadá","CanadÃÂÃÂÃÂÃÂ¡","Canadsa","Canads","Canadda","Canadaq","Canadaa","Canada`","Canad","cad","Ca","CAN","C","CA","CAnada","CDA","Caanada","Caanda","Camada","Can"]}
+    CANADA_SPELLING = {
+        s.lower()
+        for s in [
+            "Canada",
+            "canada",
+            "CANADA",
+            "candada",
+            "can.",
+            "can",
+            "ca",
+            "cANADA",
+            "VCanada",
+            "Toronto",
+            "Cnd",
+            "Cdn",
+            "Candad",
+            "Canda",
+            "Canaxa",
+            "Cananda",
+            "Canadá",
+            "CanadÃÂÃÂÃÂÃÂ¡",
+            "Canadsa",
+            "Canads",
+            "Canadda",
+            "Canadaq",
+            "Canadaa",
+            "Canada`",
+            "Canad",
+            "cad",
+            "Ca",
+            "CAN",
+            "C",
+            "CA",
+            "CAnada",
+            "CDA",
+            "Caanada",
+            "Caanda",
+            "Camada",
+            "Can",
+        ]
+    }
 
-    addresses = []    
-    for raw_address in raw_addresses:
+    address_mappings = {}
+    canadian_addresses_data = []
+    addresses_data = []
+
+    for idx, raw_address in enumerate(raw_addresses):
+        postal_code = None
         raw_fields = {
             "address_line1": raw_address.address_line_1,
             "address_line2": raw_address.address_line_2,
@@ -553,39 +553,54 @@ def create_addresses(raw_addresses: List[RawAddress]) -> List[Address]:
             "postal_code": raw_address.postal_code,
             "phone": raw_address.phone,
         }
-        if raw_address.country in CANADA_SPELLING:
-            postal_code = ''.join(char for char in raw_address.postal_code if char.isalnum()).upper().replace('O', '0')
-            postal_code = postal_code[:3] + ' ' + postal_code[3:]
+
+        if raw_address.country.lower() in CANADA_SPELLING:
+            country = "Canada"
+            postal_code = (
+                "".join(char for char in raw_address.postal_code if char.isalnum())
+                .upper()
+                .replace("O", "0")
+            )
+            postal_code = postal_code[:3] + " " + postal_code[3:]
 
             if not is_postal_code(postal_code):
                 postal_code = None
-                
 
-            address, created = get_one_or_create(
-                db.session,
-                CanadianAddress,
-                raw_fields=raw_fields,
-                temp_country=raw_address.country,
-                address_line1=raw_address.address_line_1,
-                address_line2=raw_address.address_line_2,
-                city=raw_address.city,
-                province=raw_address.province,
-                country=raw_address.country,
-                postal_code=postal_code,
-                phone=raw_address.phone,
-            )
+            fields = {
+                "address_line1": raw_address.address_line_1,
+                "address_line2": raw_address.address_line_2,
+                "city": raw_address.city,
+                "province": raw_address.province,
+                "country": country,
+                "postal_code": postal_code,
+                "raw_fields": raw_fields,
+            }
+            canadian_addresses_data.append((idx, fields))
+
         else:
-            address, created = get_one_or_create(
-                db.session,
-                Address,
-                raw_fields=raw_fields,
-                temp_country=raw_address.country,
-            )
+            fields = {"raw_fields": raw_fields}
+            addresses_data.append((idx, fields))
 
-        addresses.append(address)
+    canadian_addresses_tuples = get_one_or_create_all(
+        db.session, CanadianAddress, [data for _, data in canadian_addresses_data]
+    )
+    addresses_tuples = get_one_or_create_all(
+        db.session, Address, [data for _, data in addresses_data]
+    )
+
+    for (index, _), (created_address, _) in zip(
+        canadian_addresses_data, canadian_addresses_tuples
+    ):
+        address_mappings[index] = created_address
+    for (index, _), (created_address, _) in zip(addresses_data, addresses_tuples):
+        address_mappings[index] = created_address
 
     db.session.flush()
-    return addresses
+
+    # Sort the created addresses based on their original order
+    sorted_addresses = [address_mappings[i] for i in sorted(address_mappings.keys())]
+
+    return sorted_addresses
 
 
 def create_firms(raw_firms: List[RawFirm]) -> List[Firm]:
@@ -700,7 +715,7 @@ def create_data_rows(db):
         print(f"Parse {data_source.value}: {end_time - start_time} seconds")
 
     start_time = time.time()
-    create_raw_tables(db,data_rows)
+    create_raw_tables(db, data_rows)
     end_time = time.time()
     print(f"Create all Raw Tables: {end_time - start_time} seconds")
 
@@ -718,9 +733,9 @@ from app import app, db
 
 def run():
     with app.app_context():
-        #extract_files_from_zip()
+        # extract_files_from_zip()
 
-        #db = setup_db(app_db)
+        # db = setup_db(app_db)
 
         delete_all_data(
             db,
@@ -735,8 +750,8 @@ def run():
             ],
         )
 
-        #create_data_rows(db)
-        #db.session.commit()
+        # create_data_rows(db)
+        # db.session.commit()
 
         create_models(
             db,
