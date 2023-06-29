@@ -5,7 +5,6 @@ import xmltodict
 import time
 import zipfile
 import pprint
-from collections import defaultdict
 from app import db as app_db
 from app.models.models import (
     LobbyingReport,
@@ -20,6 +19,7 @@ from app.models.models import (
     FirmBusinessType,
     GovernmentFunding,
     PrivateFunding,
+    CanadianAddress,
 )
 from app.models.processor_models import (
     RawAddress,
@@ -39,6 +39,8 @@ from app.models.processor_models import (
 )
 from app.models.enums import DataSource
 from util.sqlalchemy_helpers import get_one_or_create
+from util.address_helper import is_postal_code
+
 
 from datetime import datetime, date
 from dataclasses import dataclass
@@ -74,7 +76,7 @@ def get_data_rows(file_dict: Dict, data_source: DataSource) -> List[Data]:
     return data_rows
 
 
-def create_raw_tables(data_rows: List[Data]):
+def create_raw_tables(db, data_rows: List[Data]):
     for idx, data_row in enumerate(data_rows):
         data_value = data_row.data_value
         print(f"({idx+1}/{len(data_rows)}): {data_value['SMNumber']}")
@@ -445,6 +447,8 @@ def create_grassroots(raw_grassroots: List[RawGrassroot]) -> List[Grassroot]:
 
 
 def create_beneficiaries(raw_beneficiaries: List[RawBeneficiary]) -> List[Beneficiary]:
+    beneficiaries = []
+    start_time = time.time()
     address_dict = {
         raw_beneficiary.address: address
         for raw_beneficiary, address in zip(
@@ -454,123 +458,132 @@ def create_beneficiaries(raw_beneficiaries: List[RawBeneficiary]) -> List[Benefi
             ),
         )
     }
+    end_time = time.time()
+    print(f"Create addresses for create_beneficiaries took {end_time - start_time} seconds")
 
-    raw_beneficiaries_dict = defaultdict(list)
     for raw_beneficiary in raw_beneficiaries:
-        raw_beneficiaries_dict[
-            (
-                raw_beneficiary.Type,
-                raw_beneficiary.Name,
-                raw_beneficiary.TradeName,
-                raw_beneficiary.FiscalStart,
-                raw_beneficiary.FiscalEnd,
-                raw_beneficiary.address_id,
-            )
-        ].append(raw_beneficiary)
-
-    beneficiaries_dict = defaultdict(list)
-    for raw_beneficiary_key, raw_beneficiary_group in raw_beneficiaries_dict.values():
-        raw_beneficiary = raw_beneficiary_group[0]
         beneficiary_type = BeneficiaryType(raw_beneficiary.Type)
-        fiscal_start = (
-            None
-            if raw_beneficiary.FiscalStart is None
-            else datetime.strptime(raw_beneficiary.FiscalStart, "%Y-%m-%d").date()
-        )
-        fiscal_end = (
-            None
-            if raw_beneficiary.FiscalEnd is None
-            else datetime.strptime(raw_beneficiary.FiscalEnd, "%Y-%m-%d").date()
-        )
         address = address_dict[raw_beneficiary.address]
 
-        beneficiary = Beneficiary.query.filter(
-            Beneficiary.type == beneficiary_type,
-            Beneficiary.name == raw_beneficiary.Name,
-            Beneficiary.trade_name == raw_beneficiary.TradeName,
-            Beneficiary.fiscal_start == fiscal_start,
-            Beneficiary.fiscal_end == fiscal_end,
-            Beneficiary.address_id == address.id,
-        ).one_or_none()
+        if False:
+            if raw_beneficiary.name == ".Yellow Pages Digital & Media Solution Ltd.":
+                "Yellow Pages Digital & Media Solutions Ltd."
+            if raw_beneficiary.name == "Yellow Pages Digital & Media Solution Ltd.":
+                "Yellow Pages Digital & Media Solutions Ltd."
 
-        if beneficiary is not None:
-            beneficiary.resports.append(
-                LobbyingReport.query.get(raw_beneficiary.report_id)
-            )
-        else:
-            beneficiary = Beneficiary(
-                type=beneficiary_type,
-                name=raw_beneficiary.Name,
-                trade_name=raw_beneficiary.TradeName,
-                fiscal_start=fiscal_start,
-                fiscal_end=fiscal_end,
-                address_id=address.id,
-                address=address,
-                reports=[
-                    db.session.get(LobbyingReport, raw_beneficiary.report_id)
-                    for raw_beneficiary in raw_beneficiary_group
-                ],
-            )
+            if (
+                raw_beneficiary.name
+                == "1. James Gault Holdings Inc , 2. 1175484 Ontario Inc. 3. 1606077 Ontario Inc."
+            ):
+                pass
+            if raw_beneficiary.name == "101 St. Clair Building Group":
+                "101 St. Clair Building Group Inc."  # ??
+            if (
+                raw_beneficiary.trade_name
+                == "Holding Company: Military Trail and Kingston Road development"
+            ):
+                pass
+            if raw_beneficiary.trade_name == "Rietz<":
+                raw_beneficiary.trade_name = "Rietz"
+            if raw_beneficiary.name == "1095- 1111 Danforth Project GP Inc.":
+                "1095-1111 Danforth Project GP Inc."
+            if (
+                raw_beneficiary.name
+                == "117051 Ontario Ltd., Cabo Three Investments Inc."
+            ):
+                pass
+            if raw_beneficiary.name == "1213763 Ontario Incorporated":
+                raw_beneficiary.name = "1213763 Ontario Inc."
+            if raw_beneficiary.name == "1245 Dundas Inc":
+                raw_beneficiary.TradeName = "Abacus"
+            if raw_beneficiary.name == "1245 Dundas St W Inc":
+                raw_beneficiary.name = "1245 Dundas Inc"
+            if (
+                raw_beneficiary.TradeName
+                == "Holding Company: Jane Street and Elmira Dr."
+            ):
+                pass
+            if raw_beneficiary.name == "14 Prince Arthur Avenue Limited":
+                raw_beneficiary.TradeName = None
+            if (
+                raw_beneficiary.trade_name
+                == "Holding Co.; Spadina and Front area development"
+            ):
+                pass
+            if (
+                raw_beneficiary.name
+                == "1579661 Ontario Inc., Claireville Holdings Ltd., Frances Danyliw"
+            ):
+                pass
+            if raw_beneficiary.name == "1597181 Ontario Inc":
+                pass
 
-        beneficiaries_dict[raw_beneficiary_key].append(beneficiary)
-        db.session.add(beneficiary)
-        db.session.flush()
+        beneficiary, created = get_one_or_create(
+            db.session,
+            Beneficiary,
+            type=beneficiary_type,
+            name=raw_beneficiary.Name,
+            trade_name=raw_beneficiary.TradeName,
+            address_id=address.id,
+            address=address,
+        )
+        beneficiary.reports.append(
+            db.session.get(LobbyingReport, raw_beneficiary.report_id)
+        )
 
-    beneficiaries = [
-        beneficiaries_dict[
-            (
-                raw_beneficiary.Type,
-                raw_beneficiary.Name,
-                raw_beneficiary.TradeName,
-                raw_beneficiary.FiscalStart,
-                raw_beneficiary.FiscalEnd,
-                raw_beneficiary.address_id,
-            )
-        ]
-        for raw_beneficiary in raw_beneficiaries
-    ]
-    # db.session.bulk_save_objects(beneficiaries)
+        beneficiaries.append(beneficiary)
+
+    db.session.bulk_save_objects(beneficiaries)
     db.session.flush()
 
     return beneficiaries
 
 
-def create_addresses_old(raw_addresses: List[RawAddress]) -> List[Address]:
-    addresses = []
-    for raw_address in raw_addresses:
-        address = Address(
-            address_line1=raw_address.address_line_1,
-            address_line2=raw_address.address_line_2,
-            city=raw_address.city,
-            province=raw_address.province,
-            country=raw_address.country,
-            postal_code=raw_address.postal_code,
-            phone=raw_address.phone,
-        )
-        addresses.append(address)
-
-    db.session.add_all(addresses)
-    db.session.flush()
-    return addresses
-
-
 def create_addresses(raw_addresses: List[RawAddress]) -> List[Address]:
-    addresses = []
+    CANADA_SPELLING = {s.lower() for s in ["Canada", "canada", "CANADA","candada","can.","can","ca","cANADA","VCanada","Toronto","Cnd","Cdn","Candad","Canda","Canaxa","Cananda","Canadá","CanadÃÂÃÂÃÂÃÂ¡","Canadsa","Canads","Canadda","Canadaq","Canadaa","Canada`","Canad","cad","Ca","CAN","C","CA","CAnada","CDA","Caanada","Caanda","Camada","Can"]}
+
+    addresses = []    
     for raw_address in raw_addresses:
-        address, created = get_one_or_create(
-            db.session,
-            Address,
-            address_line1=raw_address.address_line_1,
-            address_line2=raw_address.address_line_2,
-            city=raw_address.city,
-            province=raw_address.province,
-            country=raw_address.country,
-            postal_code=raw_address.postal_code,
-            phone=raw_address.phone,
-        )
+        raw_fields = {
+            "address_line1": raw_address.address_line_1,
+            "address_line2": raw_address.address_line_2,
+            "city": raw_address.city,
+            "province": raw_address.province,
+            "country": raw_address.country,
+            "postal_code": raw_address.postal_code,
+            "phone": raw_address.phone,
+        }
+        if raw_address.country in CANADA_SPELLING:
+            postal_code = ''.join(char for char in raw_address.postal_code if char.isalnum()).upper().replace('O', '0')
+            postal_code = postal_code[:3] + ' ' + postal_code[3:]
+
+            if not is_postal_code(postal_code):
+                postal_code = None
+                
+
+            address, created = get_one_or_create(
+                db.session,
+                CanadianAddress,
+                raw_fields=raw_fields,
+                temp_country=raw_address.country,
+                address_line1=raw_address.address_line_1,
+                address_line2=raw_address.address_line_2,
+                city=raw_address.city,
+                province=raw_address.province,
+                country=raw_address.country,
+                postal_code=postal_code,
+                phone=raw_address.phone,
+            )
+        else:
+            address, created = get_one_or_create(
+                db.session,
+                Address,
+                raw_fields=raw_fields,
+                temp_country=raw_address.country,
+            )
+
         addresses.append(address)
 
-    # db.session.add_all(addresses)
     db.session.flush()
     return addresses
 
@@ -662,75 +675,88 @@ def create_private_funding(
     return fundings
 
 
+def extract_files_from_zip():
+    zip_file = os.path.join(DATA_PATH, "lobbyactivity.zip")
+    with zipfile.ZipFile(zip_file, "r") as zip_ref:
+        for member in zip_ref.namelist():
+            filename = os.path.basename(member)
+            source = zip_ref.open(member)
+            target = open(os.path.join(DATA_PATH, filename), "wb")
+            with source, target:
+                shutil.copyfileobj(source, target)
+
+
+def delete_all_data(db, models):
+    for model in models:
+        db.session.execute(delete(model))
+
+
+def create_data_rows(db):
+    data_rows = []
+    for data_source in DataSource:
+        start_time = time.time()
+        data_rows += get_data_rows(xml_to_dict(data_source), data_source)
+        end_time = time.time()
+        print(f"Parse {data_source.value}: {end_time - start_time} seconds")
+
+    start_time = time.time()
+    create_raw_tables(db,data_rows)
+    end_time = time.time()
+    print(f"Create all Raw Tables: {end_time - start_time} seconds")
+
+
+def create_models(db, raw_models, create_functions):
+    for raw_model, create_function in zip(raw_models, create_functions):
+        start_time = time.time()
+        create_function(raw_model.query.all())
+        end_time = time.time()
+        print(f"Create all {raw_model.__name__}: {end_time - start_time} seconds")
+
+
 from app import app, db
 
 
 def run():
     with app.app_context():
-        zip_file = os.path.join(DATA_PATH, "lobbyactivity.zip")
-        with zipfile.ZipFile(zip_file, "r") as zip_ref:
-            for member in zip_ref.namelist():
-                filename = os.path.basename(member)
-                if not filename:
-                    continue
-                source = zip_ref.open(member)
-                target = open(os.path.join(DATA_PATH, filename), "wb")
-                with source, target:
-                    shutil.copyfileobj(source, target)
+        #extract_files_from_zip()
 
-        db = setup_db(app_db)
-        data_rows = []
-        for data_source in DataSource:
-            start_time = time.time()
-            data_rows += get_data_rows(xml_to_dict(data_source), data_source)
-            end_time = time.time()
-            print(f"Parse {data_source.value}: {end_time - start_time} seconds")
+        #db = setup_db(app_db)
 
-        start_time = time.time()
-        create_raw_tables(data_rows)
-        end_time = time.time()
-        print(f"Create all Raw Tables: {end_time - start_time} seconds")
+        delete_all_data(
+            db,
+            [
+                LobbyingReport,
+                Grassroot,
+                Beneficiary,
+                Address,
+                Firm,
+                PrivateFunding,
+                GovernmentFunding,
+            ],
+        )
 
-        for model in [
-            LobbyingReport,
-            Grassroot,
-            Beneficiary,
-            Address,
-            Firm,
-            PrivateFunding,
-            GovernmentFunding,
-        ]:
-            db.session.execute(delete(model))
+        #create_data_rows(db)
+        #db.session.commit()
 
-        start_time = time.time()
-        create_lobbying_reports(RawLobbyingReport.query.all())
-        end_time = time.time()
-        print(f"Create all Lobbying Reports: {end_time - start_time} seconds")
-
-        start_time = time.time()
-        create_grassroots(RawGrassroot.query.all())
-        end_time = time.time()
-        print(f"Create all Grassroot: {end_time - start_time} seconds")
-
-        start_time = time.time()
-        create_beneficiaries(RawBeneficiary.query.all())
-        end_time = time.time()
-        print(f"Create all Beneficiary: {end_time - start_time} seconds")
-
-        start_time = time.time()
-        create_firms(RawFirm.query.all())
-        end_time = time.time()
-        print(f"Create all Firm: {end_time - start_time} seconds")
-
-        start_time = time.time()
-        create_government_funding(RawGmtFunding.query.all())
-        end_time = time.time()
-        print(f"Create all Government Funding: {end_time - start_time} seconds")
-
-        start_time = time.time()
-        create_private_funding(RawPrivateFunding.query.all())
-        end_time = time.time()
-        print(f"Create all Private Funding: {end_time - start_time} seconds")
+        create_models(
+            db,
+            [
+                RawLobbyingReport,
+                RawGrassroot,
+                RawBeneficiary,
+                RawFirm,
+                RawGmtFunding,
+                RawPrivateFunding,
+            ],
+            [
+                create_lobbying_reports,
+                create_grassroots,
+                create_beneficiaries,
+                create_firms,
+                create_government_funding,
+                create_private_funding,
+            ],
+        )
 
         db.session.commit()
 

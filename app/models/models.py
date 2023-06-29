@@ -1,12 +1,14 @@
 from datetime import date
 from app import db
 from sqlalchemy.orm import validates
+from sqlalchemy import JSON
 from enum import Enum
 from app.models.errors import (
     get_type_error_message,
     get_enum_error_message,
     get_enum_date_must_be_before_or_equal,
     get_enum_date_must_be_after_or_equal,
+    get_invalid_postal_code_message
 )
 from app.models.enums import (
     LobbyingReportStatus,
@@ -14,6 +16,7 @@ from app.models.enums import (
     BeneficiaryType,
     FirmType,
     FirmBusinessType,
+    AddressType
 )
 
 report_beneficiary_association = db.Table(
@@ -209,8 +212,6 @@ class Beneficiary(db.Model):
     type = db.Column(db.Enum(BeneficiaryType))
     name = db.Column(db.String)
     trade_name = db.Column(db.String)
-    fiscal_start = db.Column(db.String, nullable=True)
-    fiscal_end = db.Column(db.String, nullable=True)
     address_id = db.Column(db.Integer, db.ForeignKey("address.id"))
     address = db.relationship("Address")
     reports = db.relationship(
@@ -218,29 +219,6 @@ class Beneficiary(db.Model):
         secondary=report_beneficiary_association,
         backref=db.backref("beneficiaries", lazy="dynamic"),
     )
-
-    @validates("fiscal_start")
-    def validate_fiscal_start(self, key, fiscal_start):
-        if self.fiscal_end and fiscal_start > self.end_date:
-            raise ValueError(
-                get_enum_date_must_be_before_or_equal(
-                    "fiscal_start", fiscal_start, "fiscal_end", self.fiscal_end
-                )
-            )
-
-        return fiscal_start
-
-    @validates("end_date")
-    def validate_end_date(self, key, fiscal_end):
-        if self.fiscal_start and fiscal_end < self.fiscal_start:
-            raise ValueError(
-                get_enum_date_must_be_after_or_equal(
-                    "fiscal_end", fiscal_end, "fiscal_start", self.fiscal_start
-                )
-            )
-
-        return fiscal_end
-
 
 class Firm(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -277,6 +255,16 @@ class GovernmentFunding(db.Model):
 
 class Address(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    address_type = db.Column(db.Enum(AddressType))
+    temp_country = db.Column(db.String)
+    raw_fields = db.Column(JSON)
+
+    __mapper_args__ = {
+        "polymorphic_on": "address_type",
+        "polymorphic_identity": AddressType.OTHER,
+    }
+
+class CanadianAddress(Address):
     address_line1 = db.Column(db.String)
     address_line2 = db.Column(db.String)
     city = db.Column(db.String)
@@ -284,3 +272,40 @@ class Address(db.Model):
     country = db.Column(db.String)
     postal_code = db.Column(db.String)
     phone = db.Column(db.String)
+
+    __mapper_args__ = {
+        "polymorphic_identity": AddressType.CANADIAN,
+    }
+
+    @validates('postal_code')
+    def validate_postal_code(self, key, postal_code):
+        if postal_code is None:
+            return None
+        
+        # define the valid characters for each position
+        valid_postal_first_third_chars = set('ABCEGHJKLMNPRSTVXY')
+        valid_postal_chars = set('ABCEGHJKLMNPRSTVWXYZ')
+        valid_digits = set('0123456789')
+        valid_white_space = set(' ')
+
+        valid_chars = [
+            valid_postal_first_third_chars,  # A
+            valid_digits,                    # 1
+            valid_postal_chars,              # A
+            valid_white_space,               # <space>
+            valid_digits,                    # 1
+            valid_postal_chars,              # A
+            valid_digits,                    # 1
+        ]
+
+        # check if the length of postal code is correct
+        if len(postal_code) != len(valid_chars):
+            raise ValueError(get_invalid_postal_code_message(postal_code))
+
+        # check if each character in the postal code is valid
+        for char, valid_set in zip(postal_code, valid_chars):
+            if char not in valid_set:
+                raise ValueError(get_invalid_postal_code_message(postal_code))
+
+        # if all checks pass, return the formatted postal code
+        return postal_code

@@ -26,3 +26,6 @@ def get_enum_date_must_be_after_or_equal(
     after_variable_value: date,
 ):
     return f"{variable_name} {variable_value} must be after or equal to {after_variable_name} {after_variable_value}"
+
+def get_invalid_postal_code_message(postal_code: str) -> str:
+    return f"Invalid Canadian postal code '{postal_code}'. It should follow the format 'ANA NAN', where A is a letter and N is a digit."
