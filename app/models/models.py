@@ -238,9 +238,12 @@ class GovernmentFunding(db.Model):
     report_id = db.Column(db.Integer, db.ForeignKey("lobbying_report.id"))
     report = db.relationship("LobbyingReport", backref="government_fundings", lazy=True)
 
+raw_address_address = db.Table('raw_address_address', 
+    db.Column('address_id', db.Integer, db.ForeignKey('address.id'), primary_key=True),
+    db.Column('raw_address_id', db.Integer, db.ForeignKey('raw_address.id'), primary_key=True)
+)
 
 class Address(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    data_source_id = db.Column(db.Integer, db.ForeignKey("raw_address.id"))
-    data_source = db.relationship("RawAddress")
+    data_sources = db.relationship("RawAddress", secondary=raw_address_address)
 
