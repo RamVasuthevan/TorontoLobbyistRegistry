@@ -32,8 +32,8 @@ from build.addresses import create_addresses_table
 from build.lobbying_reports import create_lobbying_report_table
 from build.grassroots import create_grassroots_table
 from build.beneficiaries import create_beneficiaries_table
-from build.government_funding import create_government_funding_table
-from build.private_funding import create_private_funding_table
+from build.government_fundings import create_government_funding_table
+from build.private_fundings import create_private_funding_table
 
 from dataclasses import dataclass
 from sqlalchemy import delete
