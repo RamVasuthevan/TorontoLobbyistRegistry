@@ -169,10 +169,11 @@ class RawLobbyist(db.Model):
 class RawAddress(db.Model):
     DataSource = db.Column(db.Enum(DataSource))
     id = db.Column(db.Integer, primary_key=True)
-    address_line_1 = db.Column(db.String)
-    address_line_2 = db.Column(db.String)
-    city = db.Column(db.String)
-    country = db.Column(db.String)
-    postal_code = db.Column(db.String)
-    province = db.Column(db.String)
-    phone = db.Column(db.String)
+    AddressLine1 = db.Column(db.String)
+    AddressLine2 = db.Column(db.String)
+    City = db.Column(db.String)
+    Country = db.Column(db.String)
+    PostalCode = db.Column(db.String)
+    Province = db.Column(db.String)
+    Phone = db.Column(db.String)
+

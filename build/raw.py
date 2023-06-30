@@ -55,13 +55,13 @@ def create_raw_tables(db, data_rows: List[Data]):
 
         registrant_address = RawAddress(
             DataSource=data_row.source,
-            address_line_1=registrant_address_data["AddressLine1"],
-            address_line_2=registrant_address_data.get("AddressLine2"),
-            city=registrant_address_data["City"],
-            country=registrant_address_data["Country"],
-            phone=registrant_address_data["Phone"],
-            postal_code=registrant_address_data["PostalCode"],
-            province=registrant_address_data["Province"],
+            AddressLine1=registrant_address_data["AddressLine1"],
+            AddressLine2=registrant_address_data.get("AddressLine2"),
+            City=registrant_address_data["City"],
+            Country=registrant_address_data["Country"],
+            Phone=registrant_address_data["Phone"],
+            PostalCode=registrant_address_data["PostalCode"],
+            Province=registrant_address_data["Province"],
         )
 
         db.session.add(registrant_address)
@@ -109,13 +109,13 @@ def create_raw_tables(db, data_rows: List[Data]):
 
                 raw_communication_address = RawAddress(
                     DataSource=data_row.source,
-                    address_line_1=communication_address_data["AddressLine1"],
-                    address_line_2=communication_address_data.get("AddressLine2"),
-                    city=communication_address_data["City"],
-                    country=communication_address_data["Country"],
-                    phone=communication_address_data["Phone"],
-                    postal_code=communication_address_data["PostalCode"],
-                    province=communication_address_data["Province"],
+                    AddressLine1=communication_address_data["AddressLine1"],
+                    AddressLine2=communication_address_data.get("AddressLine2"),
+                    City=communication_address_data["City"],
+                    Country=communication_address_data["Country"],
+                    Phone=communication_address_data["Phone"],
+                    PostalCode=communication_address_data["PostalCode"],
+                    Province=communication_address_data["Province"],
                 )
 
                 db.session.add(raw_communication_address)
@@ -180,15 +180,15 @@ def create_raw_tables(db, data_rows: List[Data]):
             for beneficiary_data in raw_beneficiaries:
                 raw_beneficiary_address = RawAddress(
                     DataSource=data_row.source,
-                    address_line_1=beneficiary_data["BusinessAddress"]["AddressLine1"],
-                    address_line_2=beneficiary_data["BusinessAddress"].get(
+                    AddressLine1=beneficiary_data["BusinessAddress"]["AddressLine1"],
+                    AddressLine2=beneficiary_data["BusinessAddress"].get(
                         "AddressLine2"
                     ),
-                    city=beneficiary_data["BusinessAddress"]["City"],
-                    country=beneficiary_data["BusinessAddress"]["Country"],
-                    phone=beneficiary_data["BusinessAddress"].get("Phone", None),
-                    postal_code=beneficiary_data["BusinessAddress"]["PostalCode"],
-                    province=beneficiary_data["BusinessAddress"]["Province"],
+                    City=beneficiary_data["BusinessAddress"]["City"],
+                    Country=beneficiary_data["BusinessAddress"]["Country"],
+                    Phone=beneficiary_data["BusinessAddress"].get("Phone", None),
+                    PostalCode=beneficiary_data["BusinessAddress"]["PostalCode"],
+                    Province=beneficiary_data["BusinessAddress"]["Province"],
                 )
 
                 db.session.add(raw_beneficiary_address)
@@ -217,13 +217,13 @@ def create_raw_tables(db, data_rows: List[Data]):
             for firm_data in raw_firms:
                 raw_firm_address = RawAddress(
                     DataSource=data_row.source,
-                    address_line_1=firm_data["BusinessAddress"]["AddressLine1"],
-                    address_line_2=firm_data["BusinessAddress"].get("AddressLine2"),
-                    city=firm_data["BusinessAddress"]["City"],
-                    country=firm_data["BusinessAddress"]["Country"],
-                    phone=firm_data["BusinessAddress"].get("Phone"),
-                    postal_code=firm_data["BusinessAddress"]["PostalCode"],
-                    province=firm_data["BusinessAddress"]["Province"],
+                    AddressLine1=firm_data["BusinessAddress"]["AddressLine1"],
+                    AddressLine2=firm_data["BusinessAddress"].get("AddressLine2"),
+                    City=firm_data["BusinessAddress"]["City"],
+                    Country=firm_data["BusinessAddress"]["Country"],
+                    Phone=firm_data["BusinessAddress"].get("Phone"),
+                    PostalCode=firm_data["BusinessAddress"]["PostalCode"],
+                    Province=firm_data["BusinessAddress"]["Province"],
                 )
 
                 db.session.add(raw_firm_address)
