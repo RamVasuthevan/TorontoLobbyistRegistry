@@ -323,3 +323,14 @@ def create_addresses(db, raw_addresses: List[RawAddress]) -> List[Address]:
 
     return sorted_addresses
 
+
+def get_address_data_row(raw_address:RawAddress)->dict:
+    return {
+        "address_line1": raw_address.address_line_1,
+        "address_line2": raw_address.address_line_2,
+        "city": raw_address.city,
+        "province": raw_address.province,
+        "country": raw_address.country,
+        "postal_code": raw_address.postal_code,
+    }
+

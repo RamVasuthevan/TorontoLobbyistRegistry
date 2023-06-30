@@ -5,7 +5,6 @@
       <th>Relationship</th>
       <th>Name</th>
       <th>Other Trade Names</th>
-      <th>Address</th> 
     </tr>
   </thead>
   <tbody>
@@ -15,7 +14,6 @@
         <td>{{ beneficiary.type }}</td>
         <td>{{ beneficiary.name }}</td>
         <td>{{ beneficiary.trade_name }}</td>
-        <td>{{ beneficiary.address.address_line1 }}, {{ beneficiary.address.city }}, {{ beneficiary.address.province }}, {{ beneficiary.address.country }}, {{ beneficiary.address.postal_code }}</td>
       </tr>
     {% endfor %}
   </tbody>

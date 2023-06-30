@@ -5,14 +5,14 @@
 <p>Type: {{ beneficiary.type }}</p>
 <p>Name: {{ beneficiary.name }}</p>
 <p>Trade Name: {{ beneficiary.trade_name }}</p>
-<p>Address ID: {{ beneficiary.address_id }}</p>
 {% if beneficiary.address %}
+<p>Address ID: {{ beneficiary.address_id }}</p>
 <p>{{ beneficiary.address.address_line1 }}, {{ beneficiary.address.address_line2 }}, {{ beneficiary.address.city }}, {{ beneficiary.address.province }}, {{ beneficiary.address.country }}, {{ beneficiary.address.postal_code }}</p>
 {% endif %}
-<h2>Reports:</h2>
-{% for report in beneficiary.reports %}
-    <ul>
-        <li><a href="{{ url_for('lobbying_report', id=report.id) }}">{{ report.smnumber }}</a></li>
-    </ul>
-{% endfor %}
+{% if beneficiary.report %}
+<h2>Report:</h2>
+<ul>
+    <li><a href="{{ url_for('lobbying_report', id=beneficiary.report.id) }}">{{beneficiary.report.smnumber }}</a></li>
+</ul>
+{% endif %}
 {% endblock %}

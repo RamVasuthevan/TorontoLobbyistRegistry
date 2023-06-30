@@ -29,8 +29,7 @@ from app.models.enums import DataSource
 from build.raw import create_raw_tables
 from build.lobbying_reports import create_lobbying_report_table
 from build.grassroots import create_grassroots_table
-from build.beneficiaries import create_beneficiaries
-from build.firms import create_firms
+from build.beneficiaries import create_beneficiaries_table
 from build.government_funding import create_government_funding_table
 from build.private_funding import create_private_funding_table
 
@@ -96,34 +95,37 @@ from app import app, db
 
 def run():
     with app.app_context():
-        # extract_files_from_zip(DATA_ZIP)
+        if True:
+            extract_files_from_zip(DATA_ZIP)
 
-        # db.drop_all()
-        # db.create_all()
+            db.drop_all()
+            db.create_all()
 
-        # start_time = time.time()
-        # data_rows = create_data_rows()
-        # end_time = time.time()
-        # print(f"Create data_rows : {end_time - start_time} seconds")
+            start_time = time.time()
+            data_rows = create_data_rows()
+            end_time = time.time()
+            print(f"Create data_rows : {end_time - start_time} seconds")
 
-        # start_time = time.time()
-        # create_raw_tables(db, data_rows)
-        # end_time = time.time()
-        # print(f"Create all Raw Tables: {end_time - start_time} seconds")
+            start_time = time.time()
+            create_raw_tables(db, data_rows)
+            end_time = time.time()
+            print(f"Create all Raw Tables: {end_time - start_time} seconds")
 
         LobbyingReport.query.delete()
         Grassroot.query.delete()
         GovernmentFunding.query.delete()
         PrivateFunding.query.delete()
+        Beneficiary.query.delete()
 
         create_tables(
             db,
-            [RawLobbyingReport, RawGrassroot, RawGmtFunding, RawPrivateFunding],
+            [RawLobbyingReport, RawGrassroot, RawGmtFunding, RawPrivateFunding,RawBeneficiary],
             [
                 create_lobbying_report_table,
                 create_grassroots_table,
                 create_government_funding_table,
                 create_private_funding_table,
+                create_beneficiaries_table,
             ],
         )
 

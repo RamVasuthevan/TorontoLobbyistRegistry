@@ -8,7 +8,7 @@ from app.models.errors import (
     get_enum_error_message,
     get_enum_date_must_be_before_or_equal,
     get_enum_date_must_be_after_or_equal,
-    get_invalid_postal_code_message
+    get_invalid_postal_code_message,
 )
 from app.models.enums import (
     LobbyingReportStatus,
@@ -17,20 +17,7 @@ from app.models.enums import (
     FirmType,
     FirmBusinessType,
     AddressType,
-    CanadianProvincesTerritories
-)
-
-raw_lobbying_report_lobbyist_association = db.Table(
-    "raw_lobbying_report_lobbyist",
-    db.Column("raw_lobbying_report_id", db.Integer, db.ForeignKey("raw_lobbying_report.id")),
-    db.Column("lobbyist_id", db.Integer, db.ForeignKey("lobbyist.id")),
-)
-
-
-report_beneficiary_association = db.Table(
-    "report_beneficiary",
-    db.Column("report_id", db.Integer, db.ForeignKey("lobbying_report.id")),
-    db.Column("beneficiary_id", db.Integer, db.ForeignKey("beneficiary.id")),
+    CanadianProvincesTerritories,
 )
 
 
@@ -45,13 +32,6 @@ class LobbyingReport(db.Model):
     proposed_end_date = db.Column(db.Date, nullable=True)
     initial_approval_date = db.Column(db.Date)
     effective_date = db.Column(db.Date)
-    #beneficiaries = db.relationship(
-    #    "Beneficiary",
-    #    secondary=report_beneficiary_association,
-    #    backref=db.backref("reports", lazy="dynamic"),
-    #)
-    # registrant_id = db.Column(db.Integer, db.ForeignKey('registrant.id'))
-    # registrant = db.relationship('Registrant', back_populates='lobbying_reports')
 
     @validates("smnumber")
     def validate_smnumber(self, key, smnumber):
@@ -222,11 +202,9 @@ class Beneficiary(db.Model):
     trade_name = db.Column(db.String)
     address_id = db.Column(db.Integer, db.ForeignKey("address.id"))
     address = db.relationship("Address")
-    reports = db.relationship(
-        "LobbyingReport",
-        secondary=report_beneficiary_association,
-        backref=db.backref("beneficiaries", lazy="dynamic"),
-    )
+    report_id = db.Column(db.Integer, db.ForeignKey("lobbying_report.id"))
+    report = db.relationship("LobbyingReport", backref="beneficiaries", lazy=True)
+
 
 class Firm(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -272,6 +250,7 @@ class Address(db.Model):
         "polymorphic_identity": AddressType.OTHER,
     }
 
+
 class CanadianAddress(Address):
     address_line1 = db.Column(db.String)
     address_line2 = db.Column(db.String)
@@ -285,25 +264,25 @@ class CanadianAddress(Address):
         "polymorphic_identity": AddressType.CANADIAN,
     }
 
-    @validates('postal_code')
+    @validates("postal_code")
     def validate_postal_code(self, key, postal_code):
         if postal_code is None:
             return None
-        
+
         # define the valid characters for each position
-        valid_postal_first_third_chars = set('ABCEGHJKLMNPRSTVXY')
-        valid_postal_chars = set('ABCEGHJKLMNPRSTVWXYZ')
-        valid_digits = set('0123456789')
-        valid_white_space = set(' ')
+        valid_postal_first_third_chars = set("ABCEGHJKLMNPRSTVXY")
+        valid_postal_chars = set("ABCEGHJKLMNPRSTVWXYZ")
+        valid_digits = set("0123456789")
+        valid_white_space = set(" ")
 
         valid_chars = [
             valid_postal_first_third_chars,  # A
-            valid_digits,                    # 1
-            valid_postal_chars,              # A
-            valid_white_space,               # <space>
-            valid_digits,                    # 1
-            valid_postal_chars,              # A
-            valid_digits,                    # 1
+            valid_digits,  # 1
+            valid_postal_chars,  # A
+            valid_white_space,  # <space>
+            valid_digits,  # 1
+            valid_postal_chars,  # A
+            valid_digits,  # 1
         ]
 
         # check if the length of postal code is correct

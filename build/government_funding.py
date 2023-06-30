@@ -5,20 +5,6 @@ from app.models.models import GovernmentFunding
 from app.models.processor_models import RawGmtFunding
 from sqlalchemy import insert
 
-def create_government_funding(session: Session, raw_fundings: List[RawGmtFunding]) -> List[GovernmentFunding]:
-    data = [
-        {
-            "government_name": raw_funding.GMTName,
-            "program": raw_funding.Program,
-            "report_id": raw_funding.report_id,
-        }
-        for raw_funding in raw_fundings
-    ]
-    
-    session.execute(insert(GovernmentFunding), data)
-    session.commit()
-    return session.query(GovernmentFunding).all()
-
 def get_government_funding_data_row(raw_funding: RawGmtFunding) -> dict:
     return {
         "government_name": raw_funding.GMTName,

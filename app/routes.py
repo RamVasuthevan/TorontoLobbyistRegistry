@@ -24,9 +24,7 @@ def lobbying_reports():
     return render_template(
         "lobbying_reports.html",
         title="Lobbying Reports",
-        lobbying_reports=LobbyingReport.query.all(),
-        lobbying_report_status=LobbyingReportStatus,
-        Lobbying_report_type=LobbyingReportType,
+        lobbying_reports=LobbyingReport.query.all()
     )
 
 
