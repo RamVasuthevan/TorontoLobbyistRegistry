@@ -24,6 +24,7 @@ from app.models.processor_models import (
     RawPrivateFunding,
     RawGmtFunding,
     RawLobbyingReport,
+    RawAddress,
 )
 from app.models.enums import DataSource
 from build.raw import create_raw_tables
@@ -96,7 +97,7 @@ from app import app, db
 
 def run():
     with app.app_context():
-        if True:
+        if False:
             extract_files_from_zip(DATA_ZIP)
 
             db.drop_all()
@@ -120,7 +121,7 @@ def run():
 
         create_tables(
             db,
-            [Address, RawLobbyingReport, RawGrassroot, RawGmtFunding, RawPrivateFunding,RawBeneficiary],
+            [RawAddress, RawLobbyingReport, RawGrassroot, RawGmtFunding, RawPrivateFunding,RawBeneficiary],
             [
                 create_addresses_table,
                 create_lobbying_report_table,
