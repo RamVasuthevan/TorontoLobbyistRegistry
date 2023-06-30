@@ -27,6 +27,7 @@ from app.models.processor_models import (
 )
 from app.models.enums import DataSource
 from build.raw import create_raw_tables
+from build.addresses import create_addresses_table
 from build.lobbying_reports import create_lobbying_report_table
 from build.grassroots import create_grassroots_table
 from build.beneficiaries import create_beneficiaries_table
@@ -119,8 +120,9 @@ def run():
 
         create_tables(
             db,
-            [RawLobbyingReport, RawGrassroot, RawGmtFunding, RawPrivateFunding,RawBeneficiary],
+            [Address, RawLobbyingReport, RawGrassroot, RawGmtFunding, RawPrivateFunding,RawBeneficiary],
             [
+                create_addresses_table,
                 create_lobbying_report_table,
                 create_grassroots_table,
                 create_government_funding_table,
