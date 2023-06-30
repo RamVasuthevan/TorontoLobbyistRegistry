@@ -20,6 +20,13 @@ from app.models.enums import (
     CanadianProvincesTerritories
 )
 
+raw_lobbying_report_lobbyist_association = db.Table(
+    "raw_lobbying_report_lobbyist",
+    db.Column("raw_lobbying_report_id", db.Integer, db.ForeignKey("raw_lobbying_report.id")),
+    db.Column("lobbyist_id", db.Integer, db.ForeignKey("lobbyist.id")),
+)
+
+
 report_beneficiary_association = db.Table(
     "report_beneficiary",
     db.Column("report_id", db.Integer, db.ForeignKey("lobbying_report.id")),

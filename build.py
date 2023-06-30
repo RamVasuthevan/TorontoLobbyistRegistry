@@ -27,12 +27,12 @@ from app.models.processor_models import (
 )
 from app.models.enums import DataSource
 from build.raw import create_raw_tables
-from build.lobbying_reports import create_lobbying_reports
-from build.grassroots import create_grassroots
+from build.lobbying_reports import create_lobbying_report_table
+from build.grassroots import create_grassroots_table
 from build.beneficiaries import create_beneficiaries
 from build.firms import create_firms
-from build.government_funding import create_government_funding
-from build.private_funding import create_private_funding
+from build.government_funding import create_government_funding_table
+from build.private_funding import create_private_funding_table
 
 from dataclasses import dataclass
 from sqlalchemy import delete
@@ -83,7 +83,7 @@ def create_data_rows() -> List[Data]:
     return data_rows
 
 
-def create_models(db, raw_models, create_functions):
+def create_tables(db, raw_models, create_functions):
     for raw_model, create_function in zip(raw_models, create_functions):
         start_time = time.time()
         create_function(db.session, raw_model.query.all())
@@ -116,14 +116,14 @@ def run():
         GovernmentFunding.query.delete()
         PrivateFunding.query.delete()
 
-        create_models(
+        create_tables(
             db,
             [RawLobbyingReport, RawGrassroot, RawGmtFunding, RawPrivateFunding],
             [
-                create_lobbying_reports,
-                create_grassroots,
-                create_government_funding,
-                create_private_funding,
+                create_lobbying_report_table,
+                create_grassroots_table,
+                create_government_funding_table,
+                create_private_funding_table,
             ],
         )
 
