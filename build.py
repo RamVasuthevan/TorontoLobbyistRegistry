@@ -1,12 +1,9 @@
 from typing import List, Dict
 import os
-import shutil
 import xmltodict
 import time
 import zipfile
 import pprint
-import cProfile
-import pstats
 
 from app import db as app_db
 from app.models.models import (
@@ -33,12 +30,16 @@ from build.raw import create_raw_tables
 from build.lobbying_reports import create_lobbying_reports
 from build.grassroots import create_grassroots
 from build.beneficiaries import create_beneficiaries
+from build.firms import create_firms
+from build.government_funding import create_government_funding
+from build.private_funding import create_private_funding
 
 from dataclasses import dataclass
 from sqlalchemy import delete
 
 
 DATA_PATH = "data"
+DATA_ZIP = "lobbyactivity.zip"
 
 
 @dataclass
@@ -52,12 +53,6 @@ def xml_to_dict(data_source: DataSource) -> Dict:
         return xmltodict.parse(fd.read())
 
 
-def setup_db(db):
-    db.drop_all()
-    db.create_all()
-    return db
-
-
 def get_data_rows(file_dict: Dict, data_source: DataSource) -> List[Data]:
     data_rows = []
     for val in file_dict["ROWSET"]["ROW"]:
@@ -67,15 +62,10 @@ def get_data_rows(file_dict: Dict, data_source: DataSource) -> List[Data]:
     return data_rows
 
 
-def extract_files_from_zip():
-    zip_file = os.path.join(DATA_PATH, "lobbyactivity.zip")
+def extract_files_from_zip(file_name: str) -> None:
+    zip_file = os.path.join(DATA_PATH, file_name)
     with zipfile.ZipFile(zip_file, "r") as zip_ref:
-        for member in zip_ref.namelist():
-            filename = os.path.basename(member)
-            source = zip_ref.open(member)
-            target = open(os.path.join(DATA_PATH, filename), "wb")
-            with source, target:
-                shutil.copyfileobj(source, target)
+        zip_ref.extractall(DATA_PATH)
 
 
 def delete_all_data(db, models):
@@ -83,24 +73,20 @@ def delete_all_data(db, models):
         db.session.execute(delete(model))
 
 
-def create_data_rows(db):
+def create_data_rows() -> List[Data]:
     data_rows = []
     for data_source in DataSource:
         start_time = time.time()
         data_rows += get_data_rows(xml_to_dict(data_source), data_source)
         end_time = time.time()
         print(f"Parse {data_source.value}: {end_time - start_time} seconds")
-
-    start_time = time.time()
-    create_raw_tables(db, data_rows)
-    end_time = time.time()
-    print(f"Create all Raw Tables: {end_time - start_time} seconds")
+    return data_rows
 
 
 def create_models(db, raw_models, create_functions):
     for raw_model, create_function in zip(raw_models, create_functions):
         start_time = time.time()
-        create_function(db, raw_model.query.all())
+        create_function(db.session, raw_model.query.all())
         end_time = time.time()
         print(f"Create all {raw_model.__name__}: {end_time - start_time} seconds")
 
@@ -110,26 +96,39 @@ from app import app, db
 
 def run():
     with app.app_context():
-        extract_files_from_zip()
+        # extract_files_from_zip(DATA_ZIP)
 
-        db = setup_db(app_db)
+        # db.drop_all()
+        # db.create_all()
 
-        delete_all_data(
+        # start_time = time.time()
+        # data_rows = create_data_rows()
+        # end_time = time.time()
+        # print(f"Create data_rows : {end_time - start_time} seconds")
+
+        # start_time = time.time()
+        # create_raw_tables(db, data_rows)
+        # end_time = time.time()
+        # print(f"Create all Raw Tables: {end_time - start_time} seconds")
+
+        LobbyingReport.query.delete()
+        Grassroot.query.delete()
+        GovernmentFunding.query.delete()
+        PrivateFunding.query.delete()
+
+        create_models(
             db,
+            [RawLobbyingReport, RawGrassroot, RawGmtFunding, RawPrivateFunding],
             [
-                LobbyingReport,
+                create_lobbying_reports,
+                create_grassroots,
+                create_government_funding,
+                create_private_funding,
             ],
         )
-        create_data_rows(db)
-        create_models(db,[RawLobbyingReport],[create_lobbying_reports])
 
         db.session.commit()
 
 
 if __name__ == "__main__":
-    profiler = cProfile.Profile()
-    profiler.enable()
     run()
-    profiler.disable()
-    stats = pstats.Stats(profiler).sort_stats('cumtime')  # sort by cumulative time spent in function
-    stats.print_stats()
