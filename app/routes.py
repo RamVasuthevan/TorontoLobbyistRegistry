@@ -9,7 +9,7 @@ from app.models.models import (
     Beneficiary,
     Firm,
     PrivateFunding,
-    GovernmentFunding
+    GovernmentFunding,
 )
 
 
@@ -24,9 +24,7 @@ def lobbying_reports():
     return render_template(
         "lobbying_reports.html",
         title="Lobbying Reports",
-        lobbying_reports=LobbyingReport.query.all(),
-        lobbying_report_status=LobbyingReportStatus,
-        Lobbying_report_type=LobbyingReportType,
+        lobbying_reports=LobbyingReport.query.all()
     )
 
 
@@ -44,26 +42,44 @@ def grassroots():
         "grassroots.html", title="Grassroots", grassroots=Grassroot.query.all()
     )
 
+
 @app.route("/beneficiaries")
 def beneficiaries():
     return render_template(
-        "beneficiaries.html", title="beneficiaries", beneficiaries=Beneficiary.query.all()
+        "beneficiaries.html",
+        title="beneficiaries",
+        beneficiaries=Beneficiary.query.order_by(Beneficiary.name, Beneficiary.trade_name).all(),
     )
+
+
+@app.route("/beneficiary/<int:id>")
+def beneficiary(id):
+    beneficiary = Beneficiary.query.get(id)
+    return render_template(
+        "beneficiary.html", title="Beneficiary", beneficiary=beneficiary
+    )
+
 
 @app.route("/firms")
 def firms():
-    return render_template(
-        "firms.html", title="Firms", firms=Firm.query.all()
-    )
+    return render_template("firms.html", title="Firms", firms=Firm.query.all())
+
 
 @app.route("/privatefunding")
 def privatefunding():
     return render_template(
-        "privatefunding.html", title="Private Funding", privatefundings=PrivateFunding.query.all()
+        "privatefunding.html",
+        title="Private Funding",
+        privatefundings=PrivateFunding.query.all(),
     )
+
 
 @app.route("/governmentfunding")
 def governmentfunding():
     return render_template(
-        "governmentfunding.html", title="Government Funding", governmentfundings=GovernmentFunding.query.all()
+        "governmentfunding.html",
+        title="Government Funding",
+        governmentfundings=GovernmentFunding.query.all(),
     )
+
+
