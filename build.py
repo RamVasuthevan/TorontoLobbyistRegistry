@@ -119,6 +119,7 @@ def run():
         GovernmentFunding.query.delete()
         PrivateFunding.query.delete()
         Beneficiary.query.delete()
+        Firm.query.delete()
 
         create_tables(
             db,
