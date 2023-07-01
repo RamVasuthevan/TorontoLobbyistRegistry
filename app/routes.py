@@ -51,7 +51,6 @@ def beneficiaries():
         beneficiaries=Beneficiary.query.order_by(Beneficiary.name, Beneficiary.trade_name).all(),
     )
 
-
 @app.route("/beneficiary/<int:id>")
 def beneficiary(id):
     beneficiary = Beneficiary.query.get(id)
@@ -62,7 +61,18 @@ def beneficiary(id):
 
 @app.route("/firms")
 def firms():
-    return render_template("firms.html", title="Firms", firms=Firm.query.all())
+    return render_template(
+        "firms.html",
+        title="firms",
+        firms=Firm.query.order_by(Firm.name, Firm.trade_name).all(),
+    )
+
+@app.route("/firm/<int:id>")
+def firm(id):
+    firm = Firm.query.get(id)
+    return render_template(
+        "firm.html", title="Firm", firm=firm
+    )
 
 
 @app.route("/privatefunding")

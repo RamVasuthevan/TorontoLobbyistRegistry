@@ -20,6 +20,7 @@ from app.models.enums import (
     CanadianProvincesTerritories,
 )
 
+from app.models.processor_models import RawAddress
 
 class LobbyingReport(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -211,8 +212,6 @@ class Firm(db.Model):
     type = db.Column(db.Enum(FirmType))
     name = db.Column(db.String)
     trade_name = db.Column(db.String)
-    fiscal_start = db.Column(db.Date)
-    fiscal_end = db.Column(db.Date)
     description = db.Column(db.String)
     business_type = db.Column(db.Enum(FirmBusinessType))
     address_id = db.Column(db.Integer, db.ForeignKey("address.id"))

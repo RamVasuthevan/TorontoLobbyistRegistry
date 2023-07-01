@@ -1,29 +1,26 @@
 <table>
-    <thead>
+  <thead>
+    <tr>
+      <th>Id</th>
+      <th>Report ID</th>
+      <th>Type</th>
+      <th>Name</th>
+      <th>Trade Name</th>
+      <th>Description</th>
+      <th>Business Type</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for firm in firms %}
       <tr>
-        <th>Type</th>
-        <th>Name</th>
-        <th>Other Trade Names</th>
-        <th>Fiscal Year Start</th>
-        <th>Fiscal Year End</th>
-        <th>Description</th>
-        <th>Business Type</th>
-        <th>Address</th>
+        <td><a href="{{ url_for('firm', id=firm.id) }}">{{ firm.id }}</a></td>
+        <td><a href="{{ url_for('lobbying_report', id=firm.report_id) }}">{{ firm.report.smnumber }}</a></td>
+        <td>{{ firm.type }}</td>
+        <td>{{ firm.name }}</td>
+        <td>{{ firm.trade_name }}</td>
+        <td>{{ firm.description }}</td>
+        <td>{{ firm.business_type }}</td>        
       </tr>
-    </thead>
-    <tbody>
-      {% for firm in firms %}
-        <tr>
-          <td>{{ firm.type }}</td>
-          <td>{{ firm.name }}</td>
-          <td>{{ firm.trade_name }}</td>
-          <td>{{ firm.fiscal_start }}</td>
-          <td>{{ firm.fiscal_end }}</td>
-          <td>{{ firm.description }}</td>
-          <td>{{ firm.business_type }}</td>
-          <td>{{ firm.address.address_line1 }}, {{ firm.address.city }}, {{ firm.address.province }}, {{ firm.address.country }}, {{ firm.address.postal_code }}</td>
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  
+    {% endfor %}
+  </tbody>
+</table>
