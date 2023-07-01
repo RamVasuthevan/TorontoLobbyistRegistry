@@ -1,0 +1,20 @@
+<table>
+  <thead>
+    <tr>
+      <th>Id</th>
+      <th>Relationship</th>
+      <th>Name</th>
+      <th>Other Trade Names</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for beneficiary in beneficiaries %}
+      <tr>
+        <td><a href="{{ url_for('beneficiary', id=beneficiary.id) }}">{{ beneficiary.id }}</a></td>
+        <td>{{ beneficiary.type }}</td>
+        <td>{{ beneficiary.name }}</td>
+        <td>{{ beneficiary.trade_name }}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>

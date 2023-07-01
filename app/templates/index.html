@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Welcome to Toronto Lobbying Report!</h1>
+<p>View:</p>
+<ul>
+    <li><a href="{{ url_for('lobbying_reports') }}">Lobbying Reports</a></li>
+    <li><a href="{{ url_for('grassroots') }}">Grassroots</a></li>
+    <li><a href="{{ url_for('beneficiaries') }}">Beneficiaries</a></li>
+    <li><a href="{{ url_for('firms') }}">Firms</a></li>
+    <li><a href="{{ url_for('privatefunding') }}">Private Fundings</a></li>
+    <li><a href="{{ url_for('governmentfunding') }}">Government Fundings</a></li>
+</ul>
+{% endblock %}

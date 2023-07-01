@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Lobbying Report {{ report.smnumber }}</h1>
+<p><strong>SM Number:</strong> {{ report.smnumber }}</p>
+<p><strong>Status:</strong> {{ report.status.value }}</p>
+<p><strong>Type:</strong> {{ report.type.value }}</p>
+<p><strong>Subject Matter:</strong> {{ report.subject_matter }}</p>
+<p><strong>Particulars:</strong> {{ report.particulars }}</p>
+<p><strong>Proposed Start Date:</strong> {{ report.proposed_start_date }}</p>
+<p><strong>Proposed End Date:</strong> {{ report.proposed_end_date }}</p>
+<p><strong>Initial Approval Date:</strong> {{ report.initial_approval_date }}</p>
+<p><strong>Effective Date:</strong> {{ report.effective_date }}</p>
+
+{% set grassroots = report.grassroots %}
+{% if grassroots %}
+<h2>Grassroots</h2>
+  {% include 'tables/grassroots_table.html' %}
+{% endif %}
+
+{% set beneficiaries = report.beneficiaries %}
+{% if beneficiaries %}
+<h2>Beneficiaries</h2>
+  {% include 'tables/beneficiaries_table.html' %}
+{% endif %}
+
+{% set firms = report.firms %}
+{% if firms %}
+<h2>Firms</h2>
+  {% include 'tables/firms_table.html' %}
+{% endif %}
+
+{% set private_fundings = report.private_fundings %}
+{% if private_fundings %}
+<h2>Private Funding</h2>
+  {% include 'tables/privatefundings_table.html' %}
+{% endif %}
+
+{% set governmentfundings = report.government_fundings %}
+{% if governmentfundings %}
+<h2>Government Funding</h2>
+  {% include 'tables/governmentfundings_table.html' %}
+{% endif %}
+
+
+{% endblock %}

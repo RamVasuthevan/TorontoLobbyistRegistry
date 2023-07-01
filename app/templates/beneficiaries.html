@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>Beneficiaries</h1>
+{% if beneficiaries %}
+  {% include 'tables/beneficiaries_table.html' %}
+{% endif %}
+{% endblock %}
