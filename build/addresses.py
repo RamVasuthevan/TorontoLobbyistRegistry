@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List
 from sqlalchemy.orm import Session
-from app.models.models import Address
+from app.models.models import Address, CanadianAddress, AmericanAddress, OtherAddress
 from app.models.processor_models import RawAddress
 from sqlalchemy import insert
 from collections import defaultdict
@@ -36,13 +36,6 @@ def get_grouped_raw_addresses(raw_addresses: List[RawAddress]) -> List[dict]:
     ]
     
     return raw_address_grouped
-
-def create_addresses_table2(session: Session, raw_addresses: List[RawAddress]) -> List[Address]:
-    data = get_grouped_raw_addresses(raw_addresses)
-
-    session.execute(insert(Address), data)
-    session.commit()
-    return session.query(Address).all()
 
 def create_addresses_table(session: Session, raw_addresses: List[RawAddress]) -> List[Address]:
     data = get_grouped_raw_addresses(raw_addresses)
