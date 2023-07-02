@@ -9,10 +9,9 @@
 <p>Business Type: {{ firm.business_type }}</p>
 <p>Address: {{firm.address}}</p>
 
-{% if firm.report %}
 <h2>Report:</h2>
 <ul>
-    <li><a href="{{ url_for('lobbying_report', id=firm.report.id) }}">{{ firm.report.id }}</a></li>
+    <li><a href="{{ url_for('lobbying_report', id=firm.report.id) }}">{{firm.report.smnumber }}</a></li>
 </ul>
-{% endif %}
+
 {% endblock %}
