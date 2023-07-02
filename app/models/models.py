@@ -245,4 +245,91 @@ raw_address_address = db.Table('raw_address_address',
 class Address(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     data_sources = db.relationship("RawAddress", secondary=raw_address_address)
+    type = db.Column(db.Enum(AddressType))
+    
+    __mapper_args__ = {
+        'polymorphic_identity':'address',
+        'polymorphic_on':type
+    }
 
+    def __init__(self, *args, **kwargs):
+        if type(self) is Address:
+            raise TypeError('Address is an abstract class and cannot be instantiated directly')
+        super().__init__(*args, **kwargs)
+
+
+class CanadianAddress(Address):
+    id = db.Column(db.Integer, db.ForeignKey('address.id'), primary_key=True)
+    address_line1 = db.Column(db.String)
+    address_line2 = db.Column(db.String)
+    city = db.Column(db.String)
+    province = db.Column(db.String)
+    _country = db.Column('country', db.String, default='Canada')
+    postal_code = db.Column(db.String)
+    phone = db.Column(db.String)
+
+    __mapper_args__ = {
+        'polymorphic_identity':AddressType.CANADIAN,
+    }
+
+    @property
+    def country(self):
+        return self._country
+
+    @country.setter
+    def country(self, value):
+        raise AttributeError(f"'{self.__class__.__name__}' object has a fixed 'country' attribute.")
+
+    def __str__(self):
+        address = self.address_line1
+        if self.address_line2:
+            address += ', ' + self.address_line2
+        return f'{address}, {self.city}, {self.province}, {self.country}, {self.postal_code}'
+
+class AmericanAddress(Address):
+    id = db.Column(db.Integer, db.ForeignKey('address.id'), primary_key=True)
+    address_line1 = db.Column(db.String)
+    address_line2 = db.Column(db.String)
+    city = db.Column(db.String)
+    state = db.Column(db.String)
+    _country = db.Column('country', db.String, default='United States')
+    zipcode = db.Column(db.String)
+    phone = db.Column(db.String)
+
+    __mapper_args__ = {
+        'polymorphic_identity':AddressType.AMERICAN,
+    }
+
+    @property
+    def country(self):
+        return self._country
+
+    @country.setter
+    def country(self, value):
+        raise AttributeError(f"'{self.__class__.__name__}' object has a fixed 'country' attribute.")
+
+    def __str__(self):
+        address = self.address_line1
+        if self.address_line2:
+            address += ', ' + self.address_line2
+        return f'{address}, {self.city}, {self.state}, {self.country}, {self.zipcode}'
+
+class OtherAddress(Address):
+    id = db.Column(db.Integer, db.ForeignKey('address.id'), primary_key=True)
+    raw_address_line1 = db.Column(db.String)
+    raw_address_line2 = db.Column(db.String)
+    raw_city = db.Column(db.String)
+    raw_province = db.Column(db.String)
+    raw_country = db.Column(db.String)
+    raw_postal_code = db.Column(db.String)
+    raw_phone = db.Column(db.String)
+
+    __mapper_args__ = {
+        'polymorphic_identity':AddressType.OTHER,
+    }
+
+    def __str__(self):
+        address = self.raw_address_line1
+        if self.raw_address_line2:
+            address += ', ' + self.raw_address_line2
+        return f'{address}, {self.raw_city}, {self.raw_province}, {self.raw_country}, {self.raw_postal_code}'

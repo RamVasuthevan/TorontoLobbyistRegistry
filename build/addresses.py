@@ -1,14 +1,29 @@
-from datetime import datetime
-from typing import List
+from typing import List, Dict
 from sqlalchemy.orm import Session
-from app.models.models import Address
+from app.models.models import Address, CanadianAddress, AmericanAddress, OtherAddress
 from app.models.processor_models import RawAddress
-from sqlalchemy import insert
+from app.models.enums import AddressType
 from collections import defaultdict
 
-def get_grouped_raw_addresses(raw_addresses: List[RawAddress]) -> List[dict]:
-    D = defaultdict(list)
+# Hardcoded dictionary for the different address types and their classes
+ADDRESS_TYPE_TO_CLASS = {
+    AddressType.CANADIAN: CanadianAddress,
+    AddressType.AMERICAN: AmericanAddress,
+    AddressType.OTHER: OtherAddress
+}
 
+
+def get_address_type(raw_address: RawAddress) -> AddressType:
+    country = raw_address.Country
+    if country == "Canada":
+        return AddressType.CANADIAN
+    elif country == "United States":
+        return AddressType.AMERICAN
+    else:
+        return AddressType.OTHER
+
+def get_grouped_raw_addresses(raw_addresses: List[RawAddress]) -> Dict[tuple, List[RawAddress]]:
+    D = defaultdict(list)
     for raw_address in raw_addresses:
         key = (
             raw_address.AddressLine1, 
@@ -19,40 +34,63 @@ def get_grouped_raw_addresses(raw_addresses: List[RawAddress]) -> List[dict]:
             raw_address.Province,
             raw_address.Phone
         )
-        D[key].append(raw_address.id)
+        D[key].append(raw_address)
+    return D
 
-    raw_address_grouped = [
-        {
-            'AddressLine1': key[0], 
-            'AddressLine2': key[1], 
-            'City': key[2],
-            'Country': key[3], 
-            'PostalCode': key[4], 
-            'Province': key[5],
-            'Phone': key[6],
-            'data_sources': [RawAddress.query.get(id) for id in ids]
-        } 
-        for key, ids in D.items()
-    ]
-    
-    return raw_address_grouped
+def get_canadian_address_data(raw_address: RawAddress) -> dict:
+    return {
+        'address_line1': raw_address.AddressLine1,
+        'address_line2': raw_address.AddressLine2,
+        'city': raw_address.City,
+        'province': raw_address.Province,
+        'postal_code': raw_address.PostalCode,
+        'phone': raw_address.Phone
+    }
 
-def create_addresses_table2(session: Session, raw_addresses: List[RawAddress]) -> List[Address]:
-    data = get_grouped_raw_addresses(raw_addresses)
+def get_american_address_data(raw_address: RawAddress) -> dict:
+    return {
+        'address_line1': raw_address.AddressLine1,
+        'address_line2': raw_address.AddressLine2,
+        'city': raw_address.City,
+        'state': raw_address.Province,
+        'zipcode': raw_address.PostalCode,
+        'phone': raw_address.Phone
+    }
 
-    session.execute(insert(Address), data)
-    session.commit()
-    return session.query(Address).all()
+def get_other_address_data(raw_address: RawAddress) -> dict:
+    return {
+        'raw_address_line1': raw_address.AddressLine1,
+        'raw_address_line2': raw_address.AddressLine2,
+        'raw_city': raw_address.City,
+        'raw_province': raw_address.Province,
+        'raw_postal_code': raw_address.PostalCode,
+        'raw_phone': raw_address.Phone
+    }
+
+# Hardcoded dictionary for the different address types and their data extraction functions
+ADDRESS_TYPE_TO_DATA_FUNCTION = {
+    AddressType.CANADIAN: get_canadian_address_data,
+    AddressType.AMERICAN: get_american_address_data,
+    AddressType.OTHER: get_other_address_data
+}
 
 def create_addresses_table(session: Session, raw_addresses: List[RawAddress]) -> List[Address]:
-    data = get_grouped_raw_addresses(raw_addresses)
+    grouped_raw_addresses = get_grouped_raw_addresses(raw_addresses)
 
     addresses = []
-    for address_data in data:
-        new_address = Address()
-        new_address.data_sources = address_data['data_sources']
+    for raw_address_list in grouped_raw_addresses.values():
+        raw_address = raw_address_list[0]  # Just need to use one of the RawAddress objects to get the details
+        address_type = get_address_type(raw_address)
+
+        AddressClass = ADDRESS_TYPE_TO_CLASS[address_type]
+        data_function = ADDRESS_TYPE_TO_DATA_FUNCTION[address_type]
+        
+        new_address = AddressClass(**data_function(raw_address))
+        new_address.data_sources = raw_address_list  # Assign the list of RawAddress objects
+
         addresses.append(new_address)
 
     session.add_all(addresses)
     session.commit()
+
     return addresses

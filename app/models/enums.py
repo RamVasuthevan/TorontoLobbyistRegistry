@@ -92,6 +92,7 @@ class LobbyistType(Enum):
 
 class AddressType(Enum):
     CANADIAN = "Canadian"
+    AMERICAN = "American"
     OTHER = "Other"
 
 class CanadianProvincesTerritories(Enum):

@@ -7,8 +7,12 @@ import pprint
 
 from app import db as app_db
 from app.models.models import (
-    LobbyingReport,
     Address,
+    CanadianAddress,
+    AmericanAddress,
+    OtherAddress,
+    raw_address_address,
+    LobbyingReport,
     Grassroot,
     Beneficiary,
     Firm,
@@ -99,7 +103,11 @@ from app import app, db
 def run():
     with app.app_context():
         if True:
+            
+            start_time = time.time()
             extract_files_from_zip(DATA_ZIP)
+            end_time = time.time()
+            print(f"Extract files: {end_time - start_time} seconds")
 
             db.drop_all()
             db.create_all()
@@ -114,6 +122,11 @@ def run():
             end_time = time.time()
             print(f"Create all Raw Tables: {end_time - start_time} seconds")
 
+        Address.query.delete()
+        CanadianAddress.query.delete()
+        AmericanAddress.query.delete()
+        OtherAddress.query.delete()
+        raw_address_address.delete()
         LobbyingReport.query.delete()
         Grassroot.query.delete()
         GovernmentFunding.query.delete()
@@ -136,7 +149,6 @@ def run():
         )
 
         db.session.commit()
-
 
 if __name__ == "__main__":
     run()
