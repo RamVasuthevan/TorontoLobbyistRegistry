@@ -18,6 +18,8 @@ from app.models.enums import (
     FirmBusinessType,
     AddressType,
     CanadianProvincesTerritories,
+    MeetingCommittee,
+    PublicOfficeHolderType,
 )
 
 from app.models.processor_models import RawAddress
@@ -241,6 +243,21 @@ raw_address_address = db.Table('raw_address_address',
     db.Column('address_id', db.Integer, db.ForeignKey('address.id'), primary_key=True),
     db.Column('raw_address_id', db.Integer, db.ForeignKey('raw_address.id'), primary_key=True)
 )
+
+class Meeting(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    committee = db.Column(db.Enum(MeetingCommittee))
+    date = db.Column(db.Date)
+
+class PublicOfficeHolder(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String)
+    office = db.Column(db.String)
+    title = db.Column(db.String)
+    type = db.Column(db.Enum(PublicOfficeHolderType))
+    meeting_id = db.Column(db.Integer, db.ForeignKey('meeting.id'))
+    meeting = db.relationship("Meeting", backref="public_office_holders", lazy=True)
+
 
 class Address(db.Model):
     id = db.Column(db.Integer, primary_key=True)

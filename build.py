@@ -18,6 +18,8 @@ from app.models.models import (
     Firm,
     GovernmentFunding,
     PrivateFunding,
+    Meeting,
+    PublicOfficeHolder
 )
 from app.models.processor_models import (
     RawGrassroot,
@@ -29,6 +31,8 @@ from app.models.processor_models import (
     RawGmtFunding,
     RawLobbyingReport,
     RawAddress,
+    RawMeeting,
+    RawPOH
 )
 from app.models.enums import DataSource
 from build.raw import create_raw_tables
@@ -39,6 +43,8 @@ from build.beneficiaries import create_beneficiaries_table
 from build.firms import create_firms_table
 from build.government_fundings import create_government_funding_table
 from build.private_fundings import create_private_funding_table
+from build.meetings import create_meeting_table
+from build.public_office_holders import create_public_office_holder_table
 
 from dataclasses import dataclass
 from sqlalchemy import delete
@@ -133,10 +139,12 @@ def run():
         PrivateFunding.query.delete()
         Beneficiary.query.delete()
         Firm.query.delete()
+        Meeting.query.delete()
+        PublicOfficeHolder.query.delete()
 
         create_tables(
             db,
-            [RawAddress, RawLobbyingReport, RawGrassroot, RawGmtFunding, RawPrivateFunding,RawBeneficiary, RawFirm],
+            [RawAddress, RawLobbyingReport, RawGrassroot, RawGmtFunding, RawPrivateFunding,RawBeneficiary, RawFirm,RawMeeting,RawPOH],
             [
                 create_addresses_table,
                 create_lobbying_report_table,
@@ -145,6 +153,8 @@ def run():
                 create_private_funding_table,
                 create_beneficiaries_table,
                 create_firms_table,
+                create_meeting_table,
+                create_public_office_holder_table
             ],
         )
 
