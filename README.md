@@ -55,6 +55,8 @@ Schema
 - Not LobbyistPreviousPublicOfficeHoldLastDate it's PreviousPublicOfficeHoldLastDate
 - Beneficiaries.BusinessAddress doesn't always have phone?
 
+- Meeting.Desc is always empty
+- Lobbyist.Business is always empty
 
 Lessons learnt
 - Commits are expensive

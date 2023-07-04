@@ -20,6 +20,7 @@ from app.models.enums import (
     CanadianProvincesTerritories,
     MeetingCommittee,
     PublicOfficeHolderType,
+    LobbyistType
 )
 
 from app.models.processor_models import RawAddress
@@ -239,15 +240,17 @@ class GovernmentFunding(db.Model):
     report_id = db.Column(db.Integer, db.ForeignKey("lobbying_report.id"))
     report = db.relationship("LobbyingReport", backref="government_fundings", lazy=True)
 
-raw_address_address = db.Table('raw_address_address', 
-    db.Column('address_id', db.Integer, db.ForeignKey('address.id'), primary_key=True),
-    db.Column('raw_address_id', db.Integer, db.ForeignKey('raw_address.id'), primary_key=True)
+meeting_lobbyist = db.Table('meeting_lobbyist', db.Model.metadata,
+    db.Column('meeting_id', db.Integer, db.ForeignKey('meeting.id')),
+    db.Column('lobbyist_id', db.Integer, db.ForeignKey('lobbyist.id'))
 )
 
 class Meeting(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     committee = db.Column(db.Enum(MeetingCommittee))
     date = db.Column(db.Date)
+    lobbyists = db.relationship("Lobbyist", secondary=meeting_lobbyist, backref="meetings")
+
 
 class PublicOfficeHolder(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -258,6 +261,26 @@ class PublicOfficeHolder(db.Model):
     meeting_id = db.Column(db.Integer, db.ForeignKey('meeting.id'))
     meeting = db.relationship("Meeting", backref="public_office_holders", lazy=True)
 
+raw_lobbyist_lobbyist = db.Table('raw_lobbyist_lobbyist',
+    db.Column('raw_lobbyist_id', db.Integer, db.ForeignKey('raw_lobbyist.id'), primary_key=True),
+    db.Column('lobbyist_id', db.Integer, db.ForeignKey('lobbyist.id'), primary_key=True)
+)
+
+class Lobbyist(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    data_sources = db.relationship("RawLobbyist", secondary=raw_lobbyist_lobbyist)
+    number = db.Column(db.String,  unique=True)
+    first_name = db.Column(db.String)
+    middle_initials = db.Column(db.String)
+    last_name = db.Column(db.String)
+    suffix = db.Column(db.String)
+    business = db.Column(db.String)
+    type = db.Column(db.Enum(LobbyistType))
+
+raw_address_address = db.Table('raw_address_address', 
+    db.Column('address_id', db.Integer, db.ForeignKey('address.id'), primary_key=True),
+    db.Column('raw_address_id', db.Integer, db.ForeignKey('raw_address.id'), primary_key=True)
+)
 
 class Address(db.Model):
     id = db.Column(db.Integer, primary_key=True)

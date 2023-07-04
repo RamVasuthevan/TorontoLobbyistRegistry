@@ -12,6 +12,7 @@ from app.models.models import (
     AmericanAddress,
     OtherAddress,
     raw_address_address,
+    raw_lobbyist_lobbyist,
     LobbyingReport,
     Grassroot,
     Beneficiary,
@@ -19,7 +20,8 @@ from app.models.models import (
     GovernmentFunding,
     PrivateFunding,
     Meeting,
-    PublicOfficeHolder
+    PublicOfficeHolder,
+    Lobbyist
 )
 from app.models.processor_models import (
     RawGrassroot,
@@ -32,7 +34,8 @@ from app.models.processor_models import (
     RawLobbyingReport,
     RawAddress,
     RawMeeting,
-    RawPOH
+    RawPOH,
+    RawLobbyist,
 )
 from app.models.enums import DataSource
 from build.raw import create_raw_tables
@@ -45,6 +48,7 @@ from build.government_fundings import create_government_funding_table
 from build.private_fundings import create_private_funding_table
 from build.meetings import create_meeting_table
 from build.public_office_holders import create_public_office_holder_table
+from build.lobbyists import create_lobbyist_table
 
 from dataclasses import dataclass
 from sqlalchemy import delete
@@ -108,7 +112,7 @@ from app import app, db
 
 def run():
     with app.app_context():
-        if True:
+        if False:
             
             start_time = time.time()
             extract_files_from_zip(DATA_ZIP)
@@ -128,11 +132,13 @@ def run():
             end_time = time.time()
             print(f"Create all Raw Tables: {end_time - start_time} seconds")
 
+            
+        db.session.query(raw_address_address).delete()
+        db.session.query(raw_lobbyist_lobbyist).delete()
         Address.query.delete()
         CanadianAddress.query.delete()
         AmericanAddress.query.delete()
         OtherAddress.query.delete()
-        raw_address_address.delete()
         LobbyingReport.query.delete()
         Grassroot.query.delete()
         GovernmentFunding.query.delete()
@@ -141,10 +147,11 @@ def run():
         Firm.query.delete()
         Meeting.query.delete()
         PublicOfficeHolder.query.delete()
+        Lobbyist.query.delete()
 
         create_tables(
             db,
-            [RawAddress, RawLobbyingReport, RawGrassroot, RawGmtFunding, RawPrivateFunding,RawBeneficiary, RawFirm,RawMeeting,RawPOH],
+            [RawAddress, RawLobbyingReport, RawGrassroot, RawGmtFunding, RawPrivateFunding,RawBeneficiary, RawFirm,RawMeeting,RawPOH, RawLobbyist],
             [
                 create_addresses_table,
                 create_lobbying_report_table,
@@ -154,7 +161,8 @@ def run():
                 create_beneficiaries_table,
                 create_firms_table,
                 create_meeting_table,
-                create_public_office_holder_table
+                create_public_office_holder_table,
+                create_lobbyist_table
             ],
         )
 
