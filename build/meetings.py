@@ -1,10 +1,10 @@
 from datetime import datetime
 from typing import List
 from sqlalchemy.orm import Session
+from sqlalchemy import insert
 from app.models.models import Meeting
 from app.models.processor_models import RawMeeting
 from app.models.enums import MeetingCommittee
-from sqlalchemy import insert
 from app.models.errors import get_enum_error_message
 
 def get_meeting_committee(raw_meeting: RawMeeting) -> MeetingCommittee:
