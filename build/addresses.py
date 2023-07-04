@@ -93,4 +93,4 @@ def create_addresses_table(session: Session, raw_addresses: List[RawAddress]) ->
     session.add_all(addresses)
     session.commit()
 
-    return addresses
+    return Address.query.all()
