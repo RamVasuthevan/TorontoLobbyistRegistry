@@ -1,0 +1,21 @@
+<table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Office</th>
+        <th>Title</th>
+        <th>Name</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for public_office_holder in public_office_holders %}
+        <tr>
+          <td>{{ public_office_holder.type }}</td>
+          <td>{{ public_office_holder.office }}</td>
+          <td>{{ public_office_holder.title }}</td>
+          <td>{{ public_office_holder.name }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  

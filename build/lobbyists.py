@@ -28,7 +28,6 @@ def get_lobbyist_data_row(raw_lobbyist: RawLobbyist) -> dict:
         "middle_initials": raw_lobbyist.MiddleInitials,
         "last_name": raw_lobbyist.LastName,
         "suffix": raw_lobbyist.Suffix,
-        "business": raw_lobbyist.Business,
         "type": LobbyistType(raw_lobbyist.Type),
     }
 

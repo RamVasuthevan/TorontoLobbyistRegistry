@@ -151,9 +151,10 @@ def run():
 
         create_tables(
             db,
-            [RawAddress, RawLobbyingReport, RawGrassroot, RawGmtFunding, RawPrivateFunding,RawBeneficiary, RawFirm,RawMeeting,RawPOH, RawLobbyist],
+            [RawAddress,RawLobbyist, RawLobbyingReport, RawGrassroot, RawGmtFunding, RawPrivateFunding,RawBeneficiary, RawFirm,RawMeeting,RawPOH],
             [
                 create_addresses_table,
+                create_lobbyist_table,
                 create_lobbying_report_table,
                 create_grassroots_table,
                 create_government_funding_table,
@@ -162,7 +163,6 @@ def run():
                 create_firms_table,
                 create_meeting_table,
                 create_public_office_holder_table,
-                create_lobbyist_table
             ],
         )
 

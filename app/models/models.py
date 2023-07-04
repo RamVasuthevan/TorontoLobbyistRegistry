@@ -250,6 +250,8 @@ class Meeting(db.Model):
     committee = db.Column(db.Enum(MeetingCommittee))
     date = db.Column(db.Date)
     lobbyists = db.relationship("Lobbyist", secondary=meeting_lobbyist, backref="meetings")
+    report_id = db.Column(db.Integer, db.ForeignKey('lobbying_report.id'))
+    report = db.relationship("LobbyingReport", backref="meetings", lazy=True)
 
 
 class PublicOfficeHolder(db.Model):
@@ -274,7 +276,6 @@ class Lobbyist(db.Model):
     middle_initials = db.Column(db.String)
     last_name = db.Column(db.String)
     suffix = db.Column(db.String)
-    business = db.Column(db.String)
     type = db.Column(db.Enum(LobbyistType))
 
 raw_address_address = db.Table('raw_address_address', 

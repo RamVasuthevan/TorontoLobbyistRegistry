@@ -1,0 +1,19 @@
+<table>
+    <thead>
+      <tr>
+        <th>Number</th>
+        <th>Type</th>
+        <th>Name</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for lobbyist in lobbyists %}
+        <tr>
+          <td><a href="{{ url_for('lobbyist', number=lobbyist.number) }}">{{ lobbyist.number }}</a></td>
+          <td>{{ lobbyist.type }}</td>
+          <td>{{ lobbyist.first_name }}{% if lobbyist.middle_initials %} {{ lobbyist.middle_initials }}{% endif %} {{ lobbyist.last_name }}{% if lobbyist.suffix %}, {{ lobbyist.suffix }}{% endif %}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  

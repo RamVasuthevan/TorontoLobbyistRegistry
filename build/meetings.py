@@ -2,10 +2,11 @@ from datetime import datetime
 from typing import List
 from sqlalchemy.orm import Session
 from sqlalchemy import insert
-from app.models.models import Meeting
-from app.models.processor_models import RawMeeting
+from app.models.models import Meeting, Lobbyist, raw_lobbyist_lobbyist
+from app.models.processor_models import RawMeeting, RawLobbyist
 from app.models.enums import MeetingCommittee
 from app.models.errors import get_enum_error_message
+
 
 def get_meeting_committee(raw_meeting: RawMeeting) -> MeetingCommittee:
     committee = raw_meeting.Committee
@@ -23,20 +24,32 @@ def get_meeting_committee(raw_meeting: RawMeeting) -> MeetingCommittee:
     raise ValueError(get_enum_error_message("committee", MeetingCommittee, committee))
 
 
-def get_meeting_data_row(raw_meeting: RawMeeting) -> dict:
+def get_meeting_data_row(raw_meeting: RawMeeting, lobbyists: List[Lobbyist]) -> dict:
     return {
-        "data_source": raw_meeting.DataSource,
-        "id": raw_meeting.id,
         "committee": get_meeting_committee(raw_meeting),
-        "description": raw_meeting.Desc,
         "date": datetime.strptime(raw_meeting.Date, "%Y-%m-%d").date(),
+        "lobbyists": lobbyists,
         "report_id": raw_meeting.report_id,
     }
 
-
 def create_meeting_table(session: Session, raw_meetings: List[RawMeeting]) -> List[Meeting]:
-    data = [get_meeting_data_row(raw_meeting) for raw_meeting in raw_meetings]
+    meetings = []
+    
+    for raw_meeting in raw_meetings:
+        # Query for Lobbyists who attended the meeting
+        lobbyists = [
+            session.query(Lobbyist)
+            .join(raw_lobbyist_lobbyist, (raw_lobbyist_lobbyist.c.lobbyist_id == Lobbyist.id))
+            .filter(raw_lobbyist_lobbyist.c.raw_lobbyist_id == raw_lobbyist.id)
+            .one()
+            for raw_lobbyist in session.query(RawLobbyist).filter_by(meeting_id=raw_meeting.id).all()
+        ]
 
-    session.execute(insert(Meeting), data)
+        session.query(RawLobbyist).filter_by(meeting_id=raw_meeting.id).all()
+        print(f"Meeting {raw_meeting.id} has lobbyists: {lobbyists}")
+        meetings.append(Meeting(**get_meeting_data_row(raw_meeting, lobbyists)))
+
+    session.add_all(meetings)
     session.commit()
+
     return session.query(Meeting).all()
