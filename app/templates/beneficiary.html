@@ -7,7 +7,7 @@
 <p>Trade Name: {{ beneficiary.trade_name }}</p>
 <p>Address: {{beneficiary.address}}</p>
 
-<h2>Report:</h2>
+<h2>Reports:</h2>
 <ul>
     <li><a href="{{ url_for('lobbying_report', id=beneficiary.report.id) }}">{{beneficiary.report.smnumber }}</a></li>
 </ul>

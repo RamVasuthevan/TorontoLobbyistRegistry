@@ -8,12 +8,12 @@
       </tr>
     </thead>
     <tbody>
-      {% for public_office_holder in public_office_holders %}
+      {% for publicofficeholders in publicofficeholders %}
         <tr>
-          <td>{{ public_office_holder.type }}</td>
-          <td>{{ public_office_holder.office }}</td>
-          <td>{{ public_office_holder.title }}</td>
-          <td>{{ public_office_holder.name }}</td>
+          <td>{{ publicofficeholders.type }}</td>
+          <td>{{ publicofficeholders.office }}</td>
+          <td>{{ publicofficeholders.title }}</td>
+          <td>{{ publicofficeholders.name }}</td>
         </tr>
       {% endfor %}
     </tbody>
