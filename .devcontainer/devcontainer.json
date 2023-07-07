@@ -6,7 +6,10 @@
                 "yy0931.vscode-sqlite3-editor",
                 "ms-python.python",
                 "GitHub.copilot",
-                "ms-python.black-formatter"
+                "ms-python.black-formatter",
+                "GitHub.codespaces",
+                "GitHub.github-vscode-theme",
+                "ms-python.vscode-pylance"
             ]
         }
     }

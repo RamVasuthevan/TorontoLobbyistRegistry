@@ -1,8 +1,0 @@
-Extensions installed on Codespaces:
-GitHub.codespaces
-GitHub.copilot
-GitHub.github-vscode-theme
-ms-python.black-formatter
-ms-python.python
-ms-python.vscode-pylance
-yy0931.vscode-sqlite3-editor
