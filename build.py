@@ -112,7 +112,7 @@ from app import app, db
 
 def run():
     with app.app_context():
-        if False:
+        if True:
             
             start_time = time.time()
             extract_files_from_zip(DATA_ZIP)

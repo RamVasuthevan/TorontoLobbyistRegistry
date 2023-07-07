@@ -48,6 +48,7 @@
 {% for meeting in meetings %}
   <h3>{{meeting.committee}} Committee</h3>
   <p>Meeting Date: {{meeting.date}}</p>
+  <p>Meeting ID: {{meeting.id}}</p>
   <h3>Commitee Members in Attendance:</h3>
   {% set lobbyists = meeting.lobbyists %}
   {% include 'tables/lobbyist_table.html' %}

@@ -19,7 +19,7 @@ from app.models.processor_models import (
     RawLobbyingReport,
 )
 from app.models.enums import DataSource
-
+import pprint
 
 from dataclasses import dataclass
 
@@ -295,7 +295,7 @@ def create_raw_tables(db, data_rows: List[Data]):
                 )
                 db.session.add(raw_meeting)
                 db.session.flush()
-
+                
                 if "POHS" in meeting_data:
                     if isinstance((meeting_data["POHS"]["POH"]), dict):
                         pohs_data = [meeting_data["POHS"]["POH"]]
@@ -312,25 +312,30 @@ def create_raw_tables(db, data_rows: List[Data]):
                         )
                         db.session.add(raw_poh)
 
-            if "Lobbyists" in meeting_data:
-                if isinstance(meeting_data["Lobbyists"]["Lobbyist"], dict):
-                    lobbyists_data = [meeting_data["Lobbyists"]["Lobbyist"]]
-                else:
-                    lobbyists_data = meeting_data["Lobbyists"]["Lobbyist"]
-                for lobbyist_data in lobbyists_data:
-                    raw_lobbyist = RawLobbyist(
-                        DataSource=data_row.source,
-                        Number=lobbyist_data["Number"],
-                        Prefix=lobbyist_data["Prefix"],
-                        FirstName=lobbyist_data["FirstName"],
-                        MiddleInitials=lobbyist_data["MiddleInitials"],
-                        LastName=lobbyist_data["LastName"],
-                        Suffix=lobbyist_data["Suffix"],
-                        Business=lobbyist_data["Business"],
-                        Type=lobbyist_data["Type"],
-                        meeting_id=raw_meeting.id,
-                    )
-                    db.session.add(raw_lobbyist)
+
+                if "Lobbyists" in meeting_data:
+                    if isinstance(meeting_data["Lobbyists"]["Lobbyist"], dict):
+                        lobbyists_data = [meeting_data["Lobbyists"]["Lobbyist"]]
+                    else:
+                        lobbyists_data = meeting_data["Lobbyists"]["Lobbyist"]
+                    if raw_meeting.id == 1:
+                        print("Printing from line 332")
+                        pprint.pprint(lobbyists_data)
+                    for lobbyist_data in lobbyists_data:
+                        raw_lobbyist = RawLobbyist(
+                            DataSource=data_row.source,
+                            Number=lobbyist_data["Number"],
+                            Prefix=lobbyist_data["Prefix"],
+                            FirstName=lobbyist_data["FirstName"],
+                            MiddleInitials=lobbyist_data["MiddleInitials"],
+                            LastName=lobbyist_data["LastName"],
+                            Suffix=lobbyist_data["Suffix"],
+                            Business=lobbyist_data["Business"],
+                            Type=lobbyist_data["Type"],
+                            meeting_id=raw_meeting.id,
+                        )
+                        db.session.add(raw_lobbyist)
+                        db.session.flush()
 
         raw_lobbying_report.registrant_id = raw_registrant.id
         db.session.add(raw_lobbying_report)
