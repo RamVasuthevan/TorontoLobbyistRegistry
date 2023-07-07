@@ -42,5 +42,18 @@
   {% include 'tables/governmentfundings_table.html' %}
 {% endif %}
 
+{% set meetings = report.meetings %}
+{% if meetings %}
+<h2>Communication by Committees of the Organization</h2>
+{% for meeting in meetings %}
+  <h3>{{meeting.committee}} on {{meeting.date}}</h3>
+  <h4>Commitee Members in Attendance:</h3>
+  {% set lobbyists = meeting.lobbyists %}
+  {% include 'tables/lobbyist_table.html' %}
+  <h4>Public Office Holders in Attendance</h3>
+  {% set publicofficeholders = meeting.public_office_holders %}
+  {% include 'tables/public_office_holder_table.html' %}
+{% endfor %}
+{% endif %}
 
 {% endblock %}

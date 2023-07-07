@@ -109,3 +109,16 @@ class CanadianProvincesTerritories(Enum):
     NT = "Northwest Territories"
     NU = "Nunavut"
     YT = "Yukon"
+
+class MeetingCommittee(Enum):
+    GOVERNMENT_RELATIONS = "Government Relations Committee"
+    SMART_CITIES = "Smart Cities"
+    BOARD_OF_DIRECTORS = "Board of Directors"
+    SCARBOROUGH_MULTICULTURAL_FESTIVAL = "Scarborough Community Multicultural Festival"
+    EXECUTIVE = "Executive Committee"
+
+
+class PublicOfficeHolderType(Enum):
+    MEMBER_OF_COUNCIL = "Member of Council"
+    STAFF_OF_MEMBER_OF_COUNCIL = "Staff of Member of Council"
+    EMPLOYEE_OF_THE_CITY = "Employee of the City"

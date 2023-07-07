@@ -12,12 +12,16 @@ from app.models.models import (
     AmericanAddress,
     OtherAddress,
     raw_address_address,
+    raw_lobbyist_lobbyist,
     LobbyingReport,
     Grassroot,
     Beneficiary,
     Firm,
     GovernmentFunding,
     PrivateFunding,
+    Meeting,
+    PublicOfficeHolder,
+    Lobbyist
 )
 from app.models.processor_models import (
     RawGrassroot,
@@ -29,6 +33,9 @@ from app.models.processor_models import (
     RawGmtFunding,
     RawLobbyingReport,
     RawAddress,
+    RawMeeting,
+    RawPOH,
+    RawLobbyist,
 )
 from app.models.enums import DataSource
 from build.raw import create_raw_tables
@@ -39,6 +46,9 @@ from build.beneficiaries import create_beneficiaries_table
 from build.firms import create_firms_table
 from build.government_fundings import create_government_funding_table
 from build.private_fundings import create_private_funding_table
+from build.meetings import create_meeting_table
+from build.public_office_holders import create_public_office_holder_table
+from build.lobbyists import create_lobbyist_table
 
 from dataclasses import dataclass
 from sqlalchemy import delete
@@ -122,29 +132,37 @@ def run():
             end_time = time.time()
             print(f"Create all Raw Tables: {end_time - start_time} seconds")
 
+            
+        db.session.query(raw_address_address).delete()
+        db.session.query(raw_lobbyist_lobbyist).delete()
         Address.query.delete()
         CanadianAddress.query.delete()
         AmericanAddress.query.delete()
         OtherAddress.query.delete()
-        raw_address_address.delete()
         LobbyingReport.query.delete()
         Grassroot.query.delete()
         GovernmentFunding.query.delete()
         PrivateFunding.query.delete()
         Beneficiary.query.delete()
         Firm.query.delete()
+        Meeting.query.delete()
+        PublicOfficeHolder.query.delete()
+        Lobbyist.query.delete()
 
         create_tables(
             db,
-            [RawAddress, RawLobbyingReport, RawGrassroot, RawGmtFunding, RawPrivateFunding,RawBeneficiary, RawFirm],
+            [RawAddress,RawLobbyist, RawLobbyingReport, RawGrassroot, RawGmtFunding, RawPrivateFunding,RawBeneficiary, RawFirm,RawMeeting,RawPOH],
             [
                 create_addresses_table,
+                create_lobbyist_table,
                 create_lobbying_report_table,
                 create_grassroots_table,
                 create_government_funding_table,
                 create_private_funding_table,
                 create_beneficiaries_table,
                 create_firms_table,
+                create_meeting_table,
+                create_public_office_holder_table,
             ],
         )
 

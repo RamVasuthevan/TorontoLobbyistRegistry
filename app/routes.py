@@ -10,6 +10,9 @@ from app.models.models import (
     Firm,
     PrivateFunding,
     GovernmentFunding,
+    Meeting,
+    PublicOfficeHolder,
+    Lobbyist
 )
 
 
@@ -76,20 +79,42 @@ def firm(id):
 
 
 @app.route("/privatefunding")
-def privatefunding():
+def privatefundings():
     return render_template(
-        "privatefunding.html",
+        "privatefundings.html",
         title="Private Funding",
         privatefundings=PrivateFunding.query.all(),
     )
 
 
 @app.route("/governmentfunding")
-def governmentfunding():
+def governmentfundings():
     return render_template(
-        "governmentfunding.html",
+        "governmentfundings.html",
         title="Government Funding",
         governmentfundings=GovernmentFunding.query.all(),
     )
 
+@app.route("/publicofficeholders")
+def publicofficeholders():
+    return render_template(
+        "public_office_holders.html",
+        title="Public Office Holders",
+        publicofficeholders=PublicOfficeHolder.query.all(),
+    )
 
+@app.route("/lobbyists")
+def lobbyists():
+    return render_template(
+        "lobbyists.html",
+        title="Lobbyists",
+        lobbyists=Lobbyist.query.all(),
+    )
+
+@app.route("/lobbyist/<int:id>")
+def lobbyist(id):
+    lobbyist = Lobbyist.query.get(id)
+    lobbying_reports = LobbyingReport.query.join(Meeting).join(Lobbyist, Lobbyist.id == id).all()
+    return render_template(
+        "lobbyist.html", title="Lobbyist", lobbyist=lobbyist, lobbying_reports = lobbying_reports
+    )
