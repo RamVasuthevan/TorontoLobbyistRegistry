@@ -20,10 +20,11 @@ from app.models.enums import (
     CanadianProvincesTerritories,
     MeetingCommittee,
     PublicOfficeHolderType,
-    LobbyistType
+    LobbyistType,
 )
 
 from app.models.processor_models import RawAddress
+
 
 class LobbyingReport(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -240,17 +241,23 @@ class GovernmentFunding(db.Model):
     report_id = db.Column(db.Integer, db.ForeignKey("lobbying_report.id"))
     report = db.relationship("LobbyingReport", backref="government_fundings", lazy=True)
 
-meeting_lobbyist = db.Table('meeting_lobbyist', db.Model.metadata,
-    db.Column('meeting_id', db.Integer, db.ForeignKey('meeting.id')),
-    db.Column('lobbyist_id', db.Integer, db.ForeignKey('lobbyist.id'))
+
+meeting_lobbyist = db.Table(
+    "meeting_lobbyist",
+    db.Model.metadata,
+    db.Column("meeting_id", db.Integer, db.ForeignKey("meeting.id")),
+    db.Column("lobbyist_id", db.Integer, db.ForeignKey("lobbyist.id")),
 )
+
 
 class Meeting(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     committee = db.Column(db.Enum(MeetingCommittee))
     date = db.Column(db.Date)
-    lobbyists = db.relationship("Lobbyist", secondary=meeting_lobbyist, backref="meetings")
-    report_id = db.Column(db.Integer, db.ForeignKey('lobbying_report.id'))
+    lobbyists = db.relationship(
+        "Lobbyist", secondary=meeting_lobbyist, backref="meetings"
+    )
+    report_id = db.Column(db.Integer, db.ForeignKey("lobbying_report.id"))
     report = db.relationship("LobbyingReport", backref="meetings", lazy=True)
 
 
@@ -260,57 +267,71 @@ class PublicOfficeHolder(db.Model):
     office = db.Column(db.String)
     title = db.Column(db.String)
     type = db.Column(db.Enum(PublicOfficeHolderType))
-    meeting_id = db.Column(db.Integer, db.ForeignKey('meeting.id'))
+    meeting_id = db.Column(db.Integer, db.ForeignKey("meeting.id"))
     meeting = db.relationship("Meeting", backref="public_office_holders", lazy=True)
 
-raw_lobbyist_lobbyist = db.Table('raw_lobbyist_lobbyist',
-    db.Column('raw_lobbyist_id', db.Integer, db.ForeignKey('raw_lobbyist.id'), primary_key=True),
-    db.Column('lobbyist_id', db.Integer, db.ForeignKey('lobbyist.id'), primary_key=True)
+
+raw_lobbyist_lobbyist = db.Table(
+    "raw_lobbyist_lobbyist",
+    db.Column(
+        "raw_lobbyist_id",
+        db.Integer,
+        db.ForeignKey("raw_lobbyist.id"),
+        primary_key=True,
+    ),
+    db.Column(
+        "lobbyist_id", db.Integer, db.ForeignKey("lobbyist.id"), primary_key=True
+    ),
 )
+
 
 class Lobbyist(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     data_sources = db.relationship("RawLobbyist", secondary=raw_lobbyist_lobbyist)
-    number = db.Column(db.String,  unique=True)
+    number = db.Column(db.String, unique=True)
     first_name = db.Column(db.String)
     middle_initials = db.Column(db.String)
     last_name = db.Column(db.String)
     suffix = db.Column(db.String)
     type = db.Column(db.Enum(LobbyistType))
 
-raw_address_address = db.Table('raw_address_address', 
-    db.Column('address_id', db.Integer, db.ForeignKey('address.id'), primary_key=True),
-    db.Column('raw_address_id', db.Integer, db.ForeignKey('raw_address.id'), primary_key=True)
+
+raw_address_address = db.Table(
+    "raw_address_address",
+    db.Column("address_id", db.Integer, db.ForeignKey("address.id"), primary_key=True),
+    db.Column(
+        "raw_address_id", db.Integer, db.ForeignKey("raw_address.id"), primary_key=True
+    ),
 )
+
 
 class Address(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     data_sources = db.relationship("RawAddress", secondary=raw_address_address)
     type = db.Column(db.Enum(AddressType))
-    
-    __mapper_args__ = {
-        'polymorphic_identity':'address',
-        'polymorphic_on':type
-    }
+
+    __mapper_args__ = {"polymorphic_identity": "address", "polymorphic_on": type}
 
     def __init__(self, *args, **kwargs):
         if type(self) is Address:
-            raise TypeError('Address is an abstract class and cannot be instantiated directly')
+            raise TypeError(
+                "Address is an abstract class and cannot be instantiated directly"
+            )
         super().__init__(*args, **kwargs)
 
 
 class CanadianAddress(Address):
-    id = db.Column(db.Integer, db.ForeignKey('address.id'), primary_key=True)
+    id = db.Column(db.Integer, db.ForeignKey("address.id"), primary_key=True)
     address_line1 = db.Column(db.String)
     address_line2 = db.Column(db.String)
     city = db.Column(db.String)
     province = db.Column(db.String)
-    _country = db.Column('country', db.String, default='Canada')
+    _country = db.Column("country", db.String, default="Canada")
     postal_code = db.Column(db.String)
     phone = db.Column(db.String)
 
     __mapper_args__ = {
-        'polymorphic_identity':AddressType.CANADIAN,
+        "polymorphic_identity": AddressType.CANADIAN,
     }
 
     @property
@@ -319,26 +340,29 @@ class CanadianAddress(Address):
 
     @country.setter
     def country(self, value):
-        raise AttributeError(f"'{self.__class__.__name__}' object has a fixed 'country' attribute.")
+        raise AttributeError(
+            f"'{self.__class__.__name__}' object has a fixed 'country' attribute."
+        )
 
     def __str__(self):
         address = self.address_line1
         if self.address_line2:
-            address += ', ' + self.address_line2
-        return f'{address}, {self.city}, {self.province}, {self.country}, {self.postal_code}'
+            address += ", " + self.address_line2
+        return f"{address}, {self.city}, {self.province}, {self.country}, {self.postal_code}"
+
 
 class AmericanAddress(Address):
-    id = db.Column(db.Integer, db.ForeignKey('address.id'), primary_key=True)
+    id = db.Column(db.Integer, db.ForeignKey("address.id"), primary_key=True)
     address_line1 = db.Column(db.String)
     address_line2 = db.Column(db.String)
     city = db.Column(db.String)
     state = db.Column(db.String)
-    _country = db.Column('country', db.String, default='United States')
+    _country = db.Column("country", db.String, default="United States")
     zipcode = db.Column(db.String)
     phone = db.Column(db.String)
 
     __mapper_args__ = {
-        'polymorphic_identity':AddressType.AMERICAN,
+        "polymorphic_identity": AddressType.AMERICAN,
     }
 
     @property
@@ -347,16 +371,19 @@ class AmericanAddress(Address):
 
     @country.setter
     def country(self, value):
-        raise AttributeError(f"'{self.__class__.__name__}' object has a fixed 'country' attribute.")
+        raise AttributeError(
+            f"'{self.__class__.__name__}' object has a fixed 'country' attribute."
+        )
 
     def __str__(self):
         address = self.address_line1
         if self.address_line2:
-            address += ', ' + self.address_line2
-        return f'{address}, {self.city}, {self.state}, {self.country}, {self.zipcode}'
+            address += ", " + self.address_line2
+        return f"{address}, {self.city}, {self.state}, {self.country}, {self.zipcode}"
+
 
 class OtherAddress(Address):
-    id = db.Column(db.Integer, db.ForeignKey('address.id'), primary_key=True)
+    id = db.Column(db.Integer, db.ForeignKey("address.id"), primary_key=True)
     raw_address_line1 = db.Column(db.String)
     raw_address_line2 = db.Column(db.String)
     raw_city = db.Column(db.String)
@@ -366,11 +393,11 @@ class OtherAddress(Address):
     raw_phone = db.Column(db.String)
 
     __mapper_args__ = {
-        'polymorphic_identity':AddressType.OTHER,
+        "polymorphic_identity": AddressType.OTHER,
     }
 
     def __str__(self):
         address = self.raw_address_line1
         if self.raw_address_line2:
-            address += ', ' + self.raw_address_line2
-        return f'{address}, {self.raw_city}, {self.raw_province}, {self.raw_country}, {self.raw_postal_code}'
+            address += ", " + self.raw_address_line2
+        return f"{address}, {self.raw_city}, {self.raw_province}, {self.raw_country}, {self.raw_postal_code}"

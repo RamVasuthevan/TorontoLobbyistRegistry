@@ -1,3 +1,4 @@
+<p>{{publicofficeholders[1]}}</p>
 <table>
     <thead>
       <tr>
@@ -8,12 +9,12 @@
       </tr>
     </thead>
     <tbody>
-      {% for publicofficeholders in publicofficeholders %}
+      {% for publicofficeholder in publicofficeholders %}
         <tr>
-          <td>{{ publicofficeholders.type }}</td>
-          <td>{{ publicofficeholders.office }}</td>
-          <td>{{ publicofficeholders.title }}</td>
-          <td>{{ publicofficeholders.name }}</td>
+          <td>{{ publicofficeholder.type }}</td>
+          <td>{{ publicofficeholder.office }}</td>
+          <td>{{ publicofficeholder.title }}</td>
+          <td>{{ publicofficeholder.name }}</td>
         </tr>
       {% endfor %}
     </tbody>
