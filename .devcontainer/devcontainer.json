@@ -12,5 +12,6 @@
                 "ms-python.vscode-pylance"
             ]
         }
-    }
+    },
+    "postStartCommand": "pip freeze | xargs pip uninstall -y"
 }
