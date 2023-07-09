@@ -1,7 +1,6 @@
 from typing import List, Dict
 import os
 import xmltodict
-import time
 import zipfile
 import pprint
 
