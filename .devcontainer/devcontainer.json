@@ -3,16 +3,15 @@
     "context": "..",
     "dockerFile": "Dockerfile",
     "customizations": {
-        "settings": {
-            "terminal.integrated.defaultProfile.linux": "bash",
-        },
-        "extensions": [
-            "yy0931.vscode-sqlite3-editor",
-            "ms-python.python",
-            "GitHub.copilot",
-            "ms-python.black-formatter",
-            "ms-azuretools.vscode-docker"
-        ]
+        "vscode": {
+            "extensions": [
+                "yy0931.vscode-sqlite3-editor",
+                "ms-python.python",
+                "GitHub.copilot",
+                "ms-python.black-formatter",
+                "ms-azuretools.vscode-docker"
+            ]
+        }
     },
     "postCreateCommand": "pipenv sync --dev"
 }
