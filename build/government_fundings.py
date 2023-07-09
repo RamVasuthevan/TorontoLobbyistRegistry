@@ -4,6 +4,8 @@ from sqlalchemy.orm import Session
 from app.models.models import GovernmentFunding
 from app.models.processor_models import RawGmtFunding
 from sqlalchemy import insert
+import build.utils as utils
+
 
 def get_data_row(raw_funding: RawGmtFunding) -> dict:
     return {
@@ -12,10 +14,6 @@ def get_data_row(raw_funding: RawGmtFunding) -> dict:
         "report_id": raw_funding.report_id,
     }
 
-def create_government_funding_table(session: Session, raw_fundings: List[RawGmtFunding]) -> List[GovernmentFunding]:
-    data = [get_data_row(raw_funding) for raw_funding in raw_fundings]
 
-    session.execute(insert(GovernmentFunding), data)
-    session.commit()
-    return session.query(GovernmentFunding).all()
-
+def create_table(session: Session) -> List[GovernmentFunding]:
+    return utils.create_table(session, RawGmtFunding, GovernmentFunding, get_data_row)

@@ -1,7 +1,6 @@
 from datetime import datetime
 from typing import List
 from sqlalchemy.orm import Session
-from sqlalchemy import insert
 from app.models.models import Meeting, Lobbyist, raw_lobbyist_lobbyist
 from app.models.processor_models import RawMeeting, RawLobbyist
 from app.models.enums import MeetingCommittee

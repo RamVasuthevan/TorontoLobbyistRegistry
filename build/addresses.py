@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.models.models import Address, CanadianAddress, AmericanAddress, OtherAddress
 from app.models.processor_models import RawAddress
 from app.models.enums import AddressType
-from build.helper import get_grouped_raw_records
+from build.utils import get_grouped_raw_records
 from collections import defaultdict
 
 

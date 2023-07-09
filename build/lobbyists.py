@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.models.models import Lobbyist
 from app.models.processor_models import RawLobbyist
 from app.models.enums import LobbyistType
-from build.helper import get_grouped_raw_records
+import build.utils as utils
 
 LOBBYIST_KEY = (
     "Number",
@@ -30,7 +30,7 @@ def get_data_row(raw_lobbyist: RawLobbyist) -> dict:
 def create_lobbyist_table(
     session: Session, raw_lobbyists: List[RawLobbyist]
 ) -> List[Lobbyist]:
-    grouped_raw_lobbyists = get_grouped_raw_records(raw_lobbyists, LOBBYIST_KEY)
+    grouped_raw_lobbyists = utils.get_grouped_raw_records(raw_lobbyists, LOBBYIST_KEY)
 
     lobbyists = []
     for raw_lobbyist_list in grouped_raw_lobbyists.values():

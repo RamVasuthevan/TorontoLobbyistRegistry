@@ -3,7 +3,8 @@ from sqlalchemy.orm import Session
 from app.models.models import PublicOfficeHolder
 from app.models.processor_models import RawPOH
 from app.models.enums import PublicOfficeHolderType
-from sqlalchemy import insert
+import build.utils as utils
+
 
 def get_data_row(raw_poh: RawPOH) -> dict:
     return {
@@ -16,10 +17,5 @@ def get_data_row(raw_poh: RawPOH) -> dict:
     }
 
 
-def create_public_office_holder_table(session: Session, raw_pohs: List[RawPOH]) -> List[PublicOfficeHolder]:
-    data = [get_data_row(raw_poh) for raw_poh in raw_pohs]
-
-    session.execute(insert(PublicOfficeHolder), data)
-    session.commit()
-    return session.query(PublicOfficeHolder).all()
-
+def create_table(session: Session):
+    return utils.create_table(session, RawPOH, PublicOfficeHolder, get_data_row)
