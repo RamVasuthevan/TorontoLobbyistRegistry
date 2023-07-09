@@ -1,13 +1,23 @@
 {
     "name": "Python-Flask env",
+    "context": "..",
+    "dockerFile": "codespace.dockerfile",
     "customizations": {
-        "vscode": {
-            "extensions": [
-                "yy0931.vscode-sqlite3-editor",
-                "ms-python.python",
-                "GitHub.copilot",
-                "ms-python.black-formatter"
+        "settings": {
+            "terminal.integrated.defaultProfile.linux": "bash",
+            "terminal.integrated.shellArgs.linux": [
+                "-c",
+                "echo Hello",
+                "pipenv shell"
             ]
-        }
-    }
+        },
+        "extensions": [
+            "yy0931.vscode-sqlite3-editor",
+            "ms-python.python",
+            "GitHub.copilot",
+            "ms-python.black-formatter",
+            "ms-azuretools.vscode-docker"
+        ]
+    },
+    "postCreateCommand": "pipenv sync --dev"
 }
