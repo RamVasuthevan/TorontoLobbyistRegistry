@@ -54,6 +54,7 @@ from build import firms
 
 from dataclasses import dataclass
 from sqlalchemy import delete
+from utils.profiling import timer
 
 
 DATA_PATH = "data"
@@ -94,64 +95,42 @@ def delete_all_data(db, models):
 def create_data_rows() -> List[Data]:
     data_rows = []
     for data_source in DataSource:
-        start_time = time.time()
-        data_rows += get_data_rows(xml_to_dict(data_source), data_source)
-        end_time = time.time()
-        print(f"Parse {data_source.value}: {end_time - start_time} seconds")
+        with timer(f"Get_data_rows {data_source.value}"):
+            data_rows += get_data_rows(xml_to_dict(data_source), data_source)
+
     return data_rows
 
 
 def create_tables(db):
-    start_time = time.time()
-    create_addresses_table(db.session, RawAddress.query.all())
-    print(f"Create all {RawAddress.__name__}: {time.time() - start_time} seconds")
+    with timer("Create address table"):
+        create_addresses_table(db.session, RawAddress.query.all())
 
-    start_time = time.time()
-    create_lobbyist_table(db.session, RawLobbyist.query.all())
-    print(f"Create all {RawLobbyist.__name__}: {time.time() - start_time} seconds")
+    with timer("Create all lobbyist tables"):
+        create_lobbyist_table(db.session, RawLobbyist.query.all())
 
-    start_time = time.time()
-    # create_lobbying_report_table(db.session, RawLobbyingReport.query.all())
-    lobbying_reports.create_table(db.session)
-    print(
-        f"Create all {RawLobbyingReport.__name__}: {time.time() - start_time} seconds"
-    )
+    with timer("Create all lobbying report tables"):
+        lobbying_reports.create_table(db.session)
 
-    start_time = time.time()
-    # create_grassroots_table(db.session, RawGrassroot.query.all())
-    grassroots.create_table(db.session)
-    print(f"Create all {RawGrassroot.__name__}: {time.time() - start_time} seconds")
+    with timer("Create all grassroots tables"):
+        grassroots.create_table(db.session)
 
-    start_time = time.time()
-    # create_government_funding_table(db.session, RawGmtFunding.query.all())
-    government_fundings.create_table(db.session)
-    print(f"Create all {RawGmtFunding.__name__}: {time.time() - start_time} seconds")
+    with timer("Create all government funding tables"):
+        government_fundings.create_table(db.session)
 
-    start_time = time.time()
-    # create_private_funding_table(db.session, RawPrivateFunding.query.all())
-    private_fundings.create_table(db.session)
-    print(
-        f"Create all {RawPrivateFunding.__name__}: {time.time() - start_time} seconds"
-    )
+    with timer("Create all private funding tables"):
+        private_fundings.create_table(db.session)
 
-    start_time = time.time()
-    # create_beneficiaries_table(db.session, RawBeneficiary.query.all())
-    beneficiaries.create_table(db.session)
-    print(f"Create all {RawBeneficiary.__name__}: {time.time() - start_time} seconds")
+    with timer("Create all beneficiaries tables"):
+        beneficiaries.create_table(db.session)
 
-    start_time = time.time()
-    # create_firms_table(db.session, RawFirm.query.all())
-    firms.create_table(db.session)
-    print(f"Create all {RawFirm.__name__}: {time.time() - start_time} seconds")
+    with timer("Create all firms tables"):
+        firms.create_table(db.session)
 
-    start_time = time.time()
-    create_meeting_table(db.session, RawMeeting.query.all())
-    print(f"Create all {RawMeeting.__name__}: {time.time() - start_time} seconds")
+    with timer("Create all meeting tables"):
+        create_meeting_table(db.session, RawMeeting.query.all())
 
-    start_time = time.time()
-    # create_public_office_holder_table(db.session, RawPOH.query.all())
-    public_office_holders.create_table(db.session)
-    print(f"Create all {RawPOH.__name__}: {time.time() - start_time} seconds")
+    with timer("Create all public office holder tables"):
+        public_office_holders.create_table(db.session)
 
 
 def delete_tables(db):
@@ -181,26 +160,23 @@ from app import app, db
 def run():
     with app.app_context():
         if True:
-            start_time = time.time()
-            extract_files_from_zip(DATA_ZIP)
-            end_time = time.time()
-            print(f"Extract files: {end_time - start_time} seconds")
+            with timer("Extract files"):
+                extract_files_from_zip(DATA_ZIP)
 
             db.drop_all()
             db.create_all()
 
-            start_time = time.time()
-            data_rows = create_data_rows()
-            end_time = time.time()
-            print(f"Create data_rows : {end_time - start_time} seconds")
+            with timer("Create data_rows"):
+                data_rows = create_data_rows()
 
-            start_time = time.time()
-            create_raw_tables(db, data_rows)
-            end_time = time.time()
-            print(f"Create all Raw Tables: {end_time - start_time} seconds")
 
-        delete_tables(db)
-        delete_association_tables(db)
+            with timer("Create raw tables"):
+                create_raw_tables(db, data_rows)
+
+
+        with timer("Delete tables"):
+            delete_tables(db)
+            delete_association_tables(db)
 
         create_tables(db)
 
