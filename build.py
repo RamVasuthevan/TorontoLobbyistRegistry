@@ -21,7 +21,7 @@ from app.models.models import (
     PrivateFunding,
     Meeting,
     PublicOfficeHolder,
-    Lobbyist
+    Lobbyist,
 )
 from app.models.processor_models import (
     RawGrassroot,
@@ -40,15 +40,17 @@ from app.models.processor_models import (
 from app.models.enums import DataSource
 from build.raw import create_raw_tables
 from build.addresses import create_addresses_table
-from build.lobbying_reports import create_lobbying_report_table
-from build.grassroots import create_grassroots_table
-from build.beneficiaries import create_beneficiaries_table
-from build.firms import create_firms_table
-from build.government_fundings import create_government_funding_table
-from build.private_fundings import create_private_funding_table
 from build.meetings import create_meeting_table
-from build.public_office_holders import create_public_office_holder_table
 from build.lobbyists import create_lobbyist_table
+
+
+from build import grassroots
+from build import private_fundings
+from build import public_office_holders
+from build import lobbying_reports
+from build import government_fundings
+from build import beneficiaries
+from build import firms
 
 from dataclasses import dataclass
 from sqlalchemy import delete
@@ -109,27 +111,37 @@ def create_tables(db):
     print(f"Create all {RawLobbyist.__name__}: {time.time() - start_time} seconds")
 
     start_time = time.time()
-    create_lobbying_report_table(db.session, RawLobbyingReport.query.all())
-    print(f"Create all {RawLobbyingReport.__name__}: {time.time() - start_time} seconds")
+    # create_lobbying_report_table(db.session, RawLobbyingReport.query.all())
+    lobbying_reports.create_table(db.session)
+    print(
+        f"Create all {RawLobbyingReport.__name__}: {time.time() - start_time} seconds"
+    )
 
     start_time = time.time()
-    create_grassroots_table(db.session, RawGrassroot.query.all())
+    # create_grassroots_table(db.session, RawGrassroot.query.all())
+    grassroots.create_table(db.session)
     print(f"Create all {RawGrassroot.__name__}: {time.time() - start_time} seconds")
 
     start_time = time.time()
-    create_government_funding_table(db.session, RawGmtFunding.query.all())
+    # create_government_funding_table(db.session, RawGmtFunding.query.all())
+    government_fundings.create_table(db.session)
     print(f"Create all {RawGmtFunding.__name__}: {time.time() - start_time} seconds")
 
     start_time = time.time()
-    create_private_funding_table(db.session, RawPrivateFunding.query.all())
-    print(f"Create all {RawPrivateFunding.__name__}: {time.time() - start_time} seconds")
+    # create_private_funding_table(db.session, RawPrivateFunding.query.all())
+    private_fundings.create_table(db.session)
+    print(
+        f"Create all {RawPrivateFunding.__name__}: {time.time() - start_time} seconds"
+    )
 
     start_time = time.time()
-    create_beneficiaries_table(db.session, RawBeneficiary.query.all())
+    # create_beneficiaries_table(db.session, RawBeneficiary.query.all())
+    beneficiaries.create_table(db.session)
     print(f"Create all {RawBeneficiary.__name__}: {time.time() - start_time} seconds")
 
     start_time = time.time()
-    create_firms_table(db.session, RawFirm.query.all())
+    # create_firms_table(db.session, RawFirm.query.all())
+    firms.create_table(db.session)
     print(f"Create all {RawFirm.__name__}: {time.time() - start_time} seconds")
 
     start_time = time.time()
@@ -137,7 +149,8 @@ def create_tables(db):
     print(f"Create all {RawMeeting.__name__}: {time.time() - start_time} seconds")
 
     start_time = time.time()
-    create_public_office_holder_table(db.session, RawPOH.query.all())
+    # create_public_office_holder_table(db.session, RawPOH.query.all())
+    public_office_holders.create_table(db.session)
     print(f"Create all {RawPOH.__name__}: {time.time() - start_time} seconds")
 
 
@@ -156,6 +169,7 @@ def delete_tables(db):
     PublicOfficeHolder.query.delete()
     Lobbyist.query.delete()
 
+
 def delete_association_tables(db):
     db.session.query(raw_address_address).delete()
     db.session.query(raw_lobbyist_lobbyist).delete()
@@ -167,7 +181,6 @@ from app import app, db
 def run():
     with app.app_context():
         if True:
-            
             start_time = time.time()
             extract_files_from_zip(DATA_ZIP)
             end_time = time.time()
@@ -186,14 +199,13 @@ def run():
             end_time = time.time()
             print(f"Create all Raw Tables: {end_time - start_time} seconds")
 
-            
         delete_tables(db)
         delete_association_tables(db)
-       
 
         create_tables(db)
 
         db.session.commit()
+
 
 if __name__ == "__main__":
     run()
