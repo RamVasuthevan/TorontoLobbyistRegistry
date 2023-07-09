@@ -99,12 +99,46 @@ def create_data_rows() -> List[Data]:
     return data_rows
 
 
-def create_tables(db, raw_models, create_functions):
-    for raw_model, create_function in zip(raw_models, create_functions):
-        start_time = time.time()
-        create_function(db.session, raw_model.query.all())
-        end_time = time.time()
-        print(f"Create all {raw_model.__name__}: {end_time - start_time} seconds")
+def create_tables(db):
+    start_time = time.time()
+    create_addresses_table(db.session, RawAddress.query.all())
+    print(f"Create all {RawAddress.__name__}: {time.time() - start_time} seconds")
+
+    start_time = time.time()
+    create_lobbyist_table(db.session, RawLobbyist.query.all())
+    print(f"Create all {RawLobbyist.__name__}: {time.time() - start_time} seconds")
+
+    start_time = time.time()
+    create_lobbying_report_table(db.session, RawLobbyingReport.query.all())
+    print(f"Create all {RawLobbyingReport.__name__}: {time.time() - start_time} seconds")
+
+    start_time = time.time()
+    create_grassroots_table(db.session, RawGrassroot.query.all())
+    print(f"Create all {RawGrassroot.__name__}: {time.time() - start_time} seconds")
+
+    start_time = time.time()
+    create_government_funding_table(db.session, RawGmtFunding.query.all())
+    print(f"Create all {RawGmtFunding.__name__}: {time.time() - start_time} seconds")
+
+    start_time = time.time()
+    create_private_funding_table(db.session, RawPrivateFunding.query.all())
+    print(f"Create all {RawPrivateFunding.__name__}: {time.time() - start_time} seconds")
+
+    start_time = time.time()
+    create_beneficiaries_table(db.session, RawBeneficiary.query.all())
+    print(f"Create all {RawBeneficiary.__name__}: {time.time() - start_time} seconds")
+
+    start_time = time.time()
+    create_firms_table(db.session, RawFirm.query.all())
+    print(f"Create all {RawFirm.__name__}: {time.time() - start_time} seconds")
+
+    start_time = time.time()
+    create_meeting_table(db.session, RawMeeting.query.all())
+    print(f"Create all {RawMeeting.__name__}: {time.time() - start_time} seconds")
+
+    start_time = time.time()
+    create_public_office_holder_table(db.session, RawPOH.query.all())
+    print(f"Create all {RawPOH.__name__}: {time.time() - start_time} seconds")
 
 
 def delete_tables(db):
@@ -157,22 +191,7 @@ def run():
         delete_association_tables(db)
        
 
-        create_tables(
-            db,
-            [RawAddress,RawLobbyist, RawLobbyingReport, RawGrassroot, RawGmtFunding, RawPrivateFunding,RawBeneficiary, RawFirm,RawMeeting,RawPOH],
-            [
-                create_addresses_table,
-                create_lobbyist_table,
-                create_lobbying_report_table,
-                create_grassroots_table,
-                create_government_funding_table,
-                create_private_funding_table,
-                create_beneficiaries_table,
-                create_firms_table,
-                create_meeting_table,
-                create_public_office_holder_table,
-            ],
-        )
+        create_tables(db)
 
         db.session.commit()
 
