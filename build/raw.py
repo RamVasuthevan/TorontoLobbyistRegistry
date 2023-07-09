@@ -1,7 +1,6 @@
 from typing import List
 
-
-from app import db as app_db
+# from app import db as app_db
 from app.models.processor_models import (
     RawAddress,
     RawRegistrant,
@@ -22,6 +21,7 @@ from app.models.enums import DataSource
 import pprint
 
 from dataclasses import dataclass
+
 
 @dataclass
 class Data:
@@ -119,7 +119,6 @@ def create_raw_tables(db, data_rows: List[Data]):
                 )
 
                 db.session.add(raw_communication_address)
-                #db.session.flush()
 
                 raw_communication = RawCommunication(
                     DataSource=data_row.source,
@@ -169,7 +168,6 @@ def create_raw_tables(db, data_rows: List[Data]):
                 )
 
                 db.session.add(raw_grassroot)
-                #db.session.flush()
 
         if "Beneficiaries" in data_value:
             if isinstance((data_value["Beneficiaries"]["BENEFICIARY"]), dict):
@@ -206,7 +204,6 @@ def create_raw_tables(db, data_rows: List[Data]):
                 )
 
                 db.session.add(raw_beneficiary)
-                #db.session.flush()
 
         if "Firms" in data_value:
             if isinstance((data_value["Firms"]["Firm"]), dict):
@@ -244,7 +241,6 @@ def create_raw_tables(db, data_rows: List[Data]):
                 )
 
                 db.session.add(raw_firm)
-                #db.session.flush()
 
         if "Privatefundings" in data_value:
             if isinstance(data_value["Privatefundings"]["Privatefunding"], dict):
@@ -262,7 +258,6 @@ def create_raw_tables(db, data_rows: List[Data]):
                     report_id=raw_lobbying_report.id,
                 )
                 db.session.add(raw_privatefunding)
-                #db.session.flush()
 
         if "GMTFUNDINGS" in data_value:
             if isinstance((data_value["GMTFUNDINGS"]["GMTFUNDING"]), dict):
@@ -278,7 +273,6 @@ def create_raw_tables(db, data_rows: List[Data]):
                     report_id=raw_lobbying_report.id,
                 )
                 db.session.add(raw_gmtfunding)
-                #db.session.flush()
 
         if "Meetings" in data_value:
             if isinstance((data_value["Meetings"]["Meeting"]), dict):
@@ -295,7 +289,7 @@ def create_raw_tables(db, data_rows: List[Data]):
                 )
                 db.session.add(raw_meeting)
                 db.session.flush()
-                
+
                 if "POHS" in meeting_data:
                     if isinstance((meeting_data["POHS"]["POH"]), dict):
                         pohs_data = [meeting_data["POHS"]["POH"]]
@@ -311,7 +305,6 @@ def create_raw_tables(db, data_rows: List[Data]):
                             meeting_id=raw_meeting.id,
                         )
                         db.session.add(raw_poh)
-
 
                 if "Lobbyists" in meeting_data:
                     if isinstance(meeting_data["Lobbyists"]["Lobbyist"], dict):
@@ -335,10 +328,7 @@ def create_raw_tables(db, data_rows: List[Data]):
                             meeting_id=raw_meeting.id,
                         )
                         db.session.add(raw_lobbyist)
-                        #db.session.flush()
 
         raw_lobbying_report.registrant_id = raw_registrant.id
         db.session.add(raw_lobbying_report)
     db.session.flush()
-
-
