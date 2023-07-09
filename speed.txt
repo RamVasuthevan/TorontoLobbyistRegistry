@@ -1,0 +1,11 @@
+Create all Raw Tables: 193.47825717926025 seconds
+Create all RawAddress: 16.841866970062256 seconds
+Create all RawLobbyist: 0.10770392417907715 seconds
+Create all RawLobbyingReport: 3.3601815700531006 seconds
+Create all RawGrassroot: 0.10231351852416992 seconds
+Create all RawGmtFunding: 0.09769392013549805 seconds
+Create all RawPrivateFunding: 0.08490777015686035 seconds
+Create all RawBeneficiary: 4.549354076385498 seconds
+Create all RawFirm: 7.847986221313477 seconds
+Create all RawMeeting: 0.4786839485168457 seconds
+Create all RawPOH: 0.048683881759643555 seconds
