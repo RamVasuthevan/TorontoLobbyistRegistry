@@ -2,6 +2,7 @@ from app import db
 from enum import Enum
 from app.models.enums import DataSource
 
+
 class RawLobbyingReport(db.Model):
     DataSource = db.Column(db.Enum(DataSource))
     id = db.Column(db.Integer, primary_key=True)
@@ -176,4 +177,3 @@ class RawAddress(db.Model):
     PostalCode = db.Column(db.String)
     Province = db.Column(db.String)
     Phone = db.Column(db.String)
-

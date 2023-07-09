@@ -1,5 +1,6 @@
 import sqlite3
 
+
 def print_row_counts(db_path):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
@@ -15,5 +16,6 @@ def print_row_counts(db_path):
         print(f"Table: {table_name}, Rows: {count}")
 
     conn.close()
+
 
 print_row_counts("app.sqlite")

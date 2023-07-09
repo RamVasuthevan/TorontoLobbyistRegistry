@@ -1,16 +1,12 @@
-
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.exc import IntegrityError
 from typing import List, Dict
 
 
-
-#https://skien.cc/blog/2014/02/06/sqlalchemy-and-race-conditions-follow-up-on-commits-and-flushes/
-def get_one_or_create(session,
-                      model,
-                      create_method='',
-                      create_method_kwargs=None,
-                      **kwargs):
+# https://skien.cc/blog/2014/02/06/sqlalchemy-and-race-conditions-follow-up-on-commits-and-flushes/
+def get_one_or_create(
+    session, model, create_method="", create_method_kwargs=None, **kwargs
+):
     try:
         return session.query(model).filter_by(**kwargs).one(), True
     except NoResultFound:
@@ -23,8 +19,15 @@ def get_one_or_create(session,
         except IntegrityError:
             session.rollback()
             return session.query(model).filter_by(**kwargs).one(), True
-        
-def get_one_or_create_all(session, model, instances: List[Dict] = [], create_method='', create_method_kwargs=None):
+
+
+def get_one_or_create_all(
+    session,
+    model,
+    instances: List[Dict] = [],
+    create_method="",
+    create_method_kwargs=None,
+):
     created_instances = []
     for kwargs in instances:
         instance = session.query(model).filter_by(**kwargs).first()
@@ -46,4 +49,3 @@ def get_one_or_create_all(session, model, instances: List[Dict] = [], create_met
     # flush the session once after processing all instances
     session.flush()
     return created_instances
-

@@ -95,6 +95,7 @@ class AddressType(Enum):
     AMERICAN = "American"
     OTHER = "Other"
 
+
 class CanadianProvincesTerritories(Enum):
     AB = "Alberta"
     BC = "British Columbia"
@@ -109,6 +110,7 @@ class CanadianProvincesTerritories(Enum):
     NT = "Northwest Territories"
     NU = "Nunavut"
     YT = "Yukon"
+
 
 class MeetingCommittee(Enum):
     GOVERNMENT_RELATIONS = "Government Relations Committee"
