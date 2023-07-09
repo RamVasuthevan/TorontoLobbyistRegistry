@@ -3,14 +3,6 @@
     "context": "..",
     "dockerFile": "codespace.dockerfile",
     "customizations": {
-        "settings": {
-            "terminal.integrated.defaultProfile.linux": "bash",
-            "terminal.integrated.shellArgs.linux": [
-                "-c",
-                "echo Hello",
-                "pipenv shell"
-            ]
-        },
         "extensions": [
             "yy0931.vscode-sqlite3-editor",
             "ms-python.python",
