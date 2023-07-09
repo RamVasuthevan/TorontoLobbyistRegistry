@@ -1,13 +1,17 @@
 {
     "name": "Python-Flask env",
+    "context": "..",
+    "dockerFile": "Dockerfile",
     "customizations": {
         "vscode": {
             "extensions": [
                 "yy0931.vscode-sqlite3-editor",
                 "ms-python.python",
                 "GitHub.copilot",
-                "ms-python.black-formatter"
+                "ms-python.black-formatter",
+                "ms-azuretools.vscode-docker"
             ]
         }
-    }
+    },
+    "postCreateCommand": "pipenv sync --dev"
 }
