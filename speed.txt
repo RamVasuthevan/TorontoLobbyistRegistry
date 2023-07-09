@@ -1,11 +1,11 @@
-Create all Raw Tables: 117.54493546485901 seconds
-Create all RawAddress: 14.67714786529541 seconds
-Create all RawLobbyist: 0.0755617618560791 seconds
-Create all RawLobbyingReport: 1.5546953678131104 seconds
-Create all RawGrassroot: 0.07743072509765625 seconds
-Create all RawGmtFunding: 0.07283711433410645 seconds
-Create all RawPrivateFunding: 0.06626057624816895 seconds
-Create all RawBeneficiary: 3.4797725677490234 seconds
-Create all RawFirm: 6.422666788101196 seconds
-Create all RawMeeting: 0.409865140914917 seconds
-Create all RawPOH: 0.05088400840759277 seconds
+Create all Raw Tables: 115.81003832817078 seconds
+Create all RawAddress: 13.720380067825317 seconds
+Create all RawLobbyist: 0.0967259407043457 seconds
+Create all RawLobbyingReport: 2.277367115020752 seconds
+Create all RawGrassroot: 0.06786656379699707 seconds
+Create all RawGmtFunding: 0.07009506225585938 seconds
+Create all RawPrivateFunding: 0.06906294822692871 seconds
+Create all RawBeneficiary: 3.719050168991089 seconds
+Create all RawFirm: 7.518028020858765 seconds
+Create all RawMeeting: 0.4393341541290283 seconds
+Create all RawPOH: 0.07202792167663574 seconds

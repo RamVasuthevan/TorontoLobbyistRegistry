@@ -3,7 +3,19 @@ from sqlalchemy.orm import Session
 from app.models.models import Address, CanadianAddress, AmericanAddress, OtherAddress
 from app.models.processor_models import RawAddress
 from app.models.enums import AddressType
+from build.helper import get_grouped_raw_records
 from collections import defaultdict
+
+
+ADDRESS_KEY = (
+    "AddressLine1",
+    "AddressLine2",
+    "City",
+    "Country",
+    "PostalCode",
+    "Province",
+    "Phone",
+)
 
 # Hardcoded dictionary for the different address types and their classes
 ADDRESS_TYPE_TO_CLASS = {
@@ -75,7 +87,7 @@ ADDRESS_TYPE_TO_DATA_ROW_FUNCTION = {
 }
 
 def create_addresses_table(session: Session, raw_addresses: List[RawAddress]) -> List[Address]:
-    grouped_raw_addresses = get_grouped_raw_addresses(raw_addresses)
+    grouped_raw_addresses =  get_grouped_raw_records(raw_addresses, ADDRESS_KEY)
 
     addresses = []
     for raw_address_list in grouped_raw_addresses.values():
