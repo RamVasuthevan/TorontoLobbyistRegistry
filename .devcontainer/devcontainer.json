@@ -1,8 +1,11 @@
 {
     "name": "Python-Flask env",
     "context": "..",
-    "dockerFile": "codespace.dockerfile",
+    "dockerFile": "Dockerfile",
     "customizations": {
+        "settings": {
+            "terminal.integrated.defaultProfile.linux": "bash",
+        },
         "extensions": [
             "yy0931.vscode-sqlite3-editor",
             "ms-python.python",
