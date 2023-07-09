@@ -5,7 +5,7 @@ from app.models.models import GovernmentFunding
 from app.models.processor_models import RawGmtFunding
 from sqlalchemy import insert
 
-def get_government_funding_data_row(raw_funding: RawGmtFunding) -> dict:
+def get_data_row(raw_funding: RawGmtFunding) -> dict:
     return {
         "government_name": raw_funding.GMTName,
         "program": raw_funding.Program,
@@ -13,7 +13,7 @@ def get_government_funding_data_row(raw_funding: RawGmtFunding) -> dict:
     }
 
 def create_government_funding_table(session: Session, raw_fundings: List[RawGmtFunding]) -> List[GovernmentFunding]:
-    data = [get_government_funding_data_row(raw_funding) for raw_funding in raw_fundings]
+    data = [get_data_row(raw_funding) for raw_funding in raw_fundings]
 
     session.execute(insert(GovernmentFunding), data)
     session.commit()

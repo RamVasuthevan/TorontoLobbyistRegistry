@@ -21,7 +21,7 @@ def get_grouped_raw_lobbyists(raw_lobbyists: List[RawLobbyist]) -> Dict[tuple, L
         D[key].append(raw_lobbyist)
     return D
 
-def get_lobbyist_data_row(raw_lobbyist: RawLobbyist) -> dict:
+def get_data_row(raw_lobbyist: RawLobbyist) -> dict:
     return {
         "number": raw_lobbyist.Number,
         "first_name": raw_lobbyist.FirstName,
@@ -39,7 +39,7 @@ def create_lobbyist_table(session: Session, raw_lobbyists: List[RawLobbyist]) ->
     for raw_lobbyist_list in grouped_raw_lobbyists.values():
         raw_lobbyist = raw_lobbyist_list[0]  # Just need to use one of the RawLobbyist objects to get the details
         
-        lobbyist = Lobbyist(**get_lobbyist_data_row(raw_lobbyist))
+        lobbyist = Lobbyist(**get_data_row(raw_lobbyist))
         lobbyist.data_sources = raw_lobbyist_list  # Assign the list of RawLobbyist objects
 
         lobbyists.append(lobbyist)

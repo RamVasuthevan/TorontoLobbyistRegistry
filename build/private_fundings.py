@@ -4,7 +4,7 @@ from app.models.models import PrivateFunding
 from app.models.processor_models import RawPrivateFunding
 from sqlalchemy import insert
 
-def get_private_funding_data_row(raw_funding: RawPrivateFunding) -> dict:
+def get_data_row(raw_funding: RawPrivateFunding) -> dict:
     return {
         "funding": raw_funding.Funding,
         "contact": raw_funding.Contact,
@@ -15,7 +15,7 @@ def get_private_funding_data_row(raw_funding: RawPrivateFunding) -> dict:
 
 
 def create_private_funding_table(session: Session, raw_fundings: List[RawPrivateFunding]) -> List[PrivateFunding]:
-    data = [get_private_funding_data_row(raw_funding) for raw_funding in raw_fundings]
+    data = [get_data_row(raw_funding) for raw_funding in raw_fundings]
 
     session.execute(insert(PrivateFunding), data)
     session.commit()

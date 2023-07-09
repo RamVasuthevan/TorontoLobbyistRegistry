@@ -6,7 +6,7 @@ from app.models.processor_models import RawFirm
 from app.models.enums import FirmType,FirmBusinessType
 from sqlalchemy import insert
 
-def get_firm_data_row(raw_firm: RawFirm, address_lookup: dict[int,int]) -> dict:
+def get_data_row(raw_firm: RawFirm, address_lookup: dict[int,int]) -> dict:
     return {
         "type": FirmType(raw_firm.Type),
         "name": raw_firm.Name,
@@ -21,7 +21,7 @@ def get_firm_data_row(raw_firm: RawFirm, address_lookup: dict[int,int]) -> dict:
 def create_firms_table(session: Session, raw_firms: List[RawFirm]) -> List[Firm]:
     address_lookup = {mapping.raw_address_id: mapping.address_id for mapping in session.query(raw_address_address).all()}
 
-    data = [get_firm_data_row(raw_firm, address_lookup) for raw_firm in raw_firms]
+    data = [get_data_row(raw_firm, address_lookup) for raw_firm in raw_firms]
 
     session.execute(insert(Firm).values(data))
     session.commit()

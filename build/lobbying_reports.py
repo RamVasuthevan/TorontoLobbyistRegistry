@@ -10,7 +10,7 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 
 
-def get_lobbying_report_data_row(raw_lobbying_report: RawLobbyingReport) -> dict:
+def get_data_row(raw_lobbying_report: RawLobbyingReport) -> dict:
     proposed_start_date = (
         datetime.strptime(raw_lobbying_report.ProposedStartDate, "%Y-%m-%d").date()
         if raw_lobbying_report.ProposedStartDate
@@ -45,7 +45,7 @@ def create_lobbying_report_table(session: Session, raw_lobbying_reports: List[Ra
     data = []
 
     for raw_lobbying_report in raw_lobbying_reports:
-        data.append(get_lobbying_report_data_row(raw_lobbying_report))
+        data.append(get_data_row(raw_lobbying_report))
 
     session.execute(insert(LobbyingReport), data)
     session.commit()
