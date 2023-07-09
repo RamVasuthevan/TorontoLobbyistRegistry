@@ -1,6 +1,4 @@
 from lobby import *
-import pprint as pp
-import json
 from lobby.downloader import Downloader
 
 

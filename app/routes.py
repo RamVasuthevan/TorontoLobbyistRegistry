@@ -12,7 +12,7 @@ from app.models.models import (
     GovernmentFunding,
     Meeting,
     PublicOfficeHolder,
-    Lobbyist
+    Lobbyist,
 )
 
 
@@ -27,7 +27,7 @@ def lobbying_reports():
     return render_template(
         "lobbying_reports.html",
         title="Lobbying Reports",
-        lobbying_reports=LobbyingReport.query.all()
+        lobbying_reports=LobbyingReport.query.all(),
     )
 
 
@@ -51,8 +51,11 @@ def beneficiaries():
     return render_template(
         "beneficiaries.html",
         title="beneficiaries",
-        beneficiaries=Beneficiary.query.order_by(Beneficiary.name, Beneficiary.trade_name).all(),
+        beneficiaries=Beneficiary.query.order_by(
+            Beneficiary.name, Beneficiary.trade_name
+        ).all(),
     )
+
 
 @app.route("/beneficiary/<int:id>")
 def beneficiary(id):
@@ -70,12 +73,11 @@ def firms():
         firms=Firm.query.order_by(Firm.name, Firm.trade_name).all(),
     )
 
+
 @app.route("/firm/<int:id>")
 def firm(id):
     firm = Firm.query.get(id)
-    return render_template(
-        "firm.html", title="Firm", firm=firm
-    )
+    return render_template("firm.html", title="Firm", firm=firm)
 
 
 @app.route("/privatefunding")
@@ -95,6 +97,7 @@ def governmentfundings():
         governmentfundings=GovernmentFunding.query.all(),
     )
 
+
 @app.route("/publicofficeholders")
 def publicofficeholders():
     return render_template(
@@ -102,6 +105,7 @@ def publicofficeholders():
         title="Public Office Holders",
         publicofficeholders=PublicOfficeHolder.query.all(),
     )
+
 
 @app.route("/lobbyists")
 def lobbyists():
@@ -111,10 +115,16 @@ def lobbyists():
         lobbyists=Lobbyist.query.all(),
     )
 
+
 @app.route("/lobbyist/<int:id>")
 def lobbyist(id):
     lobbyist = Lobbyist.query.get(id)
-    lobbying_reports = LobbyingReport.query.join(Meeting).join(Lobbyist, Lobbyist.id == id).all()
+    lobbying_reports = (
+        LobbyingReport.query.join(Meeting).join(Lobbyist, Lobbyist.id == id).all()
+    )
     return render_template(
-        "lobbyist.html", title="Lobbyist", lobbyist=lobbyist, lobbying_reports = lobbying_reports
+        "lobbyist.html",
+        title="Lobbyist",
+        lobbyist=lobbyist,
+        lobbying_reports=lobbying_reports,
     )

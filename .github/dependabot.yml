@@ -5,3 +5,9 @@ updates:
     schedule:
       interval: "weekly"
       day: "saturday"
+
+  - package-ecosystem: "pipenv"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "saturday"

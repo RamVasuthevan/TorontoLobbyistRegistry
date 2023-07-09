@@ -5,12 +5,12 @@ from app.models.models import (
     LobbyingReportType,
 )
 from app.models.processor_models import RawLobbyingReport
-from sqlalchemy import insert
 from datetime import datetime
 from sqlalchemy.orm import Session
+import build.utils as utils
 
 
-def get_lobbying_report_data_row(raw_lobbying_report: RawLobbyingReport) -> dict:
+def get_data_row(raw_lobbying_report: RawLobbyingReport) -> dict:
     proposed_start_date = (
         datetime.strptime(raw_lobbying_report.ProposedStartDate, "%Y-%m-%d").date()
         if raw_lobbying_report.ProposedStartDate
@@ -41,12 +41,5 @@ def get_lobbying_report_data_row(raw_lobbying_report: RawLobbyingReport) -> dict
     }
 
 
-def create_lobbying_report_table(session: Session, raw_lobbying_reports: List[RawLobbyingReport]) -> List[LobbyingReport]:
-    data = []
-
-    for raw_lobbying_report in raw_lobbying_reports:
-        data.append(get_lobbying_report_data_row(raw_lobbying_report))
-
-    session.execute(insert(LobbyingReport), data)
-    session.commit()
-    return session.query(LobbyingReport).all()
+def create_table(session: Session):
+    return utils.create_table(session, RawLobbyingReport, LobbyingReport, get_data_row)

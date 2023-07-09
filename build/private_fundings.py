@@ -2,9 +2,10 @@ from typing import List
 from sqlalchemy.orm import Session
 from app.models.models import PrivateFunding
 from app.models.processor_models import RawPrivateFunding
-from sqlalchemy import insert
+import build.utils as utils
 
-def get_private_funding_data_row(raw_funding: RawPrivateFunding) -> dict:
+
+def get_data_row(raw_funding: RawPrivateFunding) -> dict:
     return {
         "funding": raw_funding.Funding,
         "contact": raw_funding.Contact,
@@ -14,10 +15,5 @@ def get_private_funding_data_row(raw_funding: RawPrivateFunding) -> dict:
     }
 
 
-def create_private_funding_table(session: Session, raw_fundings: List[RawPrivateFunding]) -> List[PrivateFunding]:
-    data = [get_private_funding_data_row(raw_funding) for raw_funding in raw_fundings]
-
-    session.execute(insert(PrivateFunding), data)
-    session.commit()
-    return session.query(PrivateFunding).all()
-
+def create_table(session: Session) -> List[PrivateFunding]:
+    return utils.create_table(session, RawPrivateFunding, PrivateFunding, get_data_row)
