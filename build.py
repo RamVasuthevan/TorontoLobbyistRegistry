@@ -107,6 +107,26 @@ def create_tables(db, raw_models, create_functions):
         print(f"Create all {raw_model.__name__}: {end_time - start_time} seconds")
 
 
+def delete_tables(db):
+    Address.query.delete()
+    CanadianAddress.query.delete()
+    AmericanAddress.query.delete()
+    OtherAddress.query.delete()
+    LobbyingReport.query.delete()
+    Grassroot.query.delete()
+    GovernmentFunding.query.delete()
+    PrivateFunding.query.delete()
+    Beneficiary.query.delete()
+    Firm.query.delete()
+    Meeting.query.delete()
+    PublicOfficeHolder.query.delete()
+    Lobbyist.query.delete()
+
+def delete_association_tables(db):
+    db.session.query(raw_address_address).delete()
+    db.session.query(raw_lobbyist_lobbyist).delete()
+
+
 from app import app, db
 
 
@@ -133,21 +153,9 @@ def run():
             print(f"Create all Raw Tables: {end_time - start_time} seconds")
 
             
-        db.session.query(raw_address_address).delete()
-        db.session.query(raw_lobbyist_lobbyist).delete()
-        Address.query.delete()
-        CanadianAddress.query.delete()
-        AmericanAddress.query.delete()
-        OtherAddress.query.delete()
-        LobbyingReport.query.delete()
-        Grassroot.query.delete()
-        GovernmentFunding.query.delete()
-        PrivateFunding.query.delete()
-        Beneficiary.query.delete()
-        Firm.query.delete()
-        Meeting.query.delete()
-        PublicOfficeHolder.query.delete()
-        Lobbyist.query.delete()
+        delete_tables(db)
+        delete_association_tables(db)
+       
 
         create_tables(
             db,
