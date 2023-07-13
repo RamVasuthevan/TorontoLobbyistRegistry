@@ -105,11 +105,19 @@ class Downloader:
 
     @cache
     def extract_files(self):
-        lobbyactivity_zip = self.lobbyactivity_zip()
-        lobbyactivity_zip.extractall()
+        lobbyist_data_response: requests.models.Response = requests.get(
+            self.package["result"]["resources"][1]["url"]
+        )
 
+        # Save zip file
         with open(self.LOBBY_ACTIVITY_FILE_NAME, "wb") as f:
-            f.write(lobbyactivity_zip.read())
+            f.write(lobbyist_data_response.content)
+
+        # Now you have the zip file, you can create a ZipFile object from it.
+        lobbyactivity_zip = zipfile.ZipFile(BytesIO(lobbyist_data_response.content))
+
+        # Extract all files in the zip archive
+        lobbyactivity_zip.extractall()
 
         with open(self.README_FILE_NAME, "wb") as binary_file:
             binary_file.write(self.readme_bytes())
