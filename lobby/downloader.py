@@ -105,7 +105,11 @@ class Downloader:
 
     @cache
     def extract_files(self):
-        self.lobbyactivity_zip().extractall()
+        lobbyactivity_zip = self.lobbyactivity_zip()
+        lobbyactivity_zip.extractall()
+        
+        with open('lobbyactivity.zip', 'wb') as f:
+            f.write(lobbyactivity_zip.read())
 
         with open(self.README_FILE_NAME, "wb") as binary_file:
             binary_file.write(self.readme_bytes())
