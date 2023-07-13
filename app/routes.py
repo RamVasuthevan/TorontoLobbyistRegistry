@@ -94,7 +94,9 @@ def governmentfundings():
     return render_template(
         "governmentfundings.html",
         title="Government Funding",
-        governmentfundings=GovernmentFunding.query.order_by(GovernmentFunding.government_name, GovernmentFunding.program).all(),
+        governmentfundings=GovernmentFunding.query.order_by(
+            GovernmentFunding.government_name, GovernmentFunding.program
+        ).all(),
     )
 
 
@@ -103,7 +105,9 @@ def publicofficeholders():
     return render_template(
         "public_office_holders.html",
         title="Public Office Holders",
-        publicofficeholders=PublicOfficeHolder.query.order_by(PublicOfficeHolder.type,PublicOfficeHolder.office,PublicOfficeHolder.name).all(),
+        publicofficeholders=PublicOfficeHolder.query.order_by(
+            PublicOfficeHolder.type, PublicOfficeHolder.office, PublicOfficeHolder.name
+        ).all(),
     )
 
 
