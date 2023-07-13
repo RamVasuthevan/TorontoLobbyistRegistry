@@ -108,7 +108,7 @@ class Downloader:
         lobbyactivity_zip = self.lobbyactivity_zip()
         lobbyactivity_zip.extractall()
 
-        with open(self.LOBBY_ACTIVITY_FILE_NAME, 'wb') as f:
+        with open(self.LOBBY_ACTIVITY_FILE_NAME, "wb") as f:
             f.write(lobbyactivity_zip.read())
 
         with open(self.README_FILE_NAME, "wb") as binary_file:
