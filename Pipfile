@@ -10,6 +10,7 @@ flask_sqlalchemy = "3.0"
 Flask-Migrate = "4.0.4"
 xmltodict = "0.13"
 gunicorn = "20.1"
+requests = "*"
 
 [dev-packages]
 black = "23.3"
