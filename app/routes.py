@@ -85,7 +85,7 @@ def privatefundings():
     return render_template(
         "privatefundings.html",
         title="Private Funding",
-        privatefundings=PrivateFunding.query.all(),
+        private_fundings=PrivateFunding.query.all(),
     )
 
 
