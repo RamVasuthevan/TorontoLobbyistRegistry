@@ -1,6 +1,9 @@
 # TorontoLobbyistRegistry
 
-Do not trust their:
+Code is licensed under MIT and data is licensed under Open Government Licence 
+
+
+Do not trust existing data:
     - Schema
     - Data validation
     - Data Cleaning
