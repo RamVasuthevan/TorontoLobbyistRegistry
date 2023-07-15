@@ -1,7 +1,6 @@
 # TorontoLobbyistRegistry
 
-Code is licensed under MIT and data is licensed under Open Government Licence 
-
+Code is licensed under the MIT Licence and data is licensed under the Open Government Licence
 
 Do not trust existing data:
     - Schema
