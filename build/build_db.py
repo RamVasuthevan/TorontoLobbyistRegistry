@@ -41,7 +41,6 @@ from app.models.enums import DataSource
 from build.raw import create_raw_tables
 from build.addresses import create_addresses_table
 from build.meetings import create_meeting_table
-from build.lobbyists import create_lobbyist_table
 
 
 from build import grassroots
@@ -51,6 +50,7 @@ from build import lobbying_reports
 from build import government_fundings
 from build import beneficiaries
 from build import firms
+from build import lobbyists
 
 from dataclasses import dataclass
 from sqlalchemy import delete
@@ -106,7 +106,8 @@ def create_tables(db):
         create_addresses_table(db.session, RawAddress.query.all())
 
     with timer("Create all lobbyist tables"):
-        create_lobbyist_table(db.session, RawLobbyist.query.all())
+        lobbyists.create_table(db.session)
+        
 
     with timer("Create all lobbying report tables"):
         lobbying_reports.create_table(db.session)

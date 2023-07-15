@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List
 from sqlalchemy.orm import Session
 from app.models.models import Lobbyist
 from app.models.processor_models import RawLobbyist
@@ -15,7 +15,6 @@ LOBBYIST_KEY = (
     "Type",
 )
 
-
 def get_data_row(raw_lobbyist: RawLobbyist) -> dict:
     return {
         "number": raw_lobbyist.Number,
@@ -26,10 +25,8 @@ def get_data_row(raw_lobbyist: RawLobbyist) -> dict:
         "type": LobbyistType(raw_lobbyist.Type),
     }
 
-
-def create_lobbyist_table(
-    session: Session, raw_lobbyists: List[RawLobbyist]
-) -> List[Lobbyist]:
+def create_table(session: Session) -> List[Lobbyist]:
+    raw_lobbyists = session.query(RawLobbyist).all()
     grouped_raw_lobbyists = utils.get_grouped_raw_records(raw_lobbyists, LOBBYIST_KEY)
 
     lobbyists = []
