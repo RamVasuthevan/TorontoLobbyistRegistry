@@ -1,0 +1,1 @@
+python -m build.build_db
