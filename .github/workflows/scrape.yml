@@ -21,7 +21,7 @@ jobs:
           token: ${{ secrets.PAT_TORONTOLOBBYISTREGISTRY_SCRAPE }}
           repository: 'RamVasuthevan/TorontoLobbyistRegistryData'
           path: TorontoLobbyistRegistryData
-          ref: 'test'
+          ref: 'main'
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
@@ -54,4 +54,4 @@ jobs:
           git add "Lobbyist Registry Activity.zip"
           timestamp=$(date -u)
           git commit -m "Downloaded: ${timestamp}: commit: ${{env.TorontoLobbyistRegistry_commit_hash}}" || exit 0
-          git push origin test
+          git push origin main
