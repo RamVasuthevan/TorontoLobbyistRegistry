@@ -8,6 +8,10 @@ jobs:
   download_lobby_data:
     runs-on: ubuntu-latest
     steps:
+      - name: Echo commit hash of TorontoLobbyistRegistry
+        run: |
+          TorontoLobbyistRegistry_commit_hash=$(git rev-parse HEAD)
+          echo "TorontoLobbyistRegistry_commit_hash=${TorontoLobbyistRegistry_commit_hash}" >> $GITHUB_ENV
       - name: Checkout TorontoLobbyistRegistryData
         uses: actions/checkout@v2
         with:
@@ -15,10 +19,6 @@ jobs:
           repository: 'RamVasuthevan/TorontoLobbyistRegistryData'
           path: TorontoLobbyistRegistryData
           ref: 'test'
-      - name: Echo commit hash of TorontoLobbyistRegistry
-        run: |
-          TorontoLobbyistRegistry_commit_hash=$(git rev-parse HEAD)
-          echo "TorontoLobbyistRegistry_commit_hash=${TorontoLobbyistRegistry_commit_hash}" >> $GITHUB_ENV
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
