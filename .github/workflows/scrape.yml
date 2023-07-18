@@ -1,1 +1,13 @@
 
+name: Download, Unzip and Save Lobbyist Registry Data
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'
+jobs:
+  download_lobby_data:
+    runs-on: ubuntu-latest
+    steps:
+      - name: echo
+        run: echo "Hello"
