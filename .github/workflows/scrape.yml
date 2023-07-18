@@ -11,7 +11,7 @@ jobs:
       - name: Checkout TorontoLobbyistRegistryData
         uses: actions/checkout@v2
         with:
-          token: ${{ secrets.PAT_ACTION_SCRAPE_PAT_TORONTOLOBBYISTREGISTRY }}
+          token: ${{ secrets.PAT_TORONTOLOBBYISTREGISTRY_SCRAPE }}
           path: TorontoLobbyistRegistryData
           ref: 'test'
       - name: Echo commit hash of TorontoLobbyistRegistry
