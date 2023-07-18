@@ -12,7 +12,9 @@ jobs:
         uses: actions/checkout@v2
       - name: Echo commit hash of TorontoLobbyistRegistry
         run: |
-          echo "TorontoLobbyistRegistry_commit_hash=$(git rev-parse HEAD)" >> $GITHUB_ENV
+          TorontoLobbyistRegistry_commit_hash=$(git rev-parse HEAD)
+          echo "TorontoLobbyistRegistry_commit_hash=${TorontoLobbyistRegistry_commit_hash}" >> $GITHUB_ENV
+          echo "TorontoLobbyistRegistry_commit_hash=${TorontoLobbyistRegistry_commit_hash}"
       - name: Checkout TorontoLobbyistRegistryData
         uses: actions/checkout@v2
         with:
