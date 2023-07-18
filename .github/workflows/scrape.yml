@@ -8,6 +8,10 @@ jobs:
   download_lobby_data:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout TorontoLobbyistRegistry
+        uses: actions/checkout@v2
+        with:
+          repository: 'RamVasuthevan/TorontoLobbyistRegistry'
       - name: Echo commit hash of TorontoLobbyistRegistry
         run: |
           TorontoLobbyistRegistry_commit_hash=$(git rev-parse HEAD)
