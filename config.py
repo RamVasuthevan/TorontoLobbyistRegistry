@@ -21,4 +21,3 @@ class Config(object):
     CLOUDFLARE_ACCESS_KEY_ID = os.environ.get("CLOUDFLARE_ACCESS_KEY_ID")
     CLOUDFLARE_SECRET_ACCESS_KEY = os.environ.get("CLOUDFLARE_SECRET_ACCESS_KEY")
     CLOUDFLARE_R2_BUCKET_NAME = os.environ.get("BUCKET_NAME")
-

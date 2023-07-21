@@ -2,11 +2,13 @@ import boto3
 import sys
 from config import Config
 
+
 def upload_to_cloudflare(file_name, timestamp):
-    s3 = boto3.resource('s3',
-        endpoint_url = f'https://{Config.CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com',
-        aws_access_key_id = Config.CLOUDFLARE_ACCESS_KEY_ID,
-        aws_secret_access_key = Config.CLOUDFLARE_SECRET_ACCESS_KEY
+    s3 = boto3.resource(
+        "s3",
+        endpoint_url=f"https://{Config.CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com",
+        aws_access_key_id=Config.CLOUDFLARE_ACCESS_KEY_ID,
+        aws_secret_access_key=Config.CLOUDFLARE_SECRET_ACCESS_KEY,
     )
 
     bucket_name = Config.CLOUDFLARE_R2_BUCKET_NAME
@@ -20,6 +22,7 @@ def upload_to_cloudflare(file_name, timestamp):
 
     # Upload the file to the new folder
     s3.meta.client.upload_file(file_name, bucket_name, f"{new_folder}/{file_name}")
+
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
