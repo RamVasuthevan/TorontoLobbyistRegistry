@@ -5,26 +5,17 @@ from io import BytesIO
 from typing import Dict
 from pprint import pprint
 
-
 LOBBY_ACTIVITY_FILE_NAME = "Lobbyist Registry Activity.zip"
-README_FILE_NAME = "lobbyist-registry-readme.xls"
+OPEN_DATA_RESPONSE_FILE_NAME = "open-data-response.json"
+API_BASE_URL = "https://ckan0.cf.opendata.inter.prod-toronto.ca"
+API_PACKAGE_SHOW_URL = API_BASE_URL + "/api/3/action/package_show"
+API_PACKAGE_ID = "lobbyist-registry"
 
 def get_package()-> Dict:
         """Returns response from Toronto Open Data CKAN API"""
 
-        # Toronto Open Data is stored in a CKAN instance. It's APIs are documented here:
-        # https://docs.ckan.org/en/latest/api/
-
-        # To hit our API, you'll be making requests to:
-        BASE_URL = "https://ckan0.cf.opendata.inter.prod-toronto.ca"
-
-        # Datasets are called "packages". Each package can contain many "resources"
-        # To retrieve the metadata for this package and its resources, use the package name in this page's URL:
-        URL = BASE_URL + "/api/3/action/package_show"
-        ID = "lobbyist-registry"
-
-        params = {"id": ID}
-        package = requests.get(URL, params=params).json()
+        params = {"id": API_PACKAGE_ID}
+        package = requests.get(API_PACKAGE_SHOW_URL, params=params).json()
 
         return package
 
@@ -32,7 +23,7 @@ if __name__ == "__main__":
     package = get_package()
     pprint(package)
 
-    with open("open-data-response.json", "w") as json_file:
+    with open(OPEN_DATA_RESPONSE_FILE_NAME, "w") as json_file:
         json_file.write(json.dumps(package, indent=4))
     
     resource_response = {}
@@ -45,5 +36,3 @@ if __name__ == "__main__":
     
     lobbyactivity_zip = zipfile.ZipFile(BytesIO(resource_response[LOBBY_ACTIVITY_FILE_NAME].content))
     lobbyactivity_zip.extractall()
-        
-        
