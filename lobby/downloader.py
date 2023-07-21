@@ -11,14 +11,11 @@ class Downloader:
     README_FILE_NAME = "lobbyist-registry-readme.xls"
 
     def __init__(self):
-        self._called = False
         self.package = self._get_package()
         self.metadata_dates = self._get_metadata_metadata_dates()
 
     def _get_package(self) -> Dict:
         """Returns response from Toronto Open Data CKAN API"""
-        if self._called:
-            raise Exception("This method should only be called once")
 
         # Toronto Open Data is stored in a CKAN instance. It's APIs are documented here:
         # https://docs.ckan.org/en/latest/api/
@@ -34,7 +31,6 @@ class Downloader:
         params = {"id": ID}
         package = requests.get(URL, params=params).json()
 
-        self._called = True
         return package
 
     def _get_metadata_metadata_dates(self) -> Dict[str, Dict[str, str]]:
