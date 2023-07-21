@@ -5,10 +5,11 @@ from io import BytesIO
 from typing import Dict
 from datetime import datetime
 
+LOBBY_ACTIVITY_FILE_NAME = "Lobbyist Registry Activity.zip"
+README_FILE_NAME = "lobbyist-registry-readme.xls"
+
 
 class Downloader:
-    LOBBY_ACTIVITY_FILE_NAME = "Lobbyist Registry Activity.zip"
-    README_FILE_NAME = "lobbyist-registry-readme.xls"
 
     def __init__(self):
         self.package = self._get_package()
@@ -98,7 +99,7 @@ class Downloader:
         )
 
         # Save zip file
-        with open(self.LOBBY_ACTIVITY_FILE_NAME, "wb") as f:
+        with open(LOBBY_ACTIVITY_FILE_NAME, "wb") as f:
             f.write(lobbyist_data_response.content)
 
         # Now you have the zip file, you can create a ZipFile object from it.
@@ -107,7 +108,7 @@ class Downloader:
         # Extract all files in the zip archive
         lobbyactivity_zip.extractall()
 
-        with open(self.README_FILE_NAME, "wb") as binary_file:
+        with open(README_FILE_NAME, "wb") as binary_file:
             binary_file.write(self.readme_bytes())
 
         with open("open-data-response.json", "w") as json_file:
