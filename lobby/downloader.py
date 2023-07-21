@@ -13,7 +13,6 @@ class Downloader:
 
     def __init__(self):
         self.package = self._get_package()
-        self.metadata_dates = self._get_metadata_metadata_dates()
 
     def _get_package(self) -> Dict:
         """Returns response from Toronto Open Data CKAN API"""
@@ -33,30 +32,7 @@ class Downloader:
         package = requests.get(URL, params=params).json()
 
         return package
-
-    def _get_metadata_metadata_dates(self) -> Dict[str, Dict[str, str]]:
-        """Returns last modified dates for lobbying registry and readme"""
-        package = self.package
-        metadata_dates = {
-            "package": {
-                "last_refreshed": package["result"]["last_refreshed"],
-                "metadata_modified": package["result"]["metadata_modified"],
-            },
-            "lobbyist-registry-readme": {
-                "last_modified": package["result"]["resources"][0]["last_modified"],
-                "metadata_modified": package["result"]["resources"][0][
-                    "metadata_modified"
-                ],
-            },
-            "lobbyist-registry": {
-                "last_modified": package["result"]["resources"][1]["last_modified"],
-                "metadata_modified": package["result"]["resources"][1][
-                    "metadata_modified"
-                ],
-            },
-        }
-        return metadata_dates
-
+    
     def last_modified(self):
         """Returns the most recent last_modified date from the package metadata"""
         datetimes = [
