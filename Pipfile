@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-flask = "2.3"
+flask = "2.3.2"
 python-dotenv = "1"
 flask_sqlalchemy = "3.0.5"
 Flask-Migrate = "4.0.4"
@@ -13,7 +13,7 @@ gunicorn = "20.1"
 requests = "*"
 
 [dev-packages]
-black = "23.3"
+black = "23.7.0"
 
 [requires]
 python_version = "3.10"
