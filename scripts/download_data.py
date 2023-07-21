@@ -20,7 +20,8 @@ def get_package() -> Dict:
 
     return package
 
-def downdload_data()
+
+def downdload_data():
     package = get_package()
     pprint(package)
 
