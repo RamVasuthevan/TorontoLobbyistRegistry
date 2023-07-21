@@ -3,9 +3,7 @@ import requests
 import zipfile
 from io import BytesIO
 from typing import Dict
-from datetime import datetime
-from pprint import pprint as pp
-from urllib.parse import urlparse
+from pprint import pprint
 
 
 LOBBY_ACTIVITY_FILE_NAME = "Lobbyist Registry Activity.zip"
@@ -30,21 +28,16 @@ def get_package()-> Dict:
 
         return package
 
-def get_filename_from_url(url):
-    parsed_url = urlparse(url)
-    return parsed_url.path.split('/')[-1]
-
-
 if __name__ == "__main__":
     package = get_package()
-    pp.print(package)
+    pprint(package)
 
     with open("open-data-response.json", "w") as json_file:
         json_file.write(json.dumps(package, indent=4))
     
     resource_response = {}
     for resource in package["result"]["resources"]:
-        resource_response[get_filename_from_url(resource["url"])] =  requests.get(resource["url"])
+        resource_response[f"{resource['name']}.{resource['format'].lower()}"] =  requests.get(resource["url"])
     
     for resource,response in resource_response.items():
         with open(resource, "wb") as f:
