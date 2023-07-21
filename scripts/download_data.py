@@ -20,8 +20,7 @@ def get_package() -> Dict:
 
     return package
 
-
-if __name__ == "__main__":
+def downdload_data()
     package = get_package()
     pprint(package)
 
@@ -42,3 +41,7 @@ if __name__ == "__main__":
         BytesIO(resource_response[LOBBY_ACTIVITY_FILE_NAME].content)
     )
     lobbyactivity_zip.extractall()
+
+
+if __name__ == "__main__":
+    downdload_data()
