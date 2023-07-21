@@ -33,24 +33,6 @@ class Downloader:
 
         return package
     
-    def last_modified(self):
-        """Returns the most recent last_modified date from the package metadata"""
-        datetimes = [
-            self.package["package"]["last_refreshed"],
-            self.package["package"]["metadata_modified"],
-            self.package["lobbyist-registry"]["last_modified"],
-            self.package["lobbyist-registry"]["metadata_modified"],
-            self.package["lobbyist-registry-readme"]["last_modified"],
-            self.package["lobbyist-registry-readme"]["metadata_modified"],
-        ]
-        return max(
-            datetime.strptime(
-                (val.split(".")[0] if "." in val else val).replace("T", " "),
-                "%Y-%m-%d %H:%M:%S",
-            )
-            for val in datetimes
-        )
-
     def lobbyactivity_zip(self) -> zipfile.ZipFile:
         lobbyist_data_response: requests.models.Response = requests.get(
             self.package["result"]["resources"][1]["url"]
