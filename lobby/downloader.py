@@ -2,7 +2,6 @@ import json
 import requests
 import zipfile
 from io import BytesIO
-from functools import cache
 from typing import Dict
 from datetime import datetime
 
@@ -16,7 +15,6 @@ class Downloader:
         self.package = self._get_package()
         self.metadata_dates = self._get_metadata_metadata_dates()
 
-    @cache
     def _get_package(self) -> Dict:
         """Returns response from Toronto Open Data CKAN API"""
         if self._called:
@@ -39,7 +37,6 @@ class Downloader:
         self._called = True
         return package
 
-    @cache
     def _get_metadata_metadata_dates(self) -> Dict[str, Dict[str, str]]:
         """Returns last modified dates for lobbying registry and readme"""
         package = self.package
@@ -63,7 +60,6 @@ class Downloader:
         }
         return metadata_dates
 
-    @cache
     def last_modified(self):
         """Returns the most recent last_modified date from the package metadata"""
         datetimes = [
@@ -82,28 +78,24 @@ class Downloader:
             for val in datetimes
         )
 
-    @cache
     def lobbyactivity_zip(self) -> zipfile.ZipFile:
         lobbyist_data_response: requests.models.Response = requests.get(
             self.package["result"]["resources"][1]["url"]
         )
         return zipfile.ZipFile(BytesIO(lobbyist_data_response.content))
 
-    @cache
     def readme_bytes(self):
         readme_response: requests.models.Response = requests.get(
             self.package["result"]["resources"][0]["url"]
         )
         return readme_response.content
 
-    @cache
     def lobbyactivity_xml(self) -> Dict[str, zipfile.ZipExtFile]:
         return {
             memberName: self.lobbyactivity_zip().open(memberName)
             for memberName in self.lobbyactivity_zip().namelist()
         }
 
-    @cache
     def extract_files(self):
         lobbyist_data_response: requests.models.Response = requests.get(
             self.package["result"]["resources"][1]["url"]
