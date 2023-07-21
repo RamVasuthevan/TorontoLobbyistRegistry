@@ -35,7 +35,7 @@ jobs:
           pipenv install
       - name: Run Python script to download and unzip files
         run: |
-          pipenv run python download_and_extract.py 
+          pipenv run python lobby/downloader.py
           cd TorontoLobbyistRegistryData
           mv ../lobbyactivity-active.xml lobbyactivity-active.xml
           mv ../lobbyactivity-closed.xml lobbyactivity-closed.xml
