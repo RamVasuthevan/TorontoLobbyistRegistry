@@ -10,7 +10,7 @@ class Downloader:
     LOBBY_ACTIVITY_FILE_NAME = "Lobbyist Registry Activity.zip"
     README_FILE_NAME = "lobbyist-registry-readme.xls"
 
-    def __init__(self, load_from_url=True):
+    def __init__(self):
         self._called = False
         self.package = self._get_package()
         self.metadata_dates = self._get_metadata_metadata_dates()
