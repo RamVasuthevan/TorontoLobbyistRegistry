@@ -45,11 +45,6 @@ class Downloader:
         )
         return readme_response.content
 
-    def lobbyactivity_xml(self) -> Dict[str, zipfile.ZipExtFile]:
-        return {
-            memberName: self.lobbyactivity_zip().open(memberName)
-            for memberName in self.lobbyactivity_zip().namelist()
-        }
 
     def extract_files(self):
         lobbyist_data_response: requests.models.Response = requests.get(
