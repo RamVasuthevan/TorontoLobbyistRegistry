@@ -9,7 +9,7 @@ python-dotenv = "1"
 flask_sqlalchemy = "3.0.5"
 Flask-Migrate = "4.0.4"
 xmltodict = "0.13"
-gunicorn = "20.1"
+gunicorn = "21.2.0"
 requests = "*"
 
 [dev-packages]
