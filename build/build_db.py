@@ -108,7 +108,6 @@ def create_tables(db):
     with timer("Create all lobbyist tables"):
         lobbyists.create_table(db.session)
         
-
     with timer("Create all lobbying report tables"):
         lobbying_reports.create_table(db.session)
 

@@ -284,11 +284,29 @@ raw_lobbyist_lobbyist = db.Table(
     ),
 )
 
+raw_communication_lobbyist = db.Table(
+    "raw_communication_lobbyist",
+    db.Column(
+        "raw_communication_id",
+        db.Integer,
+        db.ForeignKey("raw_communication.id"),
+        primary_key=True,
+    ),
+    db.Column(
+        "lobbyist_id", db.Integer, db.ForeignKey("lobbyist.id"), primary_key=True
+    ),
+)
+
 
 class Lobbyist(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    data_sources = db.relationship("RawLobbyist", secondary=raw_lobbyist_lobbyist)
-    number = db.Column(db.String, unique=True)
+    lobbyist_data_sources = db.relationship(
+        "RawLobbyist", secondary=raw_lobbyist_lobbyist
+    )
+    communication_data_sources = db.relationship(
+        "RawCommunication", secondary=raw_communication_lobbyist
+    )
+    number = db.Column(db.String)
     first_name = db.Column(db.String)
     middle_initials = db.Column(db.String)
     last_name = db.Column(db.String)
