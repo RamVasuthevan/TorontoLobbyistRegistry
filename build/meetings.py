@@ -54,9 +54,8 @@ def create_meeting_table(
 
         session.query(RawLobbyist).filter_by(meeting_id=raw_meeting.id).all()
         # print(f"Meeting {raw_meeting.id} {raw_meeting.report_id} {raw_meeting.Committee} {raw_meeting.Date} has lobbyists: {lobbyists}")
-        meetings.append(Meeting(**get_data_row(raw_meeting, lobbyists)))
+        session.add(Meeting(**get_data_row(raw_meeting, lobbyists)))
 
-    session.add_all(meetings)
     session.commit()
 
     return session.query(Meeting).all()
