@@ -13,6 +13,7 @@ from app.models.models import (
     OtherAddress,
     raw_address_address,
     raw_lobbyist_lobbyist,
+    raw_communication_lobbyist,
     LobbyingReport,
     Grassroot,
     Beneficiary,
@@ -147,11 +148,16 @@ def delete_tables(db):
     Meeting.query.delete()
     PublicOfficeHolder.query.delete()
     Lobbyist.query.delete()
+    raw_address_address.delete()
+    raw_lobbyist_lobbyist.delete()
+
+
 
 
 def delete_association_tables(db):
     db.session.query(raw_address_address).delete()
     db.session.query(raw_lobbyist_lobbyist).delete()
+    db.session.query(raw_communication_lobbyist).delete()
 
 
 from app import app, db
