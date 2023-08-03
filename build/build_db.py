@@ -162,7 +162,7 @@ from app import app, db
 
 def run():
     with app.app_context():
-        if False:
+        if True:
             with timer("Extract files"):
                 extract_files_from_zip(DATA_ZIP)
 
