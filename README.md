@@ -64,15 +64,15 @@ Lessons learnt
 - Commits are expensive
 
 Todo:
-    - Clean up Pipfile
-    - Update files need for Github Action
-    - Clean up .gitignore
-    - Deal with devcontainer.json warnings
-    - Think about this: [Basic Relationship Patterns](https://docs.sqlalchemy.org/en/20/orm/basic_relationships.html)
-    - SQL is default nullable
-    - Update get_enum_error_message for null values
-    - More code reuse in build
-    - Remove back_ref [Using the legacy ‘backref’ relationship parameter¶](https://docs.sqlalchemy.org/en/20/orm/backref.html)
-    - Make template names consistent 
-    - Create Person Pages (Public Officer Holder)
+- Clean up Pipfile
+- Update files need for Github Action
+- Clean up .gitignore
+- Deal with devcontainer.json warnings
+- Think about this: [Basic Relationship Patterns](https://docs.sqlalchemy.org/en/20/orm/basic_relationships.html)
+- SQL is default nullable
+- Update get_enum_error_message for null values
+- More code reuse in build
+- Remove back_ref [Using the legacy ‘backref’ relationship parameter¶](https://docs.sqlalchemy.org/en/20/orm/backref.html)
+- Make template names consistent 
+- Create Person Pages (Public Officer Holder)
 
