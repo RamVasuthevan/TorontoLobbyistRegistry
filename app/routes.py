@@ -105,9 +105,11 @@ def publicofficeholders():
     return render_template(
         "publicofficeholders.html",
         title="Public Office Holders",
-        publicofficeholders=PublicOfficeHolder.query.order_by(PublicOfficeHolder.name
+        publicofficeholders=PublicOfficeHolder.query.order_by(
+            PublicOfficeHolder.name
         ).all(),
     )
+
 
 @app.route("/publicofficeholder/<int:id>")
 def publicofficeholder(id):
@@ -118,6 +120,7 @@ def publicofficeholder(id):
         publicofficeholder=publicofficeholder,
     )
 
+
 @app.route("/meetings")
 def meetings():
     return render_template(
@@ -126,12 +129,12 @@ def meetings():
         meetings=Meeting.query.all(),
     )
 
+
 @app.route("/meeting/<int:id>")
 def meeting(id):
     meeting = Meeting.query.get(id)
-    return render_template(
-        "meeting.html", title="Meeting", meeting=meeting
-    )
+    return render_template("meeting.html", title="Meeting", meeting=meeting)
+
 
 @app.route("/lobbyists")
 def lobbyists():
