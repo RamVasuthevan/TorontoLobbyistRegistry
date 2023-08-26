@@ -11,6 +11,7 @@ Flask-Migrate = "4.0.4"
 xmltodict = "0.13"
 gunicorn = "21.2.0"
 requests = "*"
+boto3 = "1.28.8"
 
 [dev-packages]
 black = "23.7.0"
