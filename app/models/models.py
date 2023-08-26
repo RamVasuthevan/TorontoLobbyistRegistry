@@ -23,7 +23,7 @@ from app.models.enums import (
     LobbyistType,
 )
 
-from app.models.processor_models import RawAddress
+from app.models.processor_models import  RawPOH
 
 
 class LobbyingReport(db.Model):
@@ -242,11 +242,51 @@ class GovernmentFunding(db.Model):
     report = db.relationship("LobbyingReport", backref="government_fundings", lazy=True)
 
 
+raw_poh_publicofficeholder = db.Table(
+    "raw_poh_publicofficeholder",
+    db.Model.metadata,
+    db.Column(
+        "publicofficeholder_id",
+        db.Integer,
+        db.ForeignKey("public_office_holder.id"),
+        primary_key=True,
+    ),
+    db.Column(
+        "raw_poh_id",
+        db.Integer,
+        db.ForeignKey("raw_poh.id"),
+        primary_key=True,
+    ),
+)
+
+
+class PublicOfficeHolder(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String)
+    office = db.Column(db.String)
+    title = db.Column(db.String)
+    type = db.Column(db.Enum(PublicOfficeHolderType))
+    data_sources = db.relationship(
+        "RawPOH",
+        secondary=raw_poh_publicofficeholder,
+    )
+
+
 meeting_lobbyist = db.Table(
     "meeting_lobbyist",
     db.Model.metadata,
     db.Column("meeting_id", db.Integer, db.ForeignKey("meeting.id")),
     db.Column("lobbyist_id", db.Integer, db.ForeignKey("lobbyist.id")),
+)
+
+
+meeting_publicofficeholder = db.Table(
+    "meeting_publicofficeholder",
+    db.Model.metadata,
+    db.Column("meeting_id", db.Integer, db.ForeignKey("meeting.id")),
+    db.Column(
+        "publicofficeholder_id", db.Integer, db.ForeignKey("public_office_holder.id")
+    ),
 )
 
 
@@ -257,18 +297,11 @@ class Meeting(db.Model):
     lobbyists = db.relationship(
         "Lobbyist", secondary=meeting_lobbyist, backref="meetings"
     )
+    publicofficeholders = db.relationship(
+        "PublicOfficeHolder", secondary=meeting_publicofficeholder, backref="meetings"
+    )
     report_id = db.Column(db.Integer, db.ForeignKey("lobbying_report.id"))
     report = db.relationship("LobbyingReport", backref="meetings", lazy=True)
-
-
-class PublicOfficeHolder(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
-    office = db.Column(db.String)
-    title = db.Column(db.String)
-    type = db.Column(db.Enum(PublicOfficeHolderType))
-    meeting_id = db.Column(db.Integer, db.ForeignKey("meeting.id"))
-    meeting = db.relationship("Meeting", backref="public_office_holders", lazy=True)
 
 
 raw_lobbyist_lobbyist = db.Table(
@@ -285,10 +318,29 @@ raw_lobbyist_lobbyist = db.Table(
 )
 
 
+raw_communication_lobbyist = db.Table(
+    "raw_communication_lobbyist",
+    db.Column(
+        "raw_communication_id",
+        db.Integer,
+        db.ForeignKey("raw_communication.id"),
+        primary_key=True,
+    ),
+    db.Column(
+        "lobbyist_id", db.Integer, db.ForeignKey("lobbyist.id"), primary_key=True
+    ),
+)
+
+
 class Lobbyist(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    data_sources = db.relationship("RawLobbyist", secondary=raw_lobbyist_lobbyist)
-    number = db.Column(db.String, unique=True)
+    lobbyist_data_sources = db.relationship(
+        "RawLobbyist", secondary=raw_lobbyist_lobbyist
+    )
+    communication_data_sources = db.relationship(
+        "RawCommunication", secondary=raw_communication_lobbyist
+    )
+    number = db.Column(db.String)
     first_name = db.Column(db.String)
     middle_initials = db.Column(db.String)
     last_name = db.Column(db.String)

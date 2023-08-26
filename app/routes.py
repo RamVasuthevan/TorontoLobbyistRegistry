@@ -103,13 +103,35 @@ def governmentfundings():
 @app.route("/publicofficeholders")
 def publicofficeholders():
     return render_template(
-        "public_office_holders.html",
+        "publicofficeholders.html",
         title="Public Office Holders",
-        publicofficeholders=PublicOfficeHolder.query.order_by(
-            PublicOfficeHolder.type, PublicOfficeHolder.office, PublicOfficeHolder.name
+        publicofficeholders=PublicOfficeHolder.query.order_by(PublicOfficeHolder.name
         ).all(),
     )
 
+@app.route("/publicofficeholder/<int:id>")
+def publicofficeholder(id):
+    publicofficeholder = PublicOfficeHolder.query.get(id)
+    return render_template(
+        "publicofficeholder.html",
+        title="Public Office Holder",
+        publicofficeholder=publicofficeholder,
+    )
+
+@app.route("/meetings")
+def meetings():
+    return render_template(
+        "meetings.html",
+        title="Meetings",
+        meetings=Meeting.query.all(),
+    )
+
+@app.route("/meeting/<int:id>")
+def meeting(id):
+    meeting = Meeting.query.get(id)
+    return render_template(
+        "meeting.html", title="Meeting", meeting=meeting
+    )
 
 @app.route("/lobbyists")
 def lobbyists():
