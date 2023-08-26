@@ -23,7 +23,7 @@ from app.models.enums import (
     LobbyistType,
 )
 
-from app.models.processor_models import  RawPOH
+from app.models.processor_models import RawPOH
 
 
 class LobbyingReport(db.Model):
