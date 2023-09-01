@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-flask = "2.3.2"
+flask = "2.3.3"
 python-dotenv = "1"
 flask_sqlalchemy = "3.0.5"
 Flask-Migrate = "4.0.4"
