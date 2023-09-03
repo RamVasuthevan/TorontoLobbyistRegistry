@@ -13,6 +13,7 @@ from app.models.models import (
     Meeting,
     PublicOfficeHolder,
     Lobbyist,
+    meeting_lobbyist,
 )
 
 
@@ -148,12 +149,19 @@ def lobbyists():
 @app.route("/lobbyist/<int:id>")
 def lobbyist(id):
     lobbyist = Lobbyist.query.get(id)
-    lobbying_reports = (
-        LobbyingReport.query.join(Meeting).join(Lobbyist, Lobbyist.id == id).all()
-    )
+    lobbying_reports = []
+
+    reports_attend_meeting = LobbyingReport.query.filter(
+        LobbyingReport.id.in_(
+            db.session.query(Meeting.report_id)
+            .join(meeting_lobbyist, meeting_lobbyist.c.meeting_id == Meeting.id)
+            .filter(meeting_lobbyist.c.lobbyist_id == id)
+        )
+    ).all()
+
     return render_template(
         "lobbyist.html",
         title="Lobbyist",
         lobbyist=lobbyist,
-        lobbying_reports=lobbying_reports,
+        lobbying_reports=reports_attend_meeting,
     )
