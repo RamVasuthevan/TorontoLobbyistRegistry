@@ -23,6 +23,4 @@ def get_data_row(raw_firm: RawFirm, address_lookup: dict[int, int]) -> dict:
 
 
 def create_table(session: Session) -> List[Firm]:
-    return utils.create_table(
-        session, RawFirm, Firm, get_data_row, lookup_address=True
-    )
+    return utils.create_table(session, RawFirm, Firm, get_data_row, lookup_address=True)

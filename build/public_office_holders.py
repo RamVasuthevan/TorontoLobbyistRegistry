@@ -12,11 +12,11 @@ def get_data_row(raw_poh: RawPOH) -> dict:
         "office": raw_poh.Office,
         "title": raw_poh.Title,
         "type": PublicOfficeHolderType(raw_poh.Type),
-        "data_sources": [raw_poh]
+        "data_sources": [raw_poh],
     }
 
 
-def create_table(session: Session)-> List[PublicOfficeHolder]:
+def create_table(session: Session) -> List[PublicOfficeHolder]:
     for raw_poh in RawPOH.query.all():
         data_row = get_data_row(raw_poh)
         session.add(PublicOfficeHolder(**data_row))

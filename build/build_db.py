@@ -133,6 +133,7 @@ def create_tables(db):
     with timer("Create all meeting tables"):
         create_meeting_table(db.session, RawMeeting.query.all())
 
+
 def delete_tables(db):
     Address.query.delete()
     CanadianAddress.query.delete()
