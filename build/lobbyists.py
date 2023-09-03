@@ -25,6 +25,7 @@ COMMUNICATIONS_LOBBYIST_KEY = (
     "LobbyistType",
 )
 
+
 def get_data_row(raw_lobbyist: RawLobbyist) -> dict:
     return {
         "number": raw_lobbyist.Number,
@@ -34,6 +35,7 @@ def get_data_row(raw_lobbyist: RawLobbyist) -> dict:
         "suffix": raw_lobbyist.Suffix,
         "type": LobbyistType(raw_lobbyist.Type),
     }
+
 
 def get_data_row_from_communication(raw_communication: RawCommunication) -> dict:
     return {
@@ -45,15 +47,22 @@ def get_data_row_from_communication(raw_communication: RawCommunication) -> dict
         "type": LobbyistType(raw_communication.LobbyistType),
     }
 
+
 def create_table(session: Session) -> List[Lobbyist]:
     raw_lobbyists = session.query(RawLobbyist).all()
     raw_communications = session.query(RawCommunication).all()
 
     grouped_raw_lobbyists = utils.get_grouped_raw_records(raw_lobbyists, LOBBYIST_KEY)
-    grouped_raw_communications = utils.get_grouped_raw_records(raw_communications, COMMUNICATIONS_LOBBYIST_KEY)
+    grouped_raw_communications = utils.get_grouped_raw_records(
+        raw_communications, COMMUNICATIONS_LOBBYIST_KEY
+    )
 
-    keys = set(grouped_raw_lobbyists.keys()).union(set(grouped_raw_communications.keys()))
-    keys.discard((None, None, None, None, None, None, None)) # Some communications don't have a lobbyist
+    keys = set(grouped_raw_lobbyists.keys()).union(
+        set(grouped_raw_communications.keys())
+    )
+    keys.discard(
+        (None, None, None, None, None, None, None)
+    )  # Some communications don't have a lobbyist
     keys = list(keys)
 
     lobbyists = []
@@ -77,4 +86,3 @@ def create_table(session: Session) -> List[Lobbyist]:
     session.commit()
 
     return Lobbyist.query.all()
-
