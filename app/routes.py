@@ -13,7 +13,7 @@ from app.models.models import (
     Meeting,
     PublicOfficeHolder,
     Lobbyist,
-    meeting_lobbyist
+    meeting_lobbyist,
 )
 
 
@@ -151,7 +151,13 @@ def lobbyist(id):
     lobbyist = Lobbyist.query.get(id)
     lobbying_reports = []
 
-    reports_attend_meeting = LobbyingReport.query.filter(LobbyingReport.id.in_(db.session.query(Meeting.report_id).join(meeting_lobbyist, meeting_lobbyist.c.meeting_id == Meeting.id).filter(meeting_lobbyist.c.lobbyist_id == id))).all()
+    reports_attend_meeting = LobbyingReport.query.filter(
+        LobbyingReport.id.in_(
+            db.session.query(Meeting.report_id)
+            .join(meeting_lobbyist, meeting_lobbyist.c.meeting_id == Meeting.id)
+            .filter(meeting_lobbyist.c.lobbyist_id == id)
+        )
+    ).all()
 
     return render_template(
         "lobbyist.html",
