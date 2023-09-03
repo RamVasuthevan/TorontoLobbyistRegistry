@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-  <h1>Lobbyists {{lobbyist.number}}</h1>
+  <h1>Lobbyist {{lobbyist.number}}</h1>
   <p>Name: {{lobbyist.prefix|default('')}} {{lobbyist.first_name|default('N/A')}} {{lobbyist.middle_initials|default('')}} {{lobbyist.last_name|default('N/A')}} {{lobbyist.suffix|default('')}}</p>
   <p>Type: {{lobbyist.type}}</p>
 
