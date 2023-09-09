@@ -9,14 +9,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Echo commit hash of TorontoLobbyistRegistry
         run: |
           TorontoLobbyistRegistry_commit_hash=$(git rev-parse HEAD)
           echo "TorontoLobbyistRegistry_commit_hash=${TorontoLobbyistRegistry_commit_hash}" >> $GITHUB_ENV
           echo "TorontoLobbyistRegistry_commit_hash=${TorontoLobbyistRegistry_commit_hash}"
       - name: Checkout TorontoLobbyistRegistryData
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.PAT_TORONTOLOBBYISTREGISTRY_SCRAPE }}
           repository: 'RamVasuthevan/TorontoLobbyistRegistryData'
