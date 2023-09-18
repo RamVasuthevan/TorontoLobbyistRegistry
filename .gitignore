@@ -142,5 +142,6 @@ app.sqlite-journal
 out.txt
 test.txt
 
+LobbyistRegistryActivity.zip
 lobbyactivity-active.xml
 lobbyactivity-closed.xml
