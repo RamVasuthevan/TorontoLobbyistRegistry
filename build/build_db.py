@@ -59,7 +59,7 @@ from utils.profiling import timer
 
 
 DATA_PATH = "data"
-DATA_ZIP = "Lobbyist Registry Activity.zip"
+DATA_ZIP = "LobbyistRegistryActivity.zip"
 
 
 @dataclass
