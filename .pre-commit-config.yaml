@@ -3,5 +3,9 @@ repos:
     rev: "23.7.0"
     hooks:
     -   id: black
+-   repo: https://github.com/RamVasuthevan/version-check-pre-commit-hooks/
+    rev: 8967eea1a7702b3d87f3b641eda5730a45efc620
+    hooks:
+    -   id: python-version-runtime-txt-match-pipfile-lock
 default_language_version:
     python: python3.11.5
