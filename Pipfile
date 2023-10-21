@@ -14,7 +14,7 @@ requests = "*"
 boto3 = "1.28.62"
 
 [dev-packages]
-black = "23.9.1"
+black = "23.10.0"
 pre-commit = "3.4.0"
 
 [requires]
