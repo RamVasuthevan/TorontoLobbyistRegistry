@@ -10,7 +10,7 @@ flask_sqlalchemy = "3.1.1"
 Flask-Migrate = "4.0.5"
 xmltodict = "0.13"
 gunicorn = "21.2.0"
-requests = "*"
+requests = "2.31.0"
 boto3 = "1.28.84"
 
 [dev-packages]
