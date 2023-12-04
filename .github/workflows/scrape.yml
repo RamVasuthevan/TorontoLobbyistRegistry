@@ -53,9 +53,9 @@ jobs:
           timestamp=$(date -u)
           git commit -m "Downloaded: ${timestamp}: commit: ${{env.TorontoLobbyistRegistry_commit_hash}}" || exit 0
           git push origin main
-          - name: Move files to TorontoLobbyistRegistryData
-          run: |-
-            mv lobbyactivity-active.xml lobbyactivity-closed.xml open-data-response ../TorontoLobbyistRegistryData/
+      - name: Move files to TorontoLobbyistRegistryData
+        run: |-
+          mv lobbyactivity-active.xml lobbyactivity-closed.xml open-data-response ../TorontoLobbyistRegistryData/
       - name: Run extract_data_to_report_files.py script
         run: |-
           cd TorontoLobbyistRegistryReportsData
