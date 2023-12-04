@@ -68,5 +68,5 @@ jobs:
           git add .
           timestamp=$(date -u)
           git commit -m "Extracted Reports: ${timestamp}: commit: ${{ env.TorontoLobbyistRegistry_commit_hash }}" || exit 0
-          git push origin main
+          git push origin HEAD:temp_$(date -u +%Y%m%d%H%M%S)
         
