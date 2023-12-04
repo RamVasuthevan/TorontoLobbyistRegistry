@@ -56,6 +56,7 @@ jobs:
       - name: Move files to TorontoLobbyistRegistryReportsData
         run: |-
           cd ..
+          cd ..
           echo $(ls)
           mv lobbyactivity-active.xml lobbyactivity-closed.xml open-data-response ../TorontoLobbyistRegistryReportsData/
       - name: Run extract_data_to_report_files.py script
