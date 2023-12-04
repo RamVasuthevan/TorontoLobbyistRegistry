@@ -22,6 +22,13 @@ jobs:
           repository: 'RamVasuthevan/TorontoLobbyistRegistryData'
           path: TorontoLobbyistRegistryData
           ref: 'main'
+      - name: Checkout TorontoLobbyistRegistryReportsData
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT_TORONTOLOBBYISTREGISTRY_SCRAPE }}
+          repository: 'RamVasuthevan/TorontoLobbyistRegistryReportsData'
+          path: TorontoLobbyistRegistryReportsData
+          ref: 'main'
       - name: Set up Python 3.11.5
         uses: actions/setup-python@v4
         with:
@@ -46,3 +53,20 @@ jobs:
           timestamp=$(date -u)
           git commit -m "Downloaded: ${timestamp}: commit: ${{env.TorontoLobbyistRegistry_commit_hash}}" || exit 0
           git push origin main
+          - name: Move files to TorontoLobbyistRegistryData
+          run: |-
+            mv lobbyactivity-active.xml lobbyactivity-closed.xml open-data-response ../TorontoLobbyistRegistryData/
+      - name: Run extract_data_to_report_files.py script
+        run: |-
+          cd TorontoLobbyistRegistryReportsData
+          pipenv run python ../scripts/extract_data_to_report_files.py
+      - name: Commit and push if files changed in TorontoLobbyistRegistryReportsData
+        run: |-
+          cd TorontoLobbyistRegistryReportsData
+          git config user.name "Automated"
+          git config user.email "actions@users.noreply.github.com"
+          git add .
+          timestamp=$(date -u)
+          git commit -m "Extracted Reports: ${timestamp}: commit: ${{ env.TorontoLobbyistRegistry_commit_hash }}" || exit 0
+          git push origin main
+        
