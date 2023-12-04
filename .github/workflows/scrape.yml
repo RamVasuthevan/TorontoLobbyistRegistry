@@ -55,8 +55,7 @@ jobs:
           git push origin main
       - name: Move files to TorontoLobbyistRegistryReportsData
         run: |-
-          cd ..
-          cd ..
+          cd TorontoLobbyistRegistryReportsData
           echo $(ls)
           mv lobbyactivity-active.xml lobbyactivity-closed.xml open-data-response ../TorontoLobbyistRegistryReportsData/
       - name: Run extract_data_to_report_files.py script
