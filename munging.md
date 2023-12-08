@@ -1,4 +1,4 @@
-# TorontoLobbyistRegistry
+# Data Munging
 
 Code is licensed under the MIT Licence and data is licensed under the Open Government Licence
 
