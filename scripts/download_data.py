@@ -30,9 +30,9 @@ def downdload_data():
 
     resource_response = {}
     for resource in package["result"]["resources"]:
-        resource_response[
-            f"{resource['name']}.{resource['format'].lower()}"
-        ] = requests.get(resource["url"])
+        resource_response[f"{resource['name']}.{resource['format'].lower()}"] = (
+            requests.get(resource["url"])
+        )
 
     for resource, response in resource_response.items():
         with open(resource, "wb") as f:
