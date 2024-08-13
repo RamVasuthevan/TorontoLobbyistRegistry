@@ -1,6 +1,6 @@
 import xml.etree.ElementTree as ET
 import logging
-from models import SubjectMatter, Registrant, BusinessAddress, Beneficiary, Firm, Communication, LobbyistBusinessAddress, Grassroots
+from models import SubjectMatter, Registrant, RegistrantBusinessAddress, Beneficiary, BeneficiaryBusinessAddress, Firm, FirmBusinessAddress, Communication, LobbyistBusinessAddress, Grassroots, Privatefunding
 
 def parse_xml_file(filename, session):
     tree = ET.parse(filename)
@@ -57,11 +57,11 @@ def parse_xml_file(filename, session):
                         session.add(registrant)
                         session.flush()
 
-                        # BusinessAddress parsing
+                        # RegistrantBusinessAddress parsing
                         address_elem = registrant_elem.find('BusinessAddress')
                         if address_elem is not None:
                             try:
-                                address = BusinessAddress(
+                                address = RegistrantBusinessAddress(
                                     registrant_id=registrant.id,
                                     address_line1=address_elem.find('AddressLine1').text,
                                     address_line2=address_elem.find('AddressLine2').text,
@@ -73,43 +73,83 @@ def parse_xml_file(filename, session):
                                 )
                                 session.add(address)
                             except Exception as e:
-                                logging.error(f"Error parsing BusinessAddress for Registrant {registration_number}: {str(e)}")
+                                logging.error(f"Error parsing RegistrantBusinessAddress for Registrant {registration_number}: {str(e)}")
 
                     registrant.subject_matters.append(sm)
                 except Exception as e:
                     logging.error(f"Error parsing Registrant for SubjectMatter {sm_number}: {str(e)}")
 
             # Beneficiary parsing
-            for beneficiary_elem in row.findall('.//BENEFICIARY'):
-                try:
-                    beneficiary = Beneficiary(
-                        sm_number=sm.sm_number,
-                        type=beneficiary_elem.find('Type').text,
-                        name=beneficiary_elem.find('Name').text,
-                        trade_name=beneficiary_elem.find('TradeName').text,
-                        fiscal_start=beneficiary_elem.find('FiscalStart').text,
-                        fiscal_end=beneficiary_elem.find('FiscalEnd').text
-                    )
-                    session.add(beneficiary)
-                except Exception as e:
-                    logging.error(f"Error parsing Beneficiary for SubjectMatter {sm_number}: {str(e)}")
+            beneficiaries_elem = row.find('Beneficiaries')
+            if beneficiaries_elem is not None:
+                for beneficiary_elem in beneficiaries_elem.findall('BENEFICIARY'):
+                    try:
+                        beneficiary = Beneficiary(
+                            sm_number=sm.sm_number,
+                            type=beneficiary_elem.find('Type').text,
+                            name=beneficiary_elem.find('Name').text,
+                            trade_name=beneficiary_elem.find('TradeName').text,
+                            fiscal_start=beneficiary_elem.find('FiscalStart').text,
+                            fiscal_end=beneficiary_elem.find('FiscalEnd').text
+                        )
+                        session.add(beneficiary)
+                        session.flush()  # This ensures beneficiary.id is available
+
+                        # BeneficiaryBusinessAddress parsing
+                        address_elem = beneficiary_elem.find('BusinessAddress')
+                        if address_elem is not None:
+                            try:
+                                address = BeneficiaryBusinessAddress(
+                                    beneficiary_id=beneficiary.id,
+                                    address_line1=address_elem.find('AddressLine1').text,
+                                    address_line2=address_elem.find('AddressLine2').text,
+                                    city=address_elem.find('City').text,
+                                    province=address_elem.find('Province').text,
+                                    country=address_elem.find('Country').text,
+                                    postal_code=address_elem.find('PostalCode').text
+                                )
+                                session.add(address)
+                            except Exception as e:
+                                logging.error(f"Error parsing BeneficiaryBusinessAddress for Beneficiary {beneficiary.name} in SubjectMatter {sm_number}: {str(e)}")
+                    except Exception as e:
+                        logging.error(f"Error parsing Beneficiary for SubjectMatter {sm_number}: {str(e)}")
 
             # Firm parsing
-            for firm_elem in row.findall('.//Firm'):
-                try:
-                    firm = Firm(
-                        sm_number=sm.sm_number,
-                        type=firm_elem.find('Type').text,
-                        name=firm_elem.find('Name').text,
-                        trade_name=firm_elem.find('TradeName').text,
-                        fiscal_start=firm_elem.find('FiscalStart').text,
-                        fiscal_end=firm_elem.find('FiscalEnd').text,
-                        description=firm_elem.find('Description').text,
-                        business_type=firm_elem.find('BusinessType').text
-                    )
-                    session.add(firm)
-                except Exception as e:
-                    logging.error(f"Error parsing Firm for SubjectMatter {sm_number}: {str(e)}")
+            firms_elem = row.find('Firms')
+            if firms_elem is not None:
+                for firm_elem in firms_elem.findall('Firm'):
+                    try:
+                        firm = Firm(
+                            sm_number=sm.sm_number,
+                            type=firm_elem.find('Type').text,
+                            name=firm_elem.find('Name').text,
+                            trade_name=firm_elem.find('TradeName').text,
+                            fiscal_start=firm_elem.find('FiscalStart').text,
+                            fiscal_end=firm_elem.find('FiscalEnd').text,
+                            description=firm_elem.find('Description').text,
+                            business_type=firm_elem.find('BusinessType').text
+                        )
+                        session.add(firm)
+                        session.flush()  # This ensures firm.id is available
+
+                        # FirmBusinessAddress parsing
+                        address_elem = firm_elem.find('BusinessAddress')
+                        if address_elem is not None:
+                            try:
+                                address = FirmBusinessAddress(
+                                    firm_id=firm.id,
+                                    address_line1=address_elem.find('AddressLine1').text,
+                                    address_line2=address_elem.find('AddressLine2').text,
+                                    city=address_elem.find('City').text,
+                                    province=address_elem.find('Province').text,
+                                    country=address_elem.find('Country').text,
+                                    postal_code=address_elem.find('PostalCode').text
+                                )
+                                session.add(address)
+                            except Exception as e:
+                                logging.error(f"Error parsing FirmBusinessAddress for Firm {firm.name} in SubjectMatter {sm_number}: {str(e)}")
+                    except Exception as e:
+                        logging.error(f"Error parsing Firm for SubjectMatter {sm_number}: {str(e)}")
 
             # Communication parsing
             for comm_elem in row.findall('.//Communication'):
@@ -176,6 +216,22 @@ def parse_xml_file(filename, session):
                         session.add(grassroots)
                     except Exception as e:
                         logging.error(f"Error parsing Grassroots for SubjectMatter {sm_number}: {str(e)}")
+
+            # Privatefunding parsing
+            privatefundings_elem = row.find('Privatefundings')
+            if privatefundings_elem is not None:
+                for privatefunding_elem in privatefundings_elem.findall('Privatefunding'):
+                    try:
+                        privatefunding = Privatefunding(
+                            sm_number=sm.sm_number,
+                            funding=privatefunding_elem.find('Funding').text,
+                            contact=privatefunding_elem.find('Contact').text,
+                            agent=privatefunding_elem.find('Agent').text,
+                            agent_contact=privatefunding_elem.find('AgentContact').text
+                        )
+                        session.add(privatefunding)
+                    except Exception as e:
+                        logging.error(f"Error parsing Privatefunding for SubjectMatter {sm_number}: {str(e)}")
 
             session.commit()
             logging.info(f"Successfully processed SubjectMatter: {sm_number}")

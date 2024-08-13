@@ -28,6 +28,7 @@ class SubjectMatter(Base):
     firms = relationship("Firm", back_populates="subject_matter")
     communications = relationship("Communication", back_populates="subject_matter")
     grassroots = relationship("Grassroots", back_populates="subject_matter")
+    privatefundings = relationship("Privatefunding", back_populates="subject_matter")
 
 class Registrant(Base):
     __tablename__ = 'registrants'
@@ -49,11 +50,11 @@ class Registrant(Base):
     previous_public_office_hold_last_date = Column(String)
 
     subject_matters = relationship("SubjectMatter", secondary=registrant_subject_matter, back_populates="registrants")
-    business_address = relationship("BusinessAddress", uselist=False, back_populates="registrant")
+    registrant_business_address = relationship("RegistrantBusinessAddress", uselist=False, back_populates="registrant")
     communications = relationship("Communication", back_populates="registrant")
 
-class BusinessAddress(Base):
-    __tablename__ = 'business_addresses'
+class RegistrantBusinessAddress(Base):
+    __tablename__ = 'registrant_business_addresses'
 
     id = Column(Integer, primary_key=True)
     registrant_id = Column(Integer, ForeignKey('registrants.id'), unique=True)
@@ -65,7 +66,7 @@ class BusinessAddress(Base):
     postal_code = Column(String(20))
     phone = Column(String(20))
 
-    registrant = relationship("Registrant", back_populates="business_address")
+    registrant = relationship("Registrant", back_populates="registrant_business_address")
 
 class Beneficiary(Base):
     __tablename__ = 'beneficiaries'
@@ -79,6 +80,21 @@ class Beneficiary(Base):
     fiscal_end = Column(String)
 
     subject_matter = relationship("SubjectMatter", back_populates="beneficiaries")
+    beneficiary_business_address = relationship("BeneficiaryBusinessAddress", uselist=False, back_populates="beneficiary")
+
+class BeneficiaryBusinessAddress(Base):
+    __tablename__ = 'beneficiary_business_addresses'
+
+    id = Column(Integer, primary_key=True)
+    beneficiary_id = Column(Integer, ForeignKey('beneficiaries.id'), unique=True)
+    address_line1 = Column(String(100))
+    address_line2 = Column(String(100))
+    city = Column(String(50))
+    province = Column(String(50))
+    country = Column(String(50))
+    postal_code = Column(String(20))
+
+    beneficiary = relationship("Beneficiary", back_populates="beneficiary_business_address")
 
 class Firm(Base):
     __tablename__ = 'firms'
@@ -94,6 +110,21 @@ class Firm(Base):
     business_type = Column(String(50))
 
     subject_matter = relationship("SubjectMatter", back_populates="firms")
+    firm_business_address = relationship("FirmBusinessAddress", uselist=False, back_populates="firm")
+
+class FirmBusinessAddress(Base):
+    __tablename__ = 'firm_business_addresses'
+
+    id = Column(Integer, primary_key=True)
+    firm_id = Column(Integer, ForeignKey('firms.id'), unique=True)
+    address_line1 = Column(String(100))
+    address_line2 = Column(String(100))
+    city = Column(String(50))
+    province = Column(String(50))
+    country = Column(String(50))
+    postal_code = Column(String(20))
+
+    firm = relationship("Firm", back_populates="firm_business_address")
 
 class Communication(Base):
     __tablename__ = 'communications'
@@ -153,30 +184,14 @@ class Grassroots(Base):
 
     subject_matter = relationship("SubjectMatter", back_populates="grassroots")
 
-class Beneficiary(Base):
-    __tablename__ = 'beneficiaries'
+class Privatefunding(Base):
+    __tablename__ = 'privatefundings'
 
     id = Column(Integer, primary_key=True)
     sm_number = Column(String(10), ForeignKey('subject_matters.sm_number'))
-    type = Column(String(50))
-    name = Column(String(100))
-    trade_name = Column(String(100))
-    fiscal_start = Column(String)
-    fiscal_end = Column(String)
+    funding = Column(String(100))
+    contact = Column(String(100))
+    agent = Column(String(100))
+    agent_contact = Column(String(100))
 
-    subject_matter = relationship("SubjectMatter", back_populates="beneficiaries")
-    business_address = relationship("BeneficiaryBusinessAddress", uselist=False, back_populates="beneficiary")
-
-class BeneficiaryBusinessAddress(Base):
-    __tablename__ = 'beneficiary_business_addresses'
-
-    id = Column(Integer, primary_key=True)
-    beneficiary_id = Column(Integer, ForeignKey('beneficiaries.id'), unique=True)
-    address_line1 = Column(String(100))
-    address_line2 = Column(String(100))
-    city = Column(String(50))
-    province = Column(String(50))
-    country = Column(String(50))
-    postal_code = Column(String(20))
-
-    beneficiary = relationship("Beneficiary", back_populates="business_address")
+    subject_matter = relationship("SubjectMatter", back_populates="privatefundings")
