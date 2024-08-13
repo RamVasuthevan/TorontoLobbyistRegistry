@@ -1,12 +1,29 @@
 import os
 import logging
+from datetime import datetime
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from models import Base
 from parse_xml_file import parse_xml_file
 
 # Set up logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+def setup_logging():
+    log_dir = 'logs'
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+    
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    log_filename = f"{log_dir}/lobbyist_registry_{timestamp}.log"
+    
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.FileHandler(log_filename),
+            logging.StreamHandler()
+        ]
+    )
+    return log_filename
 
 # Database setup
 db_file = 'lobbyist_registry.db'
@@ -23,10 +40,19 @@ def create_tables():
     logging.info("Created new database tables")
 
 if __name__ == "__main__":
+    log_filename = setup_logging()
+    logging.info(f"Logging to file: {log_filename}")
+
     delete_existing_db()
     create_tables()
     
     session = Session()
-    parse_xml_file('lobbyactivity-active.xml', session)
-    parse_xml_file('lobbyactivity-closed.xml', session)
+    
+    xml_files = ['lobbyactivity-active.xml', 'lobbyactivity-closed.xml']
+    for xml_file in xml_files:
+        logging.info(f"Starting to parse {xml_file}")
+        parse_xml_file(xml_file, session)
+        logging.info(f"Finished parsing {xml_file}")
+    
     session.close()
+    logging.info("Database population completed")

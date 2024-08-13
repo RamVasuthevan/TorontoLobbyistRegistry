@@ -152,3 +152,31 @@ class Grassroots(Base):
     target = Column(String(100))
 
     subject_matter = relationship("SubjectMatter", back_populates="grassroots")
+
+class Beneficiary(Base):
+    __tablename__ = 'beneficiaries'
+
+    id = Column(Integer, primary_key=True)
+    sm_number = Column(String(10), ForeignKey('subject_matters.sm_number'))
+    type = Column(String(50))
+    name = Column(String(100))
+    trade_name = Column(String(100))
+    fiscal_start = Column(String)
+    fiscal_end = Column(String)
+
+    subject_matter = relationship("SubjectMatter", back_populates="beneficiaries")
+    business_address = relationship("BeneficiaryBusinessAddress", uselist=False, back_populates="beneficiary")
+
+class BeneficiaryBusinessAddress(Base):
+    __tablename__ = 'beneficiary_business_addresses'
+
+    id = Column(Integer, primary_key=True)
+    beneficiary_id = Column(Integer, ForeignKey('beneficiaries.id'), unique=True)
+    address_line1 = Column(String(100))
+    address_line2 = Column(String(100))
+    city = Column(String(50))
+    province = Column(String(50))
+    country = Column(String(50))
+    postal_code = Column(String(20))
+
+    beneficiary = relationship("Beneficiary", back_populates="business_address")
