@@ -3,12 +3,6 @@ from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
 
-# Association table for the many-to-many relationship between Registrant and SubjectMatter
-registrant_subject_matter = Table('registrant_subject_matter', Base.metadata,
-    Column('registrant_id', Integer, ForeignKey('registrants.id')),
-    Column('sm_number', String(10), ForeignKey('subject_matters.sm_number'))
-)
-
 class SubjectMatter(Base):
     __tablename__ = 'subject_matters'
 
@@ -23,7 +17,9 @@ class SubjectMatter(Base):
     proposed_start_date = Column(String)
     proposed_end_date = Column(String)
 
-    registrants = relationship("Registrant", secondary=registrant_subject_matter, back_populates="subject_matters")
+    registrant_id = Column(Integer, ForeignKey('registrants.id'), unique=True)  # Adding the foreign key
+    registrant = relationship("Registrant", back_populates="subject_matters")  # One-to-many relationship
+
     beneficiaries = relationship("Beneficiary", back_populates="subject_matter")
     firms = relationship("Firm", back_populates="subject_matter")
     communications = relationship("Communication", back_populates="subject_matter")
@@ -32,11 +28,12 @@ class SubjectMatter(Base):
     gmtfundings = relationship("Gmtfunding", back_populates="subject_matter")
     meetings = relationship("Meeting", back_populates="subject_matter")
 
+
 class Registrant(Base):
     __tablename__ = 'registrants'
 
     id = Column(Integer, primary_key=True)
-    registration_number = Column(String(20), unique=True)
+    registration_number = Column(String(20))
     status = Column(String(20))
     effective_date = Column(String)
     type = Column(String(50))
@@ -51,9 +48,10 @@ class Registrant(Base):
     previous_public_office_position_program_name = Column(String(100))
     previous_public_office_hold_last_date = Column(String)
 
-    subject_matters = relationship("SubjectMatter", secondary=registrant_subject_matter, back_populates="registrants")
+    subject_matters = relationship("SubjectMatter", back_populates="registrant")  # Updated relationship
     registrant_business_address = relationship("RegistrantBusinessAddress", uselist=False, back_populates="registrant")
     communications = relationship("Communication", back_populates="registrant")
+
 
 class RegistrantBusinessAddress(Base):
     __tablename__ = 'registrant_business_addresses'

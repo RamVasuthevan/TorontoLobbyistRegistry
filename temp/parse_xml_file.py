@@ -34,48 +34,44 @@ def parse_xml_file(filename, session):
             registrant_elem = row.find('Registrant')
             if registrant_elem is not None:
                 try:
-                    registration_number = registrant_elem.find('RegistrationNUmber').text
-                    registrant = session.query(Registrant).filter_by(registration_number=registration_number).first()
-                    
-                    if registrant is None:
-                        registrant = Registrant(
-                            registration_number=registration_number,
-                            status=registrant_elem.find('Status').text,
-                            effective_date=registrant_elem.find('EffectiveDate').text,
-                            type=registrant_elem.find('Type').text,
-                            prefix=registrant_elem.find('Prefix').text,
-                            first_name=registrant_elem.find('FirstName').text,
-                            middle_initials=registrant_elem.find('MiddleInitials').text,
-                            last_name=registrant_elem.find('LastName').text,
-                            suffix=registrant_elem.find('Suffix').text,
-                            position_title=registrant_elem.find('PositionTitle').text,
-                            previous_public_office_holder=registrant_elem.find('PreviousPublicOfficeHolder').text,
-                            previous_public_office_hold_position=registrant_elem.find('PreviousPublicOfficeHoldPosition').text,
-                            previous_public_office_position_program_name=registrant_elem.find('PreviousPublicOfficePositionProgramName').text,
-                            previous_public_office_hold_last_date=registrant_elem.find('PreviousPublicOfficeHoldLastDate').text
-                        )
-                        session.add(registrant)
-                        session.flush()
+                    registrant = Registrant(
+                        registration_number=registrant_elem.find('RegistrationNUmber').text,
+                        status=registrant_elem.find('Status').text,
+                        effective_date=registrant_elem.find('EffectiveDate').text,
+                        type=registrant_elem.find('Type').text,
+                        prefix=registrant_elem.find('Prefix').text,
+                        first_name=registrant_elem.find('FirstName').text,
+                        middle_initials=registrant_elem.find('MiddleInitials').text,
+                        last_name=registrant_elem.find('LastName').text,
+                        suffix=registrant_elem.find('Suffix').text,
+                        position_title=registrant_elem.find('PositionTitle').text,
+                        previous_public_office_holder=registrant_elem.find('PreviousPublicOfficeHolder').text,
+                        previous_public_office_hold_position=registrant_elem.find('PreviousPublicOfficeHoldPosition').text,
+                        previous_public_office_position_program_name=registrant_elem.find('PreviousPublicOfficePositionProgramName').text,
+                        previous_public_office_hold_last_date=registrant_elem.find('PreviousPublicOfficeHoldLastDate').text
+                    )
+                    session.add(registrant)
+                    session.flush()
 
-                        # RegistrantBusinessAddress parsing
-                        address_elem = registrant_elem.find('BusinessAddress')
-                        if address_elem is not None:
-                            try:
-                                address = RegistrantBusinessAddress(
-                                    registrant_id=registrant.id,
-                                    address_line1=address_elem.find('AddressLine1').text,
-                                    address_line2=address_elem.find('AddressLine2').text,
-                                    city=address_elem.find('City').text,
-                                    province=address_elem.find('Province').text,
-                                    country=address_elem.find('Country').text,
-                                    postal_code=address_elem.find('PostalCode').text,
-                                    phone=address_elem.find('Phone').text
-                                )
-                                session.add(address)
-                            except Exception as e:
-                                logging.error(f"Error parsing RegistrantBusinessAddress for Registrant {registration_number}: {str(e)}")
+                    sm.registrant = registrant  # Associate the registrant with the subject matter
 
-                    registrant.subject_matters.append(sm)
+                    # RegistrantBusinessAddress parsing
+                    address_elem = registrant_elem.find('BusinessAddress')
+                    if address_elem is not None:
+                        try:
+                            address = RegistrantBusinessAddress(
+                                registrant_id=registrant.id,
+                                address_line1=address_elem.find('AddressLine1').text,
+                                address_line2=address_elem.find('AddressLine2').text,
+                                city=address_elem.find('City').text,
+                                province=address_elem.find('Province').text,
+                                country=address_elem.find('Country').text,
+                                postal_code=address_elem.find('PostalCode').text,
+                                phone=address_elem.find('Phone').text
+                            )
+                            session.add(address)
+                        except Exception as e:
+                            logging.error(f"Error parsing RegistrantBusinessAddress for Registrant {registrant.registration_number}: {str(e)}")
                 except Exception as e:
                     logging.error(f"Error parsing Registrant for SubjectMatter {sm_number}: {str(e)}")
 
@@ -247,8 +243,6 @@ def parse_xml_file(filename, session):
                     except Exception as e:
                         logging.error(f"Error parsing Gmtfunding for SubjectMatter {sm_number}: {str(e)}")
             
-
-
             # Meeting parsing
             meetings_elem = row.find('Meetings')
             if meetings_elem is not None:
