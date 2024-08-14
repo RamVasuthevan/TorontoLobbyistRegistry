@@ -9,7 +9,7 @@ def parse_xml_file(filename, session):
     for row in root.findall('.//SM'):
         try:
             sm_number = row.find('SMNumber').text
-            logging.info(f"Processing Subject Matter: {sm_number}")
+            logging.debug(f"Processing Subject Matter: {sm_number}")
 
             # SubjectMatter parsing
             try:
@@ -297,7 +297,7 @@ def parse_xml_file(filename, session):
                         logging.error(f"Error parsing Meeting for SubjectMatter {sm_number}: {str(e)}")
 
             session.commit()
-            logging.info(f"Successfully processed SubjectMatter: {sm_number}")
+            logging.debug(f"Successfully processed SubjectMatter: {sm_number}")
 
         except Exception as e:
             logging.error(f"Error processing SubjectMatter: {str(e)}")

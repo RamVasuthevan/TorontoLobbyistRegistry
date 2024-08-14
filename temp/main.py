@@ -15,14 +15,20 @@ def setup_logging():
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     log_filename = f"{log_dir}/lobbyist_registry_{timestamp}.log"
     
+    # File handler for logging all levels
+    file_handler = logging.FileHandler(log_filename)
+    file_handler.setLevel(logging.INFO)
+    
+    # Stream handler for logging only errors
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.INFO)
+    
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s - %(levelname)s - %(message)s',
-        handlers=[
-            logging.FileHandler(log_filename),
-            logging.StreamHandler()
-        ]
+        handlers=[file_handler, console_handler]
     )
+    
     return log_filename
 
 # Database setup
