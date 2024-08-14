@@ -1,8 +1,9 @@
 import os
 import logging
 from datetime import datetime
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, inspect
 from sqlalchemy.orm import sessionmaker
+from sqlite_utils import Database
 from models import Base
 from parse_xml_file import parse_xml_file
 
@@ -37,13 +38,27 @@ engine = create_engine(f'sqlite:///{db_file}')
 Session = sessionmaker(bind=engine)
 
 def delete_existing_db():
+    logging.info(f"Deleting existing database file: {db_file}")
     if os.path.exists(db_file):
         os.remove(db_file)
         logging.info(f"Deleted existing database file: {db_file}")
 
 def create_tables():
+    logging.info("Creating new database tables")
     Base.metadata.create_all(engine)
     logging.info("Created new database tables")
+
+def enable_fts():
+    logging.info("Enabling Full Text Search for all tables")
+    db = Database(db_file)
+    inspector = inspect(engine)
+
+    for table_name in inspector.get_table_names():
+        if not table_name.endswith('_fts'):
+            columns = [column['name'] for column in inspector.get_columns(table_name)]
+            db[table_name].enable_fts(columns, create_triggers=True)
+    
+    logging.info("Enabled Full Text Search for all tables")
 
 if __name__ == "__main__":
     log_filename = setup_logging()
@@ -61,4 +76,6 @@ if __name__ == "__main__":
         logging.info(f"Finished parsing {xml_file}")
     
     session.close()
-    logging.info("Database population completed")
+
+    enable_fts()
+    logging.info("Database population completed with Full Text Search enabled")
