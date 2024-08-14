@@ -5,18 +5,35 @@
 
     {% for table_info in foreign_key_tables %}
         {% if table_info.count > 0 %}
-            <h3>{{ table_info.other_table | capitalize }} Data Table</h3>
+            <h3>
+                {% set json_url = table_info.link.split('?')[0] + '.json?' + table_info.link.split('?')[1] %}
+                <a href="{{ json_url }}">
+                    {{ table_info.count }} result{% if table_info.count > 1 %}s{% endif %}
+                </a> 
+                in {{ table_info.other_table | capitalize }}
+            </h3>
             <div id="{{ table_info.other_table }}-data-table"></div>
         {% endif %}
     {% endfor %}
 
     <script>
+        async function fetchAndDisplayTable(url, tableId) {
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                displayTable(data, tableId);
+            } catch (error) {
+                console.error(`Error fetching data for ${tableId}:`, error);
+                document.getElementById(tableId).innerHTML = '<p>Error loading table data.</p>';
+            }
+        }
+
         function displayTable(data, tableId) {
-            var rows = data.rows;
-            var columns = data.columns;
+            const rows = data.rows;
+            const columns = data.columns;
 
             // Create a table and append it to the specified div
-            var tableHtml = '<table border="1" cellpadding="5">';
+            let tableHtml = '<table border="1" cellpadding="5">';
             
             // Generate the header row
             tableHtml += '<thead><tr>';
@@ -44,19 +61,21 @@
             document.getElementById(tableId).innerHTML = tableHtml;
         }
 
-        // Loop through each table_info object and fetch the data
-        {% for table_info in foreign_key_tables %}
-            {% if table_info.count > 0 %}
-                var url = "{{ table_info.link | replace('?', '.json?') }}";
-                fetch(url)
-                    .then(response => response.json())
-                    .then(data => displayTable(data, '{{ table_info.other_table }}-data-table'))
-                    .catch(error => {
-                        console.error('Error fetching {{ table_info.other_table }} data:', error);
-                        document.getElementById('{{ table_info.other_table }}-data-table').innerHTML = '<p>Error loading table data.</p>';
-                    });
-            {% endif %}
-        {% endfor %}
+        async function loadAllTables() {
+            const tableInfos = {{ foreign_key_tables | tojson }};
+            const fetchPromises = tableInfos.map(table_info => {
+                if (table_info.count > 0) {
+                    const jsonUrl = table_info.link.split('?')[0] + '.json?' + table_info.link.split('?')[1];
+                    return fetchAndDisplayTable(jsonUrl, `${table_info.other_table}-data-table`);
+                }
+            });
+
+            // Wait for all fetches to complete
+            await Promise.all(fetchPromises);
+        }
+
+        // Start loading all tables
+        loadAllTables();
     </script>
 
 {% endblock %}
