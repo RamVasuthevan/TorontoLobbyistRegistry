@@ -29,6 +29,8 @@ class SubjectMatter(Base):
     communications = relationship("Communication", back_populates="subject_matter")
     grassroots = relationship("Grassroots", back_populates="subject_matter")
     privatefundings = relationship("Privatefunding", back_populates="subject_matter")
+    gmtfundings = relationship("Gmtfunding", back_populates="subject_matter")
+    meetings = relationship("Meeting", back_populates="subject_matter")
 
 class Registrant(Base):
     __tablename__ = 'registrants'
@@ -195,3 +197,54 @@ class Privatefunding(Base):
     agent_contact = Column(String(100))
 
     subject_matter = relationship("SubjectMatter", back_populates="privatefundings")
+
+class Gmtfunding(Base):
+    __tablename__ = 'gmtfundings'
+
+    id = Column(Integer, primary_key=True)
+    sm_number = Column(String(10), ForeignKey('subject_matters.sm_number'))
+    gmt_name = Column(String(100))
+    program = Column(String(100))
+
+    subject_matter = relationship("SubjectMatter", back_populates="gmtfundings")
+
+class Meeting(Base):
+    __tablename__ = 'meetings'
+
+    id = Column(Integer, primary_key=True)
+    sm_number = Column(String(10), ForeignKey('subject_matters.sm_number'))
+    committee = Column(String(100))
+    desc = Column(String)
+    date = Column(String)
+
+    subject_matter = relationship("SubjectMatter", back_populates="meetings")
+    pohs = relationship("POH", back_populates="meeting")
+    lobbyists = relationship("MeetingLobbyist", back_populates="meeting")
+
+class POH(Base):
+    __tablename__ = 'pohs'
+
+    id = Column(Integer, primary_key=True)
+    meeting_id = Column(Integer, ForeignKey('meetings.id'))
+    name = Column(String(100))
+    office = Column(String(100))
+    title = Column(String(100))
+    type = Column(String(50))
+
+    meeting = relationship("Meeting", back_populates="pohs")
+
+class MeetingLobbyist(Base):
+    __tablename__ = 'meeting_lobbyists'
+
+    id = Column(Integer, primary_key=True)
+    meeting_id = Column(Integer, ForeignKey('meetings.id'))
+    number = Column(String(20))
+    prefix = Column(String(10))
+    first_name = Column(String(100))
+    middle_initials = Column(String(10))
+    last_name = Column(String(100))
+    suffix = Column(String(10))
+    business = Column(String(100))
+    type = Column(String(50))
+
+    meeting = relationship("Meeting", back_populates="lobbyists")

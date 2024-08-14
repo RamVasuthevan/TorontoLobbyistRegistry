@@ -1,6 +1,6 @@
 import xml.etree.ElementTree as ET
 import logging
-from models import SubjectMatter, Registrant, RegistrantBusinessAddress, Beneficiary, BeneficiaryBusinessAddress, Firm, FirmBusinessAddress, Communication, LobbyistBusinessAddress, Grassroots, Privatefunding
+from models import SubjectMatter, Registrant, RegistrantBusinessAddress, Beneficiary, BeneficiaryBusinessAddress, Firm, FirmBusinessAddress, Communication, LobbyistBusinessAddress, Grassroots, Privatefunding, Gmtfunding, Meeting, POH, MeetingLobbyist
 
 def parse_xml_file(filename, session):
     tree = ET.parse(filename)
@@ -232,6 +232,75 @@ def parse_xml_file(filename, session):
                         session.add(privatefunding)
                     except Exception as e:
                         logging.error(f"Error parsing Privatefunding for SubjectMatter {sm_number}: {str(e)}")
+
+            # Gmtfunding parsing
+            gmtfundings_elem = row.find('Gmtfundings')
+            if gmtfundings_elem is not None:
+                for gmtfunding_elem in gmtfundings_elem.findall('Gmtfunding'):
+                    try:
+                        gmtfunding = Gmtfunding(
+                            sm_number=sm.sm_number,
+                            gmt_name=gmtfunding_elem.find('GMTName').text,
+                            program=gmtfunding_elem.find('Program').text
+                        )
+                        session.add(gmtfunding)
+                    except Exception as e:
+                        logging.error(f"Error parsing Gmtfunding for SubjectMatter {sm_number}: {str(e)}")
+            
+
+
+            # Meeting parsing
+            meetings_elem = row.find('Meetings')
+            if meetings_elem is not None:
+                for meeting_elem in meetings_elem.findall('Meeting'):
+                    try:
+                        meeting = Meeting(
+                            sm_number=sm.sm_number,
+                            committee=meeting_elem.find('Committee').text,
+                            desc=meeting_elem.find('Desc').text,
+                            date=meeting_elem.find('Date').text
+                        )
+                        session.add(meeting)
+                        session.flush()  # This ensures meeting.id is available
+
+                        # POH parsing
+                        pohs_elem = meeting_elem.find('POHS')
+                        if pohs_elem is not None:
+                            for poh_elem in pohs_elem.findall('POH'):
+                                try:
+                                    poh = POH(
+                                        meeting_id=meeting.id,
+                                        name=poh_elem.find('Name').text,
+                                        office=poh_elem.find('Office').text,
+                                        title=poh_elem.find('Title').text,
+                                        type=poh_elem.find('Type').text
+                                    )
+                                    session.add(poh)
+                                except Exception as e:
+                                    logging.error(f"Error parsing POH for Meeting in SubjectMatter {sm_number}: {str(e)}")
+
+                        # Lobbyist parsing
+                        lobbyists_elem = meeting_elem.find('Lobbyists')
+                        if lobbyists_elem is not None:
+                            for lobbyist_elem in lobbyists_elem.findall('Lobbyist'):
+                                try:
+                                    lobbyist = MeetingLobbyist(
+                                        meeting_id=meeting.id,
+                                        number=lobbyist_elem.find('Number').text,
+                                        prefix=lobbyist_elem.find('Prefix').text,
+                                        first_name=lobbyist_elem.find('FirstName').text,
+                                        middle_initials=lobbyist_elem.find('MiddleInitials').text,
+                                        last_name=lobbyist_elem.find('LastName').text,
+                                        suffix=lobbyist_elem.find('Suffix').text,
+                                        business=lobbyist_elem.find('Business').text,
+                                        type=lobbyist_elem.find('Type').text
+                                    )
+                                    session.add(lobbyist)
+                                except Exception as e:
+                                    logging.error(f"Error parsing Lobbyist for Meeting in SubjectMatter {sm_number}: {str(e)}")
+
+                    except Exception as e:
+                        logging.error(f"Error parsing Meeting for SubjectMatter {sm_number}: {str(e)}")
 
             session.commit()
             logging.info(f"Successfully processed SubjectMatter: {sm_number}")
