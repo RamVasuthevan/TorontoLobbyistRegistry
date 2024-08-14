@@ -31,6 +31,10 @@ databases:
       registrants:
         description: "Information about registered lobbyists"
         label_column: "registration_number"
+        facets:
+          - status
+          - type
+          - previous_public_office_holder
         columns:
           registration_number: "Registrant's registration number (format nnnnnA)"
           status: "Registrant's status"
@@ -70,6 +74,8 @@ databases:
       beneficiaries:
         description: "Organizations or individuals benefiting from lobbying activities"
         label_column: "name"
+        facets:
+          - type
         columns:
           type: "Type of beneficiary (e.g. Client, Parent company, Subsidiary company)"
           name: "Beneficiary organization name"
@@ -80,6 +86,9 @@ databases:
       firms:
         description: "Firms engaged in lobbying activities"
         label_column: "name"
+        facets:
+          - type
+          - business_type
         columns:
           type: "Business/organization type (e.g. voluntary, in-house, consultant)"
           name: "Business/organization name"
@@ -99,6 +108,8 @@ databases:
 
       meetings:
         description: "Information about meetings involving lobbyists"
+        facets:
+          - committee
         columns:
           committee: "Name of committee holding the meeting"
           desc: "Subject of meeting"
