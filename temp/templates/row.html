@@ -8,28 +8,34 @@
             <h3>
                 {% set json_url = table_info.link.split('?')[0] + '.json?' + table_info.link.split('?')[1] %}
                 <a href="{{ json_url }}">
-                    {{ table_info.count }} result{% if table_info.count > 1 %}s{% endif %}
+                    {{ table_info.count }}reference{% if table_info.count > 1 %}s{% endif %}
                 </a> 
-                in {{ table_info.other_table | capitalize }}
+                 in {{ table_info.other_table | capitalize }}
             </h3>
             <div id="{{ table_info.other_table }}-data-table"></div>
         {% endif %}
     {% endfor %}
 
     <script>
-        async function fetchAndDisplayTable(url, tableId) {
+        const NUM_RESULTS = 5;
+
+        async function fetchAndDisplayTable(url, tableId, totalResults) {
             try {
+                console.log(`Fetching data from: ${url}`);  // Log the URL
                 const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
                 const data = await response.json();
-                displayTable(data, tableId);
+                displayTable(data, tableId, totalResults);
             } catch (error) {
                 console.error(`Error fetching data for ${tableId}:`, error);
                 document.getElementById(tableId).innerHTML = '<p>Error loading table data.</p>';
             }
         }
 
-        function displayTable(data, tableId) {
-            const rows = data.rows;
+        function displayTable(data, tableId, totalResults) {
+            const rows = data.rows.slice(0, NUM_RESULTS); // Limit to NUM_RESULTS
             const columns = data.columns;
 
             // Create a table and append it to the specified div
@@ -54,8 +60,14 @@
                 tableHtml += '</tr>';
             });
             tableHtml += '</tbody>';
-
             tableHtml += '</table>';
+
+            // Check if we need to add a "more results" link
+            if (totalResults > NUM_RESULTS) {
+                const moreResultsCount = totalResults - NUM_RESULTS;
+                const moreResultsUrl = data.query ? `${data.query.url}` : "#";
+                tableHtml += `<p><a href="${moreResultsUrl}">${moreResultsCount} more result${moreResultsCount > 1 ? 's' : ''}</a></p>`;
+            }
 
             // Insert the table into the specified div
             document.getElementById(tableId).innerHTML = tableHtml;
@@ -65,8 +77,8 @@
             const tableInfos = {{ foreign_key_tables | tojson }};
             const fetchPromises = tableInfos.map(table_info => {
                 if (table_info.count > 0) {
-                    const jsonUrl = table_info.link.split('?')[0] + '.json?' + table_info.link.split('?')[1];
-                    return fetchAndDisplayTable(jsonUrl, `${table_info.other_table}-data-table`);
+                    const jsonUrl = table_info.link.split('?')[0] + '.json?_size=' + NUM_RESULTS + '&' + table_info.link.split('?')[1];
+                    return fetchAndDisplayTable(jsonUrl, `${table_info.other_table}-data-table`, table_info.count);
                 }
             });
 
