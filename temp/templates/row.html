@@ -1,0 +1,62 @@
+{% extends "default:row.html" %}
+
+{% block content %}
+    {{ super() }}
+
+    {% for table_info in foreign_key_tables %}
+        {% if table_info.count > 0 %}
+            <h3>{{ table_info.other_table | capitalize }} Data Table</h3>
+            <div id="{{ table_info.other_table }}-data-table"></div>
+        {% endif %}
+    {% endfor %}
+
+    <script>
+        function displayTable(data, tableId) {
+            var rows = data.rows;
+            var columns = data.columns;
+
+            // Create a table and append it to the specified div
+            var tableHtml = '<table border="1" cellpadding="5">';
+            
+            // Generate the header row
+            tableHtml += '<thead><tr>';
+            columns.forEach(column => {
+                tableHtml += `<th>${column}</th>`;
+            });
+            tableHtml += '</tr></thead>';
+
+            // Generate the rows
+            tableHtml += '<tbody>';
+            rows.forEach(row => {
+                tableHtml += '<tr>';
+                row.forEach((cellData, index) => {
+                    // Handle null values and object conversion
+                    cellData = cellData !== null ? cellData : 'N/A';
+                    tableHtml += `<td>${cellData}</td>`;
+                });
+                tableHtml += '</tr>';
+            });
+            tableHtml += '</tbody>';
+
+            tableHtml += '</table>';
+
+            // Insert the table into the specified div
+            document.getElementById(tableId).innerHTML = tableHtml;
+        }
+
+        // Loop through each table_info object and fetch the data
+        {% for table_info in foreign_key_tables %}
+            {% if table_info.count > 0 %}
+                var url = "{{ table_info.link | replace('?', '.json?') }}";
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => displayTable(data, '{{ table_info.other_table }}-data-table'))
+                    .catch(error => {
+                        console.error('Error fetching {{ table_info.other_table }} data:', error);
+                        document.getElementById('{{ table_info.other_table }}-data-table').innerHTML = '<p>Error loading table data.</p>';
+                    });
+            {% endif %}
+        {% endfor %}
+    </script>
+
+{% endblock %}
