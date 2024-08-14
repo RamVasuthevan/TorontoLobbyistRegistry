@@ -1,0 +1,105 @@
+title: Toronto Lobbyist Registry Database
+description_html: |
+  <p>This database contains information about lobbyist activities in Toronto, including subject matters, 
+  registrants, beneficiaries, firms, communications, and more.</p>
+  <p>Use this tool to explore relationships between lobbyists, their clients, and government officials.</p>
+license: Open Government Licence – Toronto
+license_url: https://open.toronto.ca/open-data-license/
+source: Toronto Lobbyist Registrar via Toronto Open Data
+source_url: https://open.toronto.ca/dataset/lobbyist-registry/
+
+databases:
+  lobbyist_registry:
+    tables:
+      subject_matters:
+        description: "Information about lobbying subject matters"
+        label_column: "sm_number"
+        facets: 
+          - status
+          - type
+        columns:
+          sm_number: "Subject matter registration number (format SMnnnnn)"
+          status: "Status of subject matter registration e.g. active"
+          type: "Lobbyist type (e.g. voluntary, in-house, consultant)"
+          subject_matter: "Subject matter (e.g. grants/funding)"
+          particulars: "Decision(s) or issue(s) to be lobbied"
+          initial_approval_date: "Initial subject matter registration approval date"
+          effective_date: "Most recent subject matter registration approval date"
+          proposed_start_date: "Start of time period for lobbying on this subject matter"
+          proposed_end_date: "End of time period for lobbying on this subject matter"
+
+      registrants:
+        description: "Information about registered lobbyists"
+        label_column: "registration_number"
+        columns:
+          registration_number: "Registrant's registration number (format nnnnnA)"
+          status: "Registrant's status"
+          effective_date: "Most recent registration approval date"
+          type: "Registrant's type i.e. voluntary, in-house, consultant"
+          prefix: "Registrant's name prefix (e.g. Mr, Mrs, Ms)"
+          first_name: "Registrant's first name"
+          middle_initials: "Registrant's middle initial(s)"
+          last_name: "Registrant's last name"
+          suffix: "Registrant's name suffix (e.g. Esq, BA, PhD)"
+          position_title: "Registrant's position title"
+          previous_public_office_holder: "Registrant had previous public office position with City of Toronto (Yes/No)"
+          previous_public_office_hold_position: "Previous COT public office position held by registrant"
+          previous_public_office_position_program_name: "Name of program that registrant's previous COT public office position belonged to"
+          previous_public_office_hold_last_date: "Last date of registrant's employment in previous COT public office position"
+
+      communications:
+        description: "Records of communications between lobbyists and public office holders"
+        columns:
+          poh_office: "Ward, office, division or agency of the public office holder"
+          poh_type: "Public office holder type"
+          poh_position: "Public office holder's position title"
+          poh_name: "Name of public office holder"
+          communication_method: "List of communication methods used"
+          communication_date: "Date of communication in yyyy-mm-dd format"
+          communication_group_id: "Identifier of group receiving communication"
+          lobbyist_number: "Lobbyist registration number"
+          lobbyist_type: "Lobbyist type i.e. voluntary, in-house, consultant"
+          lobbyist_prefix: "Lobbyist's name prefix (e.g. Mr, Mrs, Ms)"
+          lobbyist_first_name: "Lobbyist's first name"
+          lobbyist_middle_initials: "Lobbyist's middle initial(s)"
+          lobbyist_last_name: "Lobbyist's last name"
+          lobbyist_suffix: "Lobbyist's name suffix (e.g. Esq, BA, PhD)"
+          lobbyist_business: "Name of lobbyist's business"
+          lobbyist_position_title: "Lobbyist's position title"
+
+      beneficiaries:
+        description: "Organizations or individuals benefiting from lobbying activities"
+        label_column: "name"
+        columns:
+          type: "Type of beneficiary (e.g. Client, Parent company, Subsidiary company)"
+          name: "Beneficiary organization name"
+          trade_name: "Other trade names used"
+          fiscal_start: "Fiscal year start date of beneficiary organization"
+          fiscal_end: "Fiscal year end date of beneficiary organization"
+
+      firms:
+        description: "Firms engaged in lobbying activities"
+        label_column: "name"
+        columns:
+          type: "Business/organization type (e.g. voluntary, in-house, consultant)"
+          name: "Business/organization name"
+          trade_name: "Other trade names used"
+          fiscal_start: "Fiscal year of the business/organization start date"
+          fiscal_end: "Fiscal year of the business/organization end date"
+          description: "Description of business activities"
+          business_type: "Business/organization type (e.g. corporation)"
+
+      grassroots:
+        description: "Information about grassroots lobbying campaigns"
+        columns:
+          community: "Type of group(s) asked to participate in campaign (e.g. public)"
+          start_date: "Campaign Period From date"
+          end_date: "Campaign Period To Date"
+          target: "Target group (e.g. councillors)"
+
+      meetings:
+        description: "Information about meetings involving lobbyists"
+        columns:
+          committee: "Name of committee holding the meeting"
+          desc: "Subject of meeting"
+          date: "Date of meeting in yyyy-mm-dd format"
