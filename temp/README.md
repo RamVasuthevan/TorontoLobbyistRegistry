@@ -9,3 +9,4 @@ I want from Datasette
 - Set ordering of table in a database
 
 Add https://docs.datasette.io/en/stable/facets.html#facets-in-metadata-json to https://docs.datasette.io/en/stable/metadata.html
+Add search only a table to datasette-search-all
