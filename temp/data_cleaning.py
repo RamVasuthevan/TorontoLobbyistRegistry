@@ -78,66 +78,6 @@ def clean_country_name(country):
     # If not found in mapping, capitalize the first letter of each word
     return country.title()
 
-def clean_registrants_previous_public_office_holder(session: Session):
-    logging.info("Starting clean_registrants_previous_public_office_holder")
-    try:
-        registrants = session.query(Registrant).filter(Registrant.previous_public_office_holder.isnot(None))
-        update_count = 0
-        changes = defaultdict(int)
-        
-        for registrant in registrants:
-            old_value = registrant.previous_public_office_holder
-            new_value = old_value.capitalize()
-            if old_value != new_value:
-                registrant.previous_public_office_holder = new_value
-                update_count += 1
-                changes[f"'{old_value}' -> '{new_value}'"] += 1
-        
-        session.commit()
-        
-        if update_count > 0:
-            logging.info(f"Updated {update_count} rows in registrants.previous_public_office_holder:")
-            for change, count in changes.items():
-                logging.info(f"  {change}: {count} occurrences")
-        else:
-            logging.info("No updates were necessary in registrants.previous_public_office_holder")
-    
-    except Exception as e:
-        session.rollback()
-        logging.error(f"Error updating registrants.previous_public_office_holder: {str(e)}")
-    
-    logging.info("Completed clean_registrants_previous_public_office_holder")
-
-def clean_registrant_business_addresses_country(session: Session):
-    logging.info("Starting clean_registrant_business_addresses_country")
-    try:
-        addresses = session.query(RegistrantBusinessAddress).filter(RegistrantBusinessAddress.country.isnot(None))
-        update_count = 0
-        changes = defaultdict(int)
-        
-        for address in addresses:
-            old_value = address.country
-            new_value = clean_country_name(old_value)
-            if old_value != new_value:
-                address.country = new_value
-                update_count += 1
-                changes[f"'{old_value}' -> '{new_value}'"] += 1
-        
-        session.commit()
-        
-        if update_count > 0:
-            logging.info(f"Updated {update_count} rows in registrant_business_addresses.country:")
-            for change, count in changes.items():
-                logging.info(f"  {change}: {count} occurrences")
-        else:
-            logging.info("No updates were necessary in registrant_business_addresses.country")
-    
-    except Exception as e:
-        session.rollback()
-        logging.error(f"Error updating registrant_business_addresses.country: {str(e)}")
-    
-    logging.info("Completed clean_registrant_business_addresses_country")
-
 def clean_province_name(province):
     if not province:
         return None
@@ -242,6 +182,66 @@ def clean_province_name(province):
     # If not found in mapping, return the original value
     return province.title()
 
+def clean_registrants_previous_public_office_holder(session: Session):
+    logging.info("Starting clean_registrants_previous_public_office_holder")
+    try:
+        registrants = session.query(Registrant).filter(Registrant.previous_public_office_holder.isnot(None))
+        update_count = 0
+        changes = defaultdict(int)
+        
+        for registrant in registrants:
+            old_value = registrant.previous_public_office_holder
+            new_value = old_value.capitalize()
+            if old_value != new_value:
+                registrant.previous_public_office_holder = new_value
+                update_count += 1
+                changes[f"'{old_value}' -> '{new_value}'"] += 1
+        
+        session.commit()
+        
+        if update_count > 0:
+            logging.info(f"Updated {update_count} rows in registrants.previous_public_office_holder:")
+            for change, count in changes.items():
+                logging.info(f"  {change}: {count} occurrences")
+        else:
+            logging.info("No updates were necessary in registrants.previous_public_office_holder")
+    
+    except Exception as e:
+        session.rollback()
+        logging.error(f"Error updating registrants.previous_public_office_holder: {str(e)}")
+    
+    logging.info("Completed clean_registrants_previous_public_office_holder")
+
+def clean_registrant_business_addresses_country(session: Session):
+    logging.info("Starting clean_registrant_business_addresses_country")
+    try:
+        addresses = session.query(RegistrantBusinessAddress).filter(RegistrantBusinessAddress.country.isnot(None))
+        update_count = 0
+        changes = defaultdict(int)
+        
+        for address in addresses:
+            old_value = address.country
+            new_value = clean_country_name(old_value)
+            if old_value != new_value:
+                address.country = new_value
+                update_count += 1
+                changes[f"'{old_value}' -> '{new_value}'"] += 1
+        
+        session.commit()
+        
+        if update_count > 0:
+            logging.info(f"Updated {update_count} rows in registrant_business_addresses.country:")
+            for change, count in changes.items():
+                logging.info(f"  {change}: {count} occurrences")
+        else:
+            logging.info("No updates were necessary in registrant_business_addresses.country")
+    
+    except Exception as e:
+        session.rollback()
+        logging.error(f"Error updating registrant_business_addresses.country: {str(e)}")
+    
+    logging.info("Completed clean_registrant_business_addresses_country")
+
 def clean_registrant_business_addresses_province(session: Session):
     logging.info("Starting clean_registrant_business_addresses_province")
     try:
@@ -271,7 +271,6 @@ def clean_registrant_business_addresses_province(session: Session):
         logging.error(f"Error updating registrant_business_addresses.province: {str(e)}")
     
     logging.info("Completed clean_registrant_business_addresses_province")
-
 
 def run_data_cleaning(session: Session):
     logging.info("Starting data cleaning operations")
