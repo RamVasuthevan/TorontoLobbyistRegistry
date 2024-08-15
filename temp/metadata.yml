@@ -114,3 +114,21 @@ databases:
           committee: "Name of committee holding the meeting"
           desc: "Subject of meeting"
           date: "Date of meeting in yyyy-mm-dd format"
+    queries:
+          unclean_data_registrant_not_poh_unclear:
+            sql: |
+              select
+                *
+              from
+                registrants
+              where
+                (
+                  "previous_public_office_hold_position" is not null
+                  and "previous_public_office_hold_position" != ""
+                )
+                and "previous_public_office_holder" = "No"
+              order by
+                registration_number desc
+              limit
+                101
+            description: "Shows registrants with previous_public_office_holder as no but there is data about the office that they held"

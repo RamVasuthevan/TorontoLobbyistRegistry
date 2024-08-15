@@ -1,11 +1,16 @@
 import os
 import logging
+import unittest
 from datetime import datetime
 from sqlalchemy import create_engine, inspect
 from sqlalchemy.orm import sessionmaker
 from sqlite_utils import Database
 from models import Base
 from parse_xml_file import parse_xml_file
+from test_database import TestDatabase
+from test_registrants import TestRegistrantData
+from test_subject_matters import TestSubjectMatterData
+from data_cleaning import run_data_cleaning  
 
 # Set up logging
 def setup_logging():
@@ -60,6 +65,31 @@ def enable_fts():
     
     logging.info("Enabled Full Text Search for all tables")
 
+def run_unit_tests():
+    logging.info("Running unit tests")
+    
+    # Create a test suite
+    suite = unittest.TestSuite()
+    
+    suite.addTest(unittest.TestLoader().loadTestsFromTestCase(TestDatabase))
+    suite.addTest(unittest.TestLoader().loadTestsFromTestCase(TestRegistrantData))
+    suite.addTest(unittest.TestLoader().loadTestsFromTestCase(TestSubjectMatterData))
+    # Run the tests
+    result = unittest.TextTestRunner(verbosity=2).run(suite)
+    
+    if result.wasSuccessful():
+        logging.info("All unit tests passed")
+    else:
+        logging.error("Some unit tests failed")
+        logging.error(f"Failures: {len(result.failures)}, Errors: {len(result.errors)}")
+        for failure in result.failures:
+            logging.error(f"Test failed: {failure[0]}")
+            logging.error(f"Error message: {failure[1]}")
+        for error in result.errors:
+            logging.error(f"Test error: {error[0]}")
+            logging.error(f"Error message: {error[1]}")
+
+
 if __name__ == "__main__":
     log_filename = setup_logging()
     logging.info(f"Logging to file: {log_filename}")
@@ -79,3 +109,7 @@ if __name__ == "__main__":
 
     enable_fts()
     logging.info("Database population completed with Full Text Search enabled")
+
+    run_data_cleaning(session)
+
+    run_unit_tests()
