@@ -10,11 +10,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlite_utils import Database
 from models import Base
 from parse_xml_file import parse_xml_file
-from test_database import TestDatabase
-from test_registrants import TestRegistrantData
-from test_subject_matters import TestSubjectMatterData
-from test_communications import TestCommunicationData
-from test_grassroots import TestGrassrootsData
+
 from data_cleaning import run_data_cleaning
 
 
@@ -79,16 +75,15 @@ def enable_fts():
 def run_unit_tests():
     logging.info("Running unit tests")
 
-    # Create a test suite
-    suite = unittest.TestSuite()
+    loader = unittest.TestLoader()
+    suite = loader.discover(start_dir='tests')
 
-    suite.addTest(unittest.TestLoader().loadTestsFromTestCase(TestDatabase))
-    suite.addTest(unittest.TestLoader().loadTestsFromTestCase(TestRegistrantData))
-    suite.addTest(unittest.TestLoader().loadTestsFromTestCase(TestSubjectMatterData))
-    suite.addTest(unittest.TestLoader().loadTestsFromTestCase(TestCommunicationData))
-    
+    logging.info("Test files to be run:")
+    for test_group in suite:
+        for test_suite in test_group:
+            for test_case in test_suite:
+                logging.info(f"Running tests from: {test_case.__module__}")
 
-    # Run the tests
     result = unittest.TextTestRunner(verbosity=2).run(suite)
 
     if result.wasSuccessful():
@@ -102,6 +97,7 @@ def run_unit_tests():
         for error in result.errors:
             logging.error(f"Test error: {error[0]}")
             logging.error(f"Error message: {error[1]}")
+
 
 
 def download_and_unzip(url, extract_to='data'):
