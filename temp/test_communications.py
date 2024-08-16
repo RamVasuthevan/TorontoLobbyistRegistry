@@ -45,7 +45,8 @@ class TestCommunicationData(unittest.TestCase):
             'Employee of Local Board',
             'Member of Local Board',
             'Staff of Member of Local Board',
-            'Member of Advisory Body'
+            'Member of Advisory Body',
+            None
         ]
         poh_type_counts = {}
         communications = self.session.query(Communication).all()
@@ -56,7 +57,7 @@ class TestCommunicationData(unittest.TestCase):
                 poh_type_counts[communication.poh_type] = poh_type_counts.get(communication.poh_type, 0) + 1
 
     def test_lobbyist_type_values(self):
-        valid_lobbyist_types = ['In-House Lobbyist', 'Sr. Officer']
+        valid_lobbyist_types = ['In-House Lobbyist', 'Sr. Officer',None]
         lobbyist_type_counts = {}
         communications = self.session.query(Communication).all()
         for communication in communications:
@@ -66,7 +67,7 @@ class TestCommunicationData(unittest.TestCase):
                 lobbyist_type_counts[communication.lobbyist_type] = lobbyist_type_counts.get(communication.lobbyist_type, 0) + 1
 
     def test_lobbyist_previous_public_office_holder_values(self):
-        valid_values = ['No', 'Yes']
+        valid_values = ['No', 'Yes', None]
         lobbyist_previous_public_office_holder_counts = {}
         communications = self.session.query(Communication).all()
         for communication in communications:

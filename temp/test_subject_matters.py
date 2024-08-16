@@ -35,33 +35,19 @@ class TestSubjectMatterData(unittest.TestCase):
 
     def test_status_values(self):
         valid_statuses = ['Closed by LRO','Closed','Active']
-        status_counts = {}
         subject_matters = self.session.query(SubjectMatter).all()
         for sm in subject_matters:
             with self.subTest(status=sm.status):
                 self.assertIn(sm.status, valid_statuses,
                               f"Invalid status: {sm.status}")
-                status_counts[sm.status] = status_counts.get(sm.status, 0) + 1
-        
-        for status, expected_count in valid_statuses:
-            actual_count = status_counts.get(status, 0)
-            self.assertEqual(actual_count, expected_count,
-                             f"Expected {expected_count} {status} subject matters, but found {actual_count}")
 
     def test_type_values(self):
         valid_types = ['Consultant','In-house', 'Voluntary']
-        type_counts = {}
         subject_matters = self.session.query(SubjectMatter).all()
         for sm in subject_matters:
             with self.subTest(type=sm.type):
                 self.assertIn(sm.type, valid_types,
                               f"Invalid type: {sm.type}")
-                type_counts[sm.type] = type_counts.get(sm.type, 0) + 1
-        
-        for sm_type, expected_count in valid_types:
-            actual_count = type_counts.get(sm_type, 0)
-            self.assertEqual(actual_count, expected_count,
-                             f"Expected {expected_count} {sm_type} subject matters, but found {actual_count}")
 
     def test_date_formats(self):
         subject_matters = self.session.query(SubjectMatter).all()
