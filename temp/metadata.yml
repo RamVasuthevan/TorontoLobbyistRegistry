@@ -53,6 +53,10 @@ databases:
 
       communications:
         description: "Records of communications between lobbyists and public office holders"
+        facets:
+          - poh_type
+          - lobbyist_type
+          - lobbyist_previous_public_office_holder
         columns:
           poh_office: "Ward, office, division or agency of the public office holder"
           poh_type: "Public office holder type"

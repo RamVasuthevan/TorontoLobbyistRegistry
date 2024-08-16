@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from models import Registrant, RegistrantBusinessAddress
+from models import Registrant, RegistrantBusinessAddress, Communication
 import logging
 from collections import defaultdict
 
@@ -272,9 +272,41 @@ def clean_registrant_business_addresses_province(session: Session):
     
     logging.info("Completed clean_registrant_business_addresses_province")
 
+def clean_communications_lobbyist_previous_public_office_holder(session: Session):
+    logging.info("Starting clean_communications_lobbyist_previous_public_office_holder")
+    try:
+        communications = session.query(Communication).filter(Communication.lobbyist_previous_public_office_holder.isnot(None))
+        update_count = 0
+        changes = defaultdict(int)
+        
+        for communication in communications:
+            old_value = communication.lobbyist_previous_public_office_holder
+            new_value = old_value.capitalize() if old_value.islower() else old_value
+            if old_value != new_value:
+                communication.lobbyist_previous_public_office_holder = new_value
+                update_count += 1
+                changes[f"'{old_value}' -> '{new_value}'"] += 1
+        
+        session.commit()
+        
+        if update_count > 0:
+            logging.info(f"Updated {update_count} rows in communications.lobbyist_previous_public_office_holder:")
+            for change, count in changes.items():
+                logging.info(f"  {change}: {count} occurrences")
+        else:
+            logging.info("No updates were necessary in communications.lobbyist_previous_public_office_holder")
+    
+    except Exception as e:
+        session.rollback()
+        logging.error(f"Error updating communications.lobbyist_previous_public_office_holder: {str(e)}")
+    
+    logging.info("Completed clean_communications_lobbyist_previous_public_office_holder")
+
+
 def run_data_cleaning(session: Session):
     logging.info("Starting data cleaning operations")
     clean_registrants_previous_public_office_holder(session)
     clean_registrant_business_addresses_country(session)
     clean_registrant_business_addresses_province(session)
+    clean_communications_lobbyist_previous_public_office_holder(session)
     logging.info("Completed data cleaning operations")
