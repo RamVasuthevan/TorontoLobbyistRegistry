@@ -14,6 +14,7 @@ from test_database import TestDatabase
 from test_registrants import TestRegistrantData
 from test_subject_matters import TestSubjectMatterData
 from test_communications import TestCommunicationData
+from test_grassroots import TestGrassrootsData
 from data_cleaning import run_data_cleaning
 
 
@@ -85,6 +86,8 @@ def run_unit_tests():
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(TestRegistrantData))
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(TestSubjectMatterData))
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(TestCommunicationData))
+    
+
     # Run the tests
     result = unittest.TextTestRunner(verbosity=2).run(suite)
 
