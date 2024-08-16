@@ -182,6 +182,58 @@ def clean_province_name(province):
     # If not found in mapping, return the original value
     return province.title()
 
+def clean_city_name(city):
+    if not city:
+        return None
+    
+    city = city.strip().lower()
+    
+    city_mapping = {
+        ".mississauga": "Mississauga",
+        "aurora": "Aurora",
+        "austell": "Austell",
+        "burlington,": "Burlington",
+        "brampton": "Brampton",
+        "brossard": "Brossard",
+        "burlington, on": "Burlington",
+        "etobicoke,": "Etobicoke",
+        "king city,": "King City",
+        "mississauga": "Mississauga",
+        "montréal": "Montreal",
+        "scarborough": "Scarborough",
+        "toronto,": "Toronto",
+        "mississauga,": "Mississauga",
+        "thornhill": "Thornhill",
+        "toronto on": "Toronto",
+        "toronto,": "Toronto",
+        "toronto": "Toronto",
+        "vaughan,": "Vaughan",
+        "vaughan": "Vaughan",
+        "york,": "York",
+        "calgary": "Calgary",
+        "denver": "Denver",
+        "etobicoke": "Etobicoke",
+        "hamilton": "Hamilton",
+        "houston": "Houston",
+        "mississauga": "Mississauga",
+        "montreal": "Montreal",
+        "oakville": "Oakville",
+        "oshawa": "Oshawa",
+        "san francisco": "San Francisco",
+        "scarborough": "Scarborough",
+        "vaughan": "Vaughan",
+        "woodbridge": "Woodbridge",
+        "york": "York",
+        "'s-hertogenbosch": "'s-Hertogenbosch",
+    }
+    
+    # Handle specific common city name cases
+    if city in city_mapping:
+        return city_mapping[city]
+    
+    # Capitalize each word in the city name
+    return city.title()
+
 def clean_registrants_previous_public_office_holder(session: Session):
     logging.info("Starting clean_registrants_previous_public_office_holder")
     try:
@@ -302,6 +354,35 @@ def clean_communications_lobbyist_previous_public_office_holder(session: Session
     
     logging.info("Completed clean_communications_lobbyist_previous_public_office_holder")
 
+def clean_lobbyist_business_addresses_city(session: Session):
+    logging.info("Starting clean_lobbyist_business_addresses_city")
+    try:
+        addresses = session.query(RegistrantBusinessAddress).filter(RegistrantBusinessAddress.city.isnot(None))
+        update_count = 0
+        changes = defaultdict(int)
+        
+        for address in addresses:
+            old_value = address.city
+            new_value = clean_city_name(old_value)
+            if old_value != new_value:
+                address.city = new_value
+                update_count += 1
+                changes[f"'{old_value}' -> '{new_value}'"] += 1
+        
+        session.commit()
+        
+        if update_count > 0:
+            logging.info(f"Updated {update_count} rows in registrant_business_addresses.city:")
+            for change, count in changes.items():
+                logging.info(f"  {change}: {count} occurrences")
+        else:
+            logging.info("No updates were necessary in registrant_business_addresses.city")
+    
+    except Exception as e:
+        session.rollback()
+        logging.error(f"Error updating registrant_business_addresses.city: {str(e)}")
+    
+    logging.info("Completed clean_lobbyist_business_addresses_city")
 
 def run_data_cleaning(session: Session):
     logging.info("Starting data cleaning operations")
@@ -309,4 +390,5 @@ def run_data_cleaning(session: Session):
     clean_registrant_business_addresses_country(session)
     clean_registrant_business_addresses_province(session)
     clean_communications_lobbyist_previous_public_office_holder(session)
+    clean_lobbyist_business_addresses_city(session)
     logging.info("Completed data cleaning operations")
