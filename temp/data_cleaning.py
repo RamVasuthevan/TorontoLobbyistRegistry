@@ -4,40 +4,47 @@ import logging
 from collections import defaultdict
 
 def clean_country_name(country):
-    if not country:
+    if not country or country.strip().lower() in ['', 'country']:
         return None
     
     country = country.strip().lower()
     
     country_mapping = {
         'canada': 'Canada',
-        'united states': 'United States',
+        'can': 'Canada',
+        'cad': 'Canada',
+        'cdn': 'Canada',
+        'cda': 'Canada',
+        'ca': 'Canada',
+        'c': 'Canada',
+        'canad': 'Canada',
+        'cananda': 'Canada',
+        'canda': 'Canada',
+        'caanda': 'Canada',
+        'canadá': 'Canada',
+        'canadÃ¡': 'Canada',
+        'can.': 'Canada',
+        'canada ': 'Canada',
+        'l4w 5k4': 'Canada',  # Corrected to map to Canada
         'usa': 'United States',
         'u.s.a.': 'United States',
         'us': 'United States',
+        'united states': 'United States',
         'united states of america': 'United States',
         'united state america': 'United States',
         'united states ': 'United States',
         'united-states': 'United States',
-        'united states': 'United States',
         'u.s.': 'United States',
-        'singapore': 'Singapore',
-        'italy': 'Italy',
-        'united kingdom': 'United Kingdom',
-        'uk': 'United Kingdom',
-        'england': 'United Kingdom',
-        'france': 'France',
-        'toronto': 'Canada',
-        'ontario': 'Canada',
-        'quebec': 'Canada',
-        'switzerland': 'Switzerland',
-        'suisse': 'Switzerland',
-        'nigeria': 'Nigeria',
-        'slovakia': 'Slovakia',
-        'australia': 'Australia',
-        'india': 'India',
+        'etats-unis': 'United States',
+        '55343': 'United States',  # Assuming this is a U.S. ZIP code
         'brazil': 'Brazil',
         'brasil': 'Brazil',
+        'england': 'United Kingdom',
+        'uk': 'United Kingdom',
+        'united kingdom': 'United Kingdom',
+        'singapore': 'Singapore',
+        'italy': 'Italy',
+        'france': 'France',
         'germany': 'Germany',
         'nederland': 'Netherlands',
         'netherlands': 'Netherlands',
@@ -45,12 +52,11 @@ def clean_country_name(country):
         'united arab emirates': 'United Arab Emirates',
         'austria': 'Austria',
         'spain': 'Spain',
-        'prc': 'China',
         'china': 'China',
+        'prc': 'China',
         'sweden': 'Sweden',
         'belgium': 'Belgium',
         'south korea': 'South Korea',
-        'etats-unis': 'United States',
         'south africa': 'South Africa',
         'ireland': 'Ireland',
         'portugal': 'Portugal',
@@ -62,16 +68,17 @@ def clean_country_name(country):
         'cameroon': 'Cameroon',
         'denmark': 'Denmark',
         'finland': 'Finland',
+        'suisse': 'Switzerland',
+        'switzerland': 'Switzerland',
+        'nigeria': 'Nigeria',
+        'slovakia': 'Slovakia',
+        'hong kong': 'Hong Kong',
+        'australia': 'Australia',
+        'india': 'India',
+        'p r china': 'China',
     }
     
-    # Handle special cases
-    if country in ['can', 'cad', 'cdn', 'cda', 'ca', 'c', 'canad', 'cananda', 'canda', 'caanda']:
-        return 'Canada'
-    
-    if country in ['canadá', 'canadÃ¡']:
-        return 'Canada'
-    
-    # Check if the country is in our mapping
+    # Handle special cases for Canada and United States variations
     if country in country_mapping:
         return country_mapping[country]
     
@@ -79,13 +86,24 @@ def clean_country_name(country):
     return country.title()
 
 def clean_province_name(province):
-    if not province:
+    if not province or province.strip().lower() in ['n/a', 'none', '-', 'non']:
         return None
     
     province = province.strip().upper()
     
     province_mapping = {
+        'AB': 'Alberta',
+        'AB - ALBERTA': 'Alberta',
+        'ALBERTA': 'Alberta',
+        'BC': 'British Columbia',
+        'B.C.': 'British Columbia',
+        'BRITISH COLUMBIA': 'British Columbia',
+        'BRITICH COLUMBIA': 'British Columbia',
+        'BRITISH COLUMBIA / COLOMBIE-BRITANNIQUE': 'British Columbia',
+        'BRITISH COLUMBIA,': 'British Columbia',
         'ON': 'Ontario',
+        'ON - ONTARIO': 'Ontario',
+        'ON -- ONTARIO': 'Ontario',
         'ONTARIO': 'Ontario',
         'ONT': 'Ontario',
         'ONT.': 'Ontario',
@@ -95,84 +113,181 @@ def clean_province_name(province):
         'ONTARIA': 'Ontario',
         'ONTARO': 'Ontario',
         'ONTATIO': 'Ontario',
-        'ONTATRIO': 'Ontario',
         'ONTRARIO': 'Ontario',
         'ONTRIO': 'Ontario',
+        'ON ONTARIO': 'Ontario',
+        'ON,': 'Ontario',
+        'ONTARIO (ON)': 'Ontario',
+        'ONTARIO - ON': 'Ontario',
+        'ONTARIO`': 'Ontario',
         'QC': 'Quebec',
         'QUEBEC': 'Quebec',
+        'QC - QUEBEC': 'Quebec',
         'QUÉBEC': 'Quebec',
-        'BC': 'British Columbia',
-        'B.C.': 'British Columbia',
-        'BRITISH COLUMBIA': 'British Columbia',
-        'BRITISH COLOUMBIA': 'British Columbia',
-        'BRITISH COLMBIA': 'British Columbia',
-        'AB': 'Alberta',
-        'ALBERTA': 'Alberta',
-        'MB': 'Manitoba',
-        'MANITOBA': 'Manitoba',
-        'MANTIOBA': 'Manitoba',
-        'SK': 'Saskatchewan',
-        'NB': 'New Brunswick',
-        'NS': 'Nova Scotia',
+        'QUÉBEC)': 'Quebec',
         'PE': 'Prince Edward Island',
         'PEI': 'Prince Edward Island',
+        'NS': 'Nova Scotia',
+        'NB': 'New Brunswick',
         'NL': 'Newfoundland and Labrador',
+        'MB': 'Manitoba',
+        'SK': 'Saskatchewan',
         'YT': 'Yukon',
         'NT': 'Northwest Territories',
         'NU': 'Nunavut',
-        
-        # US States
-        'AL': 'Alabama',
-        'AK': 'Alaska',
-        'AZ': 'Arizona',
-        'AR': 'Arkansas',
         'CA': 'California',
-        'CO': 'Colorado',
-        'CT': 'Connecticut',
-        'DE': 'Delaware',
-        'FL': 'Florida',
-        'GA': 'Georgia',
-        'HI': 'Hawaii',
-        'ID': 'Idaho',
-        'IL': 'Illinois',
-        'IN': 'Indiana',
-        'IA': 'Iowa',
-        'KS': 'Kansas',
-        'KY': 'Kentucky',
-        'LA': 'Louisiana',
-        'ME': 'Maine',
-        'MD': 'Maryland',
-        'MA': 'Massachusetts',
-        'MI': 'Michigan',
-        'MN': 'Minnesota',
-        'MS': 'Mississippi',
-        'MO': 'Missouri',
-        'MT': 'Montana',
-        'NE': 'Nebraska',
-        'NV': 'Nevada',
-        'NH': 'New Hampshire',
-        'NJ': 'New Jersey',
-        'NM': 'New Mexico',
-        'NY': 'New York',
-        'NC': 'North Carolina',
-        'ND': 'North Dakota',
-        'OH': 'Ohio',
-        'OK': 'Oklahoma',
-        'OR': 'Oregon',
-        'PA': 'Pennsylvania',
-        'RI': 'Rhode Island',
-        'SC': 'South Carolina',
-        'SD': 'South Dakota',
-        'TN': 'Tennessee',
+        'CA - CALIFORNIA': 'California',
+        'CALIFORNIA': 'California',
         'TX': 'Texas',
-        'UT': 'Utah',
-        'VT': 'Vermont',
-        'VA': 'Virginia',
+        'TEXAS': 'Texas',
+        'NY': 'New York',
+        'NEW YORK': 'New York',
+        'FL': 'Florida',
+        'FLORIDA': 'Florida',
+        'GA': 'Georgia',
+        'GEORGIA': 'Georgia',
+        'IL': 'Illinois',
+        'ILLINOIS': 'Illinois',
         'WA': 'Washington',
-        'WV': 'West Virginia',
-        'WI': 'Wisconsin',
-        'WY': 'Wyoming',
+        'WASHINGTON': 'Washington',
+        'MA': 'Massachusetts',
+        'MASSACHUSETTS': 'Massachusetts',
+        'MI': 'Michigan',
+        'MICHIGAN': 'Michigan',
+        'PA': 'Pennsylvania',
+        'PENNSYLVANIA': 'Pennsylvania',
+        'CO': 'Colorado',
+        'COLORADO': 'Colorado',
+        'NC': 'North Carolina',
+        'NORTH CAROLINA': 'North Carolina',
+        'OH': 'Ohio',
+        'OHIO': 'Ohio',
+        'VA': 'Virginia',
+        'VIRGINIA': 'Virginia',
+        'MO': 'Missouri',
+        'MISSOURI': 'Missouri',
+        'MN': 'Minnesota',
+        'MINNESOTA': 'Minnesota',
+        'NV': 'Nevada',
+        'NEVADA': 'Nevada',
+        'AZ': 'Arizona',
+        'ARIZONA': 'Arizona',
+        'OR': 'Oregon',
+        'OREGON': 'Oregon',
+        'NJ': 'New Jersey',
+        'NEW JERSEY': 'New Jersey',
+        'LA': 'Louisiana',
+        'LOUISIANA': 'Louisiana',
+        'UT': 'Utah',
+        'UTAH': 'Utah',
+        'ID': 'Idaho',
+        'IDAHO': 'Idaho',
+        'MD': 'Maryland',
+        'MARYLAND': 'Maryland',
+        'SC': 'South Carolina',
+        'SOUTH CAROLINA': 'South Carolina',
+        'IA': 'Iowa',
+        'IOWA': 'Iowa',
+        'KY': 'Kentucky',
+        'KENTUCKY': 'Kentucky',
+        'TN': 'Tennessee',
+        'TENNESSEE': 'Tennessee',
+        'ME': 'Maine',
+        'MAINE': 'Maine',
+        'CT': 'Connecticut',
+        'CONNECTICUT': 'Connecticut',
         'DC': 'District of Columbia',
+        'DISTRICT OF COLUMBIA': 'District of Columbia',
+        'IN': 'Indiana',
+        'INDIANA': 'Indiana',
+        'AL': 'Alabama',
+        'ALABAMA': 'Alabama',
+        'KS': 'Kansas',
+        'KANSAS': 'Kansas',
+        'OK': 'Oklahoma',
+        'OKLAHOMA': 'Oklahoma',
+        'NE': 'Nebraska',
+        'NEBRASKA': 'Nebraska',
+        'WI': 'Wisconsin',
+        'WISCONSIN': 'Wisconsin',
+        'MT': 'Montana',
+        'MONTANA': 'Montana',
+        'ND': 'North Dakota',
+        'NORTH DAKOTA': 'North Dakota',
+        'SD': 'South Dakota',
+        'SOUTH DAKOTA': 'South Dakota',
+        'WV': 'West Virginia',
+        'WEST VIRGINIA': 'West Virginia',
+        'WY': 'Wyoming',
+        'WYOMING': 'Wyoming',
+        'VT': 'Vermont',
+        'VERMONT': 'Vermont',
+        'NH': 'New Hampshire',
+        'NEW HAMPSHIRE': 'New Hampshire',
+        'NM': 'New Mexico',
+        'NEW MEXICO': 'New Mexico',
+        'RI': 'Rhode Island',
+        'RHODE ISLAND': 'Rhode Island',
+        'DE': 'Delaware',
+        'DELAWARE': 'Delaware',
+        'AK': 'Alaska',
+        'ALASKA': 'Alaska',
+        'HI': 'Hawaii',
+        'HAWAII': 'Hawaii',
+        'England': 'England',
+        'France': 'France',
+        'Germany': 'Germany',
+        'Italy': 'Italy',
+        'Spain': 'Spain',
+        'Japan': 'Japan',
+        'China': 'China',
+        'Brazil': 'Brazil',
+        'Australia': 'Australia',
+        'India': 'India',
+        'Israel': 'Israel',
+        'Singapore': 'Singapore',
+        'Netherlands': 'Netherlands',
+        'Norway': 'Norway',
+        'Sweden': 'Sweden',
+        'Switzerland': 'Switzerland',
+        'United Kingdom': 'United Kingdom',
+        'South Korea': 'South Korea',
+        'Mexico': 'Mexico',
+        'Hong Kong': 'Hong Kong',
+        'South Africa': 'South Africa',
+        'Belgium': 'Belgium',
+        'Russia': 'Russia',
+        'Thailand': 'Thailand',
+        'Philippines': 'Philippines',
+        'Malaysia': 'Malaysia',
+        'Indonesia': 'Indonesia',
+        'Poland': 'Poland',
+        'Austria': 'Austria',
+        'Denmark': 'Denmark',
+        'Ireland': 'Ireland',
+        'Greece': 'Greece',
+        'Finland': 'Finland',
+        'Portugal': 'Portugal',
+        'Argentina': 'Argentina',
+        'Chile': 'Chile',
+        'Czech Republic': 'Czech Republic',
+        'Hungary': 'Hungary',
+        'Turkey': 'Turkey',
+        'Saudi Arabia': 'Saudi Arabia',
+        'United Arab Emirates': 'United Arab Emirates',
+        'Luxembourg': 'Luxembourg',
+        'Slovakia': 'Slovakia',
+        'Croatia': 'Croatia',
+        'Slovenia': 'Slovenia',
+        'Lithuania': 'Lithuania',
+        'Latvia': 'Latvia',
+        'Estonia': 'Estonia',
+        'Iceland': 'Iceland',
+        'New Zealand': 'New Zealand',
+        'Monaco': 'Monaco',
+        'San Marino': 'San Marino',
+        'Malta': 'Malta',
+        'Liechtenstein': 'Liechtenstein',
     }
     
     # Check if the province is in our mapping
@@ -384,11 +499,76 @@ def clean_lobbyist_business_addresses_city(session: Session):
     
     logging.info("Completed clean_lobbyist_business_addresses_city")
 
+def clean_lobbyist_business_addresses_province(session: Session):
+    logging.info("Starting clean_lobbyist_business_addresses_province")
+    try:
+        addresses = session.query(RegistrantBusinessAddress).filter(RegistrantBusinessAddress.province.isnot(None))
+        update_count = 0
+        changes = defaultdict(int)
+        
+        for address in addresses:
+            old_value = address.province
+            new_value = clean_province_name(old_value)
+            if old_value != new_value:
+                address.province = new_value
+                update_count += 1
+                changes[f"'{old_value}' -> '{new_value}'"] += 1
+        
+        session.commit()
+        
+        if update_count > 0:
+            logging.info(f"Updated {update_count} rows in registrant_business_addresses.province:")
+            for change, count in changes.items():
+                logging.info(f"  {change}: {count} occurrences")
+        else:
+            logging.info("No updates were necessary in registrant_business_addresses.province")
+    
+    except Exception as e:
+        session.rollback()
+        logging.error(f"Error updating registrant_business_addresses.province: {str(e)}")
+    
+    logging.info("Completed clean_lobbyist_business_addresses_province")
+
+def clean_lobbyist_business_addresses_country(session: Session):
+    logging.info("Starting clean_lobbyist_business_addresses_country")
+    try:
+        addresses = session.query(RegistrantBusinessAddress).filter(RegistrantBusinessAddress.country.isnot(None))
+        update_count = 0
+        changes = defaultdict(int)
+        
+        for address in addresses:
+            old_value = address.country
+            new_value = clean_country_name(old_value)
+            if old_value != new_value:
+                address.country = new_value
+                update_count += 1
+                changes[f"'{old_value}' -> '{new_value}'"] += 1
+        
+        session.commit()
+        
+        if update_count > 0:
+            logging.info(f"Updated {update_count} rows in registrant_business_addresses.country:")
+            for change, count in changes.items():
+                logging.info(f"  {change}: {count} occurrences")
+        else:
+            logging.info("No updates were necessary in registrant_business_addresses.country")
+    
+    except Exception as e:
+        session.rollback()
+        logging.error(f"Error updating registrant_business_addresses.country: {str(e)}")
+    
+    logging.info("Completed clean_lobbyist_business_addresses_country")
+
 def run_data_cleaning(session: Session):
     logging.info("Starting data cleaning operations")
     clean_registrants_previous_public_office_holder(session)
-    clean_registrant_business_addresses_country(session)
     clean_registrant_business_addresses_province(session)
+    clean_registrant_business_addresses_country(session)
+
     clean_communications_lobbyist_previous_public_office_holder(session)
+
     clean_lobbyist_business_addresses_city(session)
+    clean_lobbyist_business_addresses_province(session)
+    clean_lobbyist_business_addresses_country(session)
+
     logging.info("Completed data cleaning operations")
