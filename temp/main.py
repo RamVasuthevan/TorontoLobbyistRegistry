@@ -1,6 +1,9 @@
 import os
 import logging
 import unittest
+import requests
+import zipfile
+from io import BytesIO
 from datetime import datetime
 from sqlalchemy import create_engine, inspect
 from sqlalchemy.orm import sessionmaker
@@ -98,26 +101,38 @@ def run_unit_tests():
             logging.error(f"Error message: {error[1]}")
 
 
+def download_and_unzip(url, extract_to='data'):
+    logging.info(f"Downloading file from {url}")
+    response = requests.get(url)
+    if response.status_code == 200:
+        logging.info("Download successful. Extracting files...")
+        with zipfile.ZipFile(BytesIO(response.content)) as zip_ref:
+            zip_ref.extractall(extract_to)
+        logging.info(f"Files extracted to {extract_to}")
+    else:
+        logging.error(f"Failed to download file. Status code: {response.status_code}")
+
 if __name__ == "__main__":
     log_filename = setup_logging()
     logging.info(f"Logging to file: {log_filename}")
+
+    # Download and extract the ZIP file
+    github_url = "https://github.com/RamVasuthevan/TorontoLobbyistRegistryData/raw/main/Lobbyist%20Registry%20Activity.zip"
+    download_and_unzip(github_url)
 
     delete_existing_db()
     create_tables()
     
     session = Session()
     
-    xml_files = ['lobbyactivity-active.xml', 'lobbyactivity-closed.xml']
-    data_folder = 'data'  # Specify the data folder
+    data_folder = 'data'
+    xml_files = [f for f in os.listdir(data_folder) if f.endswith('.xml')]
 
     for xml_file in xml_files:
         file_path = os.path.join(data_folder, xml_file)
-        if os.path.exists(file_path):
-            logging.info(f"Starting to parse {file_path}")
-            parse_xml_file(file_path, session)
-            logging.info(f"Finished parsing {file_path}")
-        else:
-            logging.error(f"File not found: {file_path}")
+        logging.info(f"Starting to parse {file_path}")
+        parse_xml_file(file_path, session)
+        logging.info(f"Finished parsing {file_path}")
     
     session.close()
     enable_fts()
