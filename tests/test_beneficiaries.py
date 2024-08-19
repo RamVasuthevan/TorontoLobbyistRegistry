@@ -6,7 +6,7 @@ from models import Beneficiary
 class TestBeneficiaryData(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        engine = create_engine('sqlite:///lobbyist_registry.db')
+        engine = create_engine('sqlite:///lobbyist_registry.db.tmp')
         Session = sessionmaker(bind=engine)
         cls.session = Session()
 

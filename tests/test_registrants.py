@@ -9,7 +9,7 @@ class TestRegistrantData(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Set up database connection
-        engine = create_engine('sqlite:///lobbyist_registry.db')
+        engine = create_engine('sqlite:///lobbyist_registry.db.tmp')
         Session = sessionmaker(bind=engine)
         cls.session = Session()
 

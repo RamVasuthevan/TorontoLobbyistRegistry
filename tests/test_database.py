@@ -5,7 +5,7 @@ from models import Base
 
 class TestDatabase(unittest.TestCase):
     def setUp(self):
-        self.engine = create_engine('sqlite:///lobbyist_registry.db')
+        self.engine = create_engine('sqlite:///lobbyist_registry.db.tmp')
         self.Session = sessionmaker(bind=self.engine)
         self.session = self.Session()
         self.inspector = inspect(self.engine)
