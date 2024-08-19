@@ -1,5 +1,12 @@
-# TorontoLobbyistRegistry
+### SubjectMatter
+- SubjectMatterDefinition is not in the readme
+- What is EffectiveDate?
+- Can the ProposedEndDate be changed? What if the lobbying lasts longer than the proposed end date? 
+- What does Closed by LRO mean? When does the LRO close a subject matter? 
 
-The goal of this project to is help make data in the Toronto Lobbyist Registrar more accessible
 
-Code is licensed under the MIT Licence and data is licensed under the Open Government Licence
+I want from Datasette
+- Set ordering of table in a database
+
+Add https://docs.datasette.io/en/stable/facets.html#facets-in-metadata-json to https://docs.datasette.io/en/stable/metadata.html
+Add search only a table to datasette-search-all
