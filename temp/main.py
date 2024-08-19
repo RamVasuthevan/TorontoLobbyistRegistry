@@ -10,9 +10,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlite_utils import Database
 from models import Base
 from parse_xml_file import parse_xml_file
-
 from data_cleaning import run_data_cleaning
-
 
 # Set up logging
 def setup_logging():
@@ -39,29 +37,36 @@ def setup_logging():
 
     return log_filename
 
-
 # Database setup
 db_file = "lobbyist_registry.db"
-engine = create_engine(f"sqlite:///{db_file}")
-Session = sessionmaker(bind=engine)
 
+def get_temp_db_file():
+    return f"{db_file}.tmp"
 
-def delete_existing_db():
-    logging.info(f"Deleting existing database file: {db_file}")
-    if os.path.exists(db_file):
-        os.remove(db_file)
-        logging.info(f"Deleted existing database file: {db_file}")
+def create_engine_and_session(db_path):
+    engine = create_engine(f"sqlite:///{db_path}")
+    Session = sessionmaker(bind=engine)
+    return engine, Session
 
+def replace_db_with_temp():
+    temp_db = get_temp_db_file()
+    if os.path.exists(temp_db):
+        if os.path.exists(db_file):
+            os.remove(db_file)
+        os.rename(temp_db, db_file)
+        logging.info(f"Replaced old database with new one: {db_file}")
+    else:
+        logging.error("Temporary database not found. No changes made.")
 
-def create_tables():
+def create_tables(engine):
     logging.info("Creating new database tables")
     Base.metadata.create_all(engine)
     logging.info("Created new database tables")
 
-
-def enable_fts():
+def enable_fts(db_path):
     logging.info("Enabling Full Text Search for all tables")
-    db = Database(db_file)
+    db = Database(db_path)
+    engine = create_engine(f"sqlite:///{db_path}")
     inspector = inspect(engine)
 
     for table_name in inspector.get_table_names():
@@ -70,7 +75,6 @@ def enable_fts():
             db[table_name].enable_fts(columns, create_triggers=True)
 
     logging.info("Enabled Full Text Search for all tables")
-
 
 def run_unit_tests():
     logging.info("Running unit tests")
@@ -88,6 +92,7 @@ def run_unit_tests():
 
     if result.wasSuccessful():
         logging.info("All unit tests passed")
+        return True
     else:
         logging.error("Some unit tests failed")
         logging.error(f"Failures: {len(result.failures)}, Errors: {len(result.errors)}")
@@ -97,8 +102,7 @@ def run_unit_tests():
         for error in result.errors:
             logging.error(f"Test error: {error[0]}")
             logging.error(f"Error message: {error[1]}")
-
-
+        return False
 
 def download_and_unzip(url, extract_to='data'):
     logging.info(f"Downloading file from {url}")
@@ -119,8 +123,11 @@ if __name__ == "__main__":
     github_url = "https://github.com/RamVasuthevan/TorontoLobbyistRegistryData/raw/main/Lobbyist%20Registry%20Activity.zip"
     download_and_unzip(github_url)
 
-    delete_existing_db()
-    create_tables()
+    # Use a temporary database file
+    temp_db_file = get_temp_db_file()
+    engine, Session = create_engine_and_session(temp_db_file)
+
+    create_tables(engine)
     
     session = Session()
     
@@ -134,8 +141,20 @@ if __name__ == "__main__":
         logging.info(f"Finished parsing {file_path}")
     
     session.close()
-    enable_fts()
+    enable_fts(temp_db_file)
     logging.info("Database population completed with Full Text Search enabled")
     
-    run_data_cleaning(session)
-    run_unit_tests()
+    run_data_cleaning(Session())
+    
+    # Run unit tests
+    test_result = run_unit_tests()
+    
+    if test_result:
+        # If tests pass, replace the old database with the new one
+        replace_db_with_temp()
+        logging.info("Database update completed successfully")
+    else:
+        logging.error("Tests failed. New database not applied.")
+        if os.path.exists(temp_db_file):
+            os.remove(temp_db_file)
+            logging.info("Temporary database file removed")
