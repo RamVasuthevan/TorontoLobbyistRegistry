@@ -7,7 +7,7 @@
         {% if table_info.count > 0 %}
             <h3>
                 {% set json_url = table_info.link.split('?')[0] + '.json?' + table_info.link.split('?')[1] %}
-                <a href="{{ json_url }}">
+                <a href="{{ table_info.link }}">
                     {{ table_info.count }} reference{% if table_info.count > 1 %}s{% endif %}
                 </a> 
                  in {{ table_info.other_table | capitalize }}
