@@ -11,4 +11,8 @@ sqlalchemy = "*"
 datasette = "*"
 sqlite-utils = "*"
 datasette-search-all = "*"
-requests = "*"
+requests = "*"s
+datasette-publish-vercel = "*"
+
+[requires]
+python_version = "3.9"
