@@ -1,0 +1,1 @@
+datasette publish vercel lobbyist_registry.db --project=toronto-lobbyist-registry  --metadata=metadata.yml --template-dir=templates --install datasette-search-all
