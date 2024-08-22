@@ -12,7 +12,7 @@
   "build": {
     "env": {
       "PIPENV_VENV_IN_PROJECT": "true"
-    },
-    "buildCommand": "./build.sh"
-  }
+    }
+  },
+  "buildCommand": "./build.sh"
 }
