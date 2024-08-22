@@ -1,6 +1,5 @@
-#python3 --version
-#pip3 install pipenv
-#pipenv install
-echo "$(dirname "$(realpath "$0")")"
+python3 --version
+pip3 install pipenv
+pipenv install
 ls
-cat main.py
+pipenv run python main.py
