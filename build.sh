@@ -3,3 +3,4 @@
 #pipenv install
 echo "$(dirname "$(realpath "$0")")"
 ls
+cat main.py
