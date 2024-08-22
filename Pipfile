@@ -10,7 +10,6 @@ sqlite-utils = "*"
 datasette-search-all = "*"
 requests = "*"
 datasette-publish-vercel = "*"
-urllib3 = "<2.0.0"
 
 [requires]
 python_version = "3.9"
