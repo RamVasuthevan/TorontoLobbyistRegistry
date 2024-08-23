@@ -13,6 +13,5 @@
     "env": {
       "PIPENV_VENV_IN_PROJECT": "true"
     }
-  },
-  "buildCommand": "next build"
+  }
 }
