@@ -1,0 +1,7 @@
+*.txt
+lobbyist_registry.db
+*.db-journal
+*tmp
+*.tmp-journal
+*.xml
+*.log
