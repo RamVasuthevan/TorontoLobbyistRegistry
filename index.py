@@ -3,9 +3,6 @@ from datasette.app import Datasette
 import json
 import pathlib
 import os
-from main import main
-
-main()
 
 static_mounts = [
     (static, str((pathlib.Path(".") / static).resolve()))
