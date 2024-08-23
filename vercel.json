@@ -1,4 +1,4 @@
 {
   "version": 2,
-  "buildCommand": "build.sh"
+  "buildCommand": "bash build.sh"
 }
