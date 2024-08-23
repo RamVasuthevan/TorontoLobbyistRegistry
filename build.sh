@@ -1,4 +1,4 @@
-export PATH=/python312/lib/python3.12/bin:$PATH
+export PATH=~/.local/bin:$PATH
 python3 --version
 pip3 install pipenv
 pip3 show pipenv
