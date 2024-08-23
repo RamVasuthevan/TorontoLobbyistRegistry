@@ -1,11 +1,16 @@
 {
+  "name": "toronto-lobbyist-registry",
   "version": 2,
-  "outputDirectory": ".",
-  "buildCommand": "bash build.sh",
+  "builds": [
+      {
+          "src": "index.py",
+          "use": "@vercel/python@3.0.7"
+      }
+  ],
   "routes": [
-    {
-      "src": "(.*)",
-      "dest": "index.py"
-    }
+      {
+          "src": "(.*)",
+          "dest": "index.py"
+      }
   ]
 }
