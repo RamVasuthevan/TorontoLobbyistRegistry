@@ -14,7 +14,5 @@
       "PIPENV_VENV_IN_PROJECT": "true"
     }
   },
-  "scripts": {
-    "build": "echo 'Hello World'"
-  }
+  "buildCommand": "next build"
 }
