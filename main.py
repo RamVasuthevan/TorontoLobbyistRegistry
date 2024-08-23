@@ -115,7 +115,7 @@ def download_and_unzip(url, extract_to='data'):
     else:
         logging.error(f"Failed to download file. Status code: {response.status_code}")
 
-if __name__ == "__main__":
+def main():
     log_filename = setup_logging()
     logging.info(f"Logging to file: {log_filename}")
 
@@ -158,3 +158,6 @@ if __name__ == "__main__":
         if os.path.exists(temp_db_file):
             os.remove(temp_db_file)
             logging.info("Temporary database file removed")
+
+if __name__ == "__main__":
+    main()
