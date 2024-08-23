@@ -1,6 +1,7 @@
 python3 --version
-pip list
-pip install pipenv
-pip list
+pip3 list
+pip3 install pipenv
+pip3 list
+pip3 show pipenv
 pipenv install
 pipenv run python main.py
