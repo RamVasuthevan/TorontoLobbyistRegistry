@@ -8,5 +8,6 @@
         "runtime": "python3.9"
       }
     }
-  ]
+  ],
+  "buildCommand": "build.sh"
 }
