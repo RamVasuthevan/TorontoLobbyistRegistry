@@ -8,11 +8,5 @@
         "runtime": "python3.9"
       }
     }
-  ],
-  "build": {
-    "env": {
-      "PIPENV_VENV_IN_PROJECT": "true"
-    },
-    "command": "./build.sh"
-  }
+  ]
 }
