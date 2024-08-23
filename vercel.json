@@ -6,8 +6,9 @@
       "use": "@vercel/python",
       "config": {
         "runtime": "python3.9"
-      }
+      },
+      "buildCommand": "build.sh"
     }
   ],
-  "buildCommand": "build.sh"
+  
 }
