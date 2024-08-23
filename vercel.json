@@ -2,11 +2,10 @@
   "version": 2,
   "builds": [
     {
-      "src": "index.py",
+      "src": "bash build.sh",
       "use": "@vercel/python"
     }
   ],
-  "buildCommand": "bash build.sh",
   "outputDirectory": ".",
   "routes": [
     {
