@@ -3,16 +3,13 @@ name = "pypi"
 url = "https://pypi.org/simple"
 verify_ssl = true
 
-[requires]
-python_version = "3.12.3"
-
 [packages]
 sqlalchemy = "*"
 datasette = "*"
 sqlite-utils = "*"
 datasette-search-all = "*"
-requests = "*"s
+requests = "*"
 datasette-publish-vercel = "*"
 
 [requires]
-python_version = "3.9"
+python_version = "3.12"
