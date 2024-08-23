@@ -5,3 +5,7 @@ pip3 show pipenv
 which pipenv
 cd /python312/lib/python3.12/site-packages
 ls
+cd pipenv
+ls
+cd ..
+pipenv install
