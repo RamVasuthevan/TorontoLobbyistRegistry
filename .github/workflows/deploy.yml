@@ -26,6 +26,9 @@ jobs:
     - name: Build database
       run: |
         pipenv run python main.py
+      
+    - name: run pip list
+      run: pip list
 
     - name: Deploy to Vercel
       env:
