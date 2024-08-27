@@ -137,7 +137,7 @@ if __name__ == "__main__":
     for xml_file in xml_files:
         file_path = os.path.join(data_folder, xml_file)
         logging.info(f"Starting to parse {file_path}")
-        #parse_xml_file(file_path, session)
+        parse_xml_file(file_path, session)
         logging.info(f"Finished parsing {file_path}")
     
     session.close()
