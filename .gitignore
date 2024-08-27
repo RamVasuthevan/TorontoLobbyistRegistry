@@ -5,3 +5,4 @@ lobbyist_registry.db
 *.tmp-journal
 *.xml
 *.log
+.env
