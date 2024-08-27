@@ -51,9 +51,8 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Create or Update Commit Comment
-      uses: peter-evans/create-or-update-comment@v4
+      uses: peter-evans/commit-comment@v3
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
         commit-id: ${{ github.sha }}
         body: |
           Deployed to Vercel 🚀
