@@ -1,0 +1,72 @@
+name: Deploy to Vercel
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pipenv
+        pipenv install
+      
+    - name: Build database
+      run: |
+        pipenv run python main.py
+
+    - name: Deploy to Vercel
+      id: deploy
+      env:
+        VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      run: |
+        if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+          OUTPUT=$(pipenv run bash deploy.sh)
+        else
+          OUTPUT=$(pipenv run bash deploy.sh --no-prod)
+        fi
+        echo "deploy_output<<EOF" >> $GITHUB_OUTPUT
+        echo "$OUTPUT" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+
+    - name: Create or Update Commit Comment
+      uses: peter-evans/commit-comment@v3
+      if: github.event_name == 'push'
+      with:
+        commit-id: ${{ github.sha }}
+        body: |
+          Deployed to Vercel 🚀
+
+          Output:
+          ```
+          ${{ steps.deploy.outputs.deploy_output }}
+          ```
+        reactions: 'rocket'
+
+    - name: Create or Update PR Comment
+      uses: peter-evans/create-or-update-comment@v4
+      if: github.event_name == 'pull_request'
+      with:
+        issue-number: ${{ github.event.pull_request.number }}
+        body: |
+          Deployed to Vercel 🚀
+
+          Output:
+          ```
+          ${{ steps.deploy.outputs.deploy_output }}
+          ```
+        reactions: 'rocket'
