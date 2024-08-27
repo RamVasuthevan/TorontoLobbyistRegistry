@@ -7,6 +7,7 @@ on:
       - main
   pull_request:
     types: [opened, synchronize, reopened]
+  workflow_call:
 
 jobs:
   deploy:
@@ -45,7 +46,7 @@ jobs:
 
     - name: Create or Update Commit Comment
       uses: peter-evans/commit-comment@v3
-      if: github.event_name == 'push'
+      if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
       with:
         sha: ${{ github.sha }}
         body: |
