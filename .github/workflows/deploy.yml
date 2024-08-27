@@ -46,7 +46,6 @@ jobs:
 
     - name: Create or Update Commit Comment
       uses: peter-evans/commit-comment@v3
-      if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
       with:
         sha: ${{ github.sha }}
         body: |
