@@ -44,7 +44,7 @@ jobs:
         echo "$OUTPUT" >> $GITHUB_OUTPUT
         echo "EOF" >> $GITHUB_OUTPUT
 
-    - name: Create or Update Commit Comment
+    - name: Create commit comment
       uses: peter-evans/commit-comment@v3
       with:
         sha: ${{ github.sha }}
