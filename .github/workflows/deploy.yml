@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - main
+      - '**'
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -50,32 +50,31 @@ jobs:
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Comment on Commit and PR
-      uses: actions/github-script@v7
+    - name: Create or Update Commit Comment
+      uses: peter-evans/create-or-update-comment@v4
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          const output = `${{ steps.deploy.outputs.deploy_output }}`;
-          const message = `Deployed to Vercel 🚀\n\nOutput:\n\`\`\`\n${output}\n\`\`\``;
-          
-          // Always comment on the commit
-          await github.rest.repos.createCommitComment({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            commit_sha: context.sha,
-            body: message
-          });
-          
-          // If this is a PR or a push to a branch with an open PR, comment on the PR
-          const prNumber = context.eventName === 'pull_request' 
-            ? context.issue.number 
-            : ${{ steps.findPr.outputs.number }};
-          
-          if (context.eventName === 'pull_request' || prNumber) {
-            await github.rest.issues.createComment({
-              issue_number: prNumber,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: message
-            });
-          }
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-id: ${{ github.sha }}
+        body: |
+          Deployed to Vercel 🚀
+
+          Output:
+          ```
+          ${{ steps.deploy.outputs.deploy_output }}
+          ```
+        reactions: 'rocket'
+
+    - name: Create or Update PR Comment
+      uses: peter-evans/create-or-update-comment@v4
+      if: github.event_name == 'pull_request' || steps.findPr.outputs.number
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        issue-number: ${{ github.event.pull_request.number || steps.findPr.outputs.number }}
+        body: |
+          Deployed to Vercel 🚀
+
+          Output:
+          ```
+          ${{ steps.deploy.outputs.deploy_output }}
+          ```
+        reactions: 'rocket'
