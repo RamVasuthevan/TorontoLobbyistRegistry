@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Check if Vercel CLI is available
-if ! command -v vercel &> /dev/null; then
-    echo "Vercel CLI not found, using token-based deployment"
+# Check if $VERCEL_TOKEN is available
+if [ -n "$VERCEL_TOKEN" ]; then
+    echo "VERCEL_TOKEN found, using token-based deployment"
     DEPLOY_CMD="datasette publish vercel --token $VERCEL_TOKEN"
 else
-    vercel --version
+    echo "VERCEL_TOKEN not found, assuming Vercel CLI is available"
     DEPLOY_CMD="datasette publish vercel"
 fi
 
