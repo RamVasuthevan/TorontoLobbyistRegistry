@@ -7,7 +7,8 @@ on:
       - main
   pull_request:
     types: [opened, synchronize, reopened]
-  workflow_call:
+  repository_dispatch:
+    types: [trigger-deploy]
 
 jobs:
   deploy:
@@ -44,8 +45,9 @@ jobs:
         echo "$OUTPUT" >> $GITHUB_OUTPUT
         echo "EOF" >> $GITHUB_OUTPUT
 
-    - name: Create commit comment
+    - name: Create or Update Commit Comment
       uses: peter-evans/commit-comment@v3
+      if: github.event_name == 'push' || github.event_name == 'repository_dispatch'
       with:
         sha: ${{ github.sha }}
         body: |
