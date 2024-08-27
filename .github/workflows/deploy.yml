@@ -47,11 +47,12 @@ jobs:
       with:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
+          const output = `${{ steps.deploy.outputs.deploy_output }}`;
           github.rest.issues.createComment({
             issue_number: context.issue.number,
             owner: context.repo.owner,
             repo: context.repo.repo,
-            body: 'Deployed to Vercel 🚀\n\nOutput:\n```\n${{ steps.deploy.outputs.deploy_output }}\n```'
+            body: `Deployed to Vercel 🚀\n\nOutput:\n\`\`\`\n${output}\n\`\`\``
           })
 
     - name: Comment Commit
@@ -60,9 +61,10 @@ jobs:
       with:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
+          const output = `${{ steps.deploy.outputs.deploy_output }}`;
           github.rest.repos.createCommitComment({
             owner: context.repo.owner,
             repo: context.repo.repo,
             commit_sha: context.sha,
-            body: 'Deployed to Vercel 🚀\n\nOutput:\n```\n${{ steps.deploy.outputs.deploy_output }}\n```'
+            body: `Deployed to Vercel 🚀\n\nOutput:\n\`\`\`\n${output}\n\`\`\``
           })
