@@ -5,6 +5,8 @@ on:
   push:
     branches:
       - '**'
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 jobs:
   deploy:
@@ -41,30 +43,39 @@ jobs:
         echo "$OUTPUT" >> $GITHUB_OUTPUT
         echo "EOF" >> $GITHUB_OUTPUT
 
-    - name: Comment on Commit
-      uses: actions/github-script@v7
+    - name: Find Pull Request
+      uses: jwalton/gh-find-current-pr@v1
+      id: findPr
       if: github.event_name == 'push'
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Comment on Commit and PR
+      uses: actions/github-script@v7
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
           const output = `${{ steps.deploy.outputs.deploy_output }}`;
+          const message = `Deployed to Vercel 🚀\n\nOutput:\n\`\`\`\n${output}\n\`\`\``;
+          
+          // Always comment on the commit
           await github.rest.repos.createCommitComment({
             owner: context.repo.owner,
             repo: context.repo.repo,
             commit_sha: context.sha,
-            body: `Deployed to Vercel 🚀\n\nOutput:\n\`\`\`\n${output}\n\`\`\``
+            body: message
           });
-
-    - name: Comment on PR
-      uses: actions/github-script@v7
-      if: github.event_name == 'pull_request'
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          const output = `${{ steps.deploy.outputs.deploy_output }}`;
-          await github.rest.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: `Deployed to Vercel 🚀\n\nOutput:\n\`\`\`\n${output}\n\`\`\``
-          });
+          
+          // If this is a PR or a push to a branch with an open PR, comment on the PR
+          if (context.eventName === 'pull_request' || ${{ steps.findPr.outputs.number }}) {
+            const prNumber = context.eventName === 'pull_request' 
+              ? context.issue.number 
+              : ${{ steps.findPr.outputs.number }};
+            
+            await github.rest.issues.createComment({
+              issue_number: prNumber,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: message
+            });
+          }
