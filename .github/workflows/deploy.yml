@@ -28,7 +28,7 @@ jobs:
         VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       run: |
         if [ "${{ github.ref }}" = "refs/heads/main" ]; then
-          pipenv run ./deploy.sh
+          bash deploy.sh
         else
-          pipenv run ./deploy.sh --no-prod
+          bash deploy.sh --no-prod
         fi
