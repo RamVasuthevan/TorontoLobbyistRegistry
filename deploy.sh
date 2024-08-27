@@ -5,6 +5,7 @@ if ! command -v vercel &> /dev/null; then
     echo "Vercel CLI not found, using token-based deployment"
     DEPLOY_CMD="datasette publish vercel --token $VERCEL_TOKEN"
 else
+    vercel --version
     DEPLOY_CMD="datasette publish vercel"
 fi
 
@@ -16,6 +17,5 @@ if [[ "$1" == "--no-prod" ]]; then
     DEPLOY_CMD="$DEPLOY_CMD --no-prod"
 fi
 
-echo $DEPLOY_CMD
 # Execute the deployment command
 eval $DEPLOY_CMD
