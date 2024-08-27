@@ -7,6 +7,7 @@ on:
       - main
   pull_request:
     types: [opened, synchronize, reopened]
+  workflow_call:
 
 jobs:
   deploy:
@@ -43,11 +44,10 @@ jobs:
         echo "$OUTPUT" >> $GITHUB_OUTPUT
         echo "EOF" >> $GITHUB_OUTPUT
 
-    - name: Create or Update Commit Comment
+    - name: Create commit comment
       uses: peter-evans/commit-comment@v3
-      if: github.event_name == 'push'
       with:
-        commit-id: ${{ github.sha }}
+        sha: ${{ github.sha }}
         body: |
           Deployed to Vercel 🚀
 
