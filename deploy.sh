@@ -16,5 +16,6 @@ if [[ "$1" == "--no-prod" ]]; then
     DEPLOY_CMD="$DEPLOY_CMD --no-prod"
 fi
 
+echo $DEPLOY_CMD
 # Execute the deployment command
 eval $DEPLOY_CMD
