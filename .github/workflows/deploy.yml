@@ -67,11 +67,11 @@ jobs:
           });
           
           // If this is a PR or a push to a branch with an open PR, comment on the PR
-          if (context.eventName === 'pull_request' || ${{ steps.findPr.outputs.number }}) {
-            const prNumber = context.eventName === 'pull_request' 
-              ? context.issue.number 
-              : ${{ steps.findPr.outputs.number }};
-            
+          const prNumber = context.eventName === 'pull_request' 
+            ? context.issue.number 
+            : ${{ steps.findPr.outputs.number }};
+          
+          if (context.eventName === 'pull_request' || prNumber) {
             await github.rest.issues.createComment({
               issue_number: prNumber,
               owner: context.repo.owner,
