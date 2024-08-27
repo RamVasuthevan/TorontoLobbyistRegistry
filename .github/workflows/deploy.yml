@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - '**'
+      - main
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -43,15 +43,9 @@ jobs:
         echo "$OUTPUT" >> $GITHUB_OUTPUT
         echo "EOF" >> $GITHUB_OUTPUT
 
-    - name: Find Pull Request
-      uses: jwalton/gh-find-current-pr@v1
-      id: findPr
-      if: github.event_name == 'push'
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-
     - name: Create or Update Commit Comment
       uses: peter-evans/commit-comment@v3
+      if: github.event_name == 'push'
       with:
         commit-id: ${{ github.sha }}
         body: |
@@ -65,10 +59,9 @@ jobs:
 
     - name: Create or Update PR Comment
       uses: peter-evans/create-or-update-comment@v4
-      if: github.event_name == 'pull_request' || steps.findPr.outputs.number
+      if: github.event_name == 'pull_request'
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        issue-number: ${{ github.event.pull_request.number || steps.findPr.outputs.number }}
+        issue-number: ${{ github.event.pull_request.number }}
         body: |
           Deployed to Vercel 🚀
 
