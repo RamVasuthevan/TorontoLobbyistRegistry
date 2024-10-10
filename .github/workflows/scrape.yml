@@ -46,7 +46,8 @@ jobs:
           git add .
           timestamp=$(date -u)
           git commit -m "Downloaded: ${timestamp}: commit: ${{env.TorontoLobbyistRegistry_commit_hash}}" || exit 0
-          git push origin main
+          git push https://RamVasuthevan:${{ secrets.PAT_TORONTOLOBBYISTREGISTRY_SCRAPE }}@github.com/RamVasuthevan/TorontoLobbyistRegistryData.git main
+        
 
   trigger_deploy:
     needs: download_lobby_data
