@@ -6,3 +6,4 @@ lobbyist_registry.db
 *.xml
 *.log
 .env
+.vercel
