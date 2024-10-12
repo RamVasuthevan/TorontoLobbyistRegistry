@@ -5,7 +5,6 @@ on:
   push:
     branches:
       - main
-      - depoly-to-do
   repository_dispatch:
     types: [trigger-deploy]
 

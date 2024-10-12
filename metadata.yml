@@ -9,7 +9,7 @@ source: Toronto Open Data
 source_url: https://open.toronto.ca/dataset/lobbyist-registry/
 repo: RamVasuthevan/TorontoLobbyistRegistry
 repo_url: https://github.com/RamVasuthevan/TorontoLobbyistRegistry
-about: Built by Ram Vasuthevan with ❤️ on the shoulders of giants (GH Actions FTW!)
+about: Built by Ram Vasuthevan with ❤️ on the shoulders of giants
 about_url: https://github.com/RamVasuthevan/TorontoLobbyistRegistry
 
 databases:
