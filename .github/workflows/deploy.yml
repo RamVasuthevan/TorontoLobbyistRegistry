@@ -1,12 +1,10 @@
-name: Deploy to Vercel
+name: Deploy to DigitalOcean
 
 on:
   workflow_dispatch:
   push:
     branches:
       - main
-  pull_request:
-    types: [opened, synchronize, reopened]
   repository_dispatch:
     types: [trigger-deploy]
 
@@ -18,62 +16,50 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
+    env:
+      SERVER_IP: 192.34.62.11
+
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Extract Python version from Pipfile
+      id: python_version
+      run: |
+        PYTHON_VERSION=$(grep "python_version" Pipfile | cut -d '"' -f2)
+        echo "python-version=$PYTHON_VERSION" >> $GITHUB_ENV
+
 
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.12'
-
+        python-version: ${{ env.python-version }}
+    
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install pipenv
-        pipenv install
-      
+
     - name: Build database
       run: |
+        pipenv install
         pipenv run python main.py
 
-    - name: Deploy to Vercel
-      id: deploy
-      env:
-        VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+    - name: Set up SSH key
       run: |
-        if [ "${{ github.ref }}" = "refs/heads/main" ]; then
-          OUTPUT=$(pipenv run bash deploy.sh)
-        else
-          OUTPUT=$(pipenv run bash deploy.sh --no-prod)
-        fi
-        echo "deploy_output<<EOF" >> $GITHUB_OUTPUT
-        echo "$OUTPUT" >> $GITHUB_OUTPUT
-        echo "EOF" >> $GITHUB_OUTPUT
+        mkdir -p ~/.ssh
+        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+        chmod 600 ~/.ssh/id_ed25519
+        ssh-keyscan -H $SERVER_IP >> ~/.ssh/known_hosts
 
-    - name: Create or Update Commit Comment
-      uses: peter-evans/commit-comment@v3
-      if: github.event_name == 'push' || github.event_name == 'repository_dispatch'
-      with:
-        sha: ${{ github.sha }}
-        body: |
-          Deployed to Vercel 🚀
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.id_ed25519_TorontoLobbyistRegistryPublic }}
 
-          Output:
-          ```
-          ${{ steps.deploy.outputs.deploy_output }}
-          ```
-        reactions: 'rocket'
+    - name: Sync files using rsync
+      run: |
+        rsync -avz --delete \
+        ./ root@$SERVER_IP:/root/TorontoLobbyistRegistry
 
-    - name: Create or Update PR Comment
-      uses: peter-evans/create-or-update-comment@v4
-      if: github.event_name == 'pull_request'
-      with:
-        issue-number: ${{ github.event.pull_request.number }}
-        body: |
-          Deployed to Vercel 🚀
-
-          Output:
-          ```
-          ${{ steps.deploy.outputs.deploy_output }}
-          ```
-        reactions: 'rocket'
+    - name: Restart the application
+      run: ssh root@$SERVER_IP "systemctl restart TorontoLobbyistRegistry"
