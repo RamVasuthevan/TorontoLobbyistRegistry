@@ -44,6 +44,7 @@ jobs:
 
     - name: Build database
       run: |
+        pipenv install
         pipenv run python main.py
 
     - name: Set up SSH key
