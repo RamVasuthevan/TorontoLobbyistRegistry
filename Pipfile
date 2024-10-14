@@ -10,6 +10,7 @@ sqlite-utils = "*"
 datasette-search-all = "*"
 requests = "*"
 datasette-publish-vercel = "*"
+datasette-block-robots = "*"
 
 [requires]
 python_version = "3.12"
