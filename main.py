@@ -5,7 +5,7 @@ import requests
 import zipfile
 from io import BytesIO
 from datetime import datetime
-from sqlalchemy import create_engine, inspect
+from sqlalchemy import create_engine, inspect, Index
 from sqlalchemy.orm import sessionmaker
 from sqlite_utils import Database
 from models import Base
@@ -40,8 +40,9 @@ def setup_logging():
 # Database setup
 db_file = "lobbyist_registry.db"
 
-def get_temp_db_file():
-    return f"{db_file}.tmp"
+def get_temp_db_file_name():
+    temp_db_file_name = f"{db_file}.tmp"
+    return temp_db_file_name
 
 def create_engine_and_session(db_path):
     engine = create_engine(f"sqlite:///{db_path}")
@@ -49,19 +50,31 @@ def create_engine_and_session(db_path):
     return engine, Session
 
 def replace_db_with_temp():
-    temp_db = get_temp_db_file()
-    if os.path.exists(temp_db):
+    temp_db_file_name = get_temp_db_file_name()
+    if os.path.exists(temp_db_file_name):
         if os.path.exists(db_file):
             os.remove(db_file)
-        os.rename(temp_db, db_file)
-        logging.info(f"Replaced old database with new one: {db_file}")
+            os.rename(temp_db_file_name, db_file)
+            logging.info(f"Replaced old database with new one: {db_file}")
+        else:
+            os.rename(temp_db_file_name, db_file)
     else:
-        logging.error("Temporary database not found. No changes made.")
+        logging.error(f"Temporary database({temp_db_file_name}) not found. No changes made.")
 
 def create_tables(engine):
     logging.info("Creating new database tables")
     Base.metadata.create_all(engine)
     logging.info("Created new database tables")
+
+def create_indexes_for_foreign_keys_sqlalchemy(base, engine):
+    metadata = base.metadata
+    for table in metadata.tables.values():
+        for column in table.columns:
+            if column.foreign_keys and not column.index:
+                # Dynamically create and bind the index
+                index = Index(f'idx_{table.name}_{column.name}', column)
+                logging.info(f"Creating index: idx_{table.name}_{column.name}")
+                index.create(bind=engine)
 
 def enable_fts(db_path):
     logging.info("Enabling Full Text Search for all tables")
@@ -124,11 +137,14 @@ if __name__ == "__main__":
     download_and_unzip(github_url)
 
     # Use a temporary database file
-    temp_db_file = get_temp_db_file()
-    engine, Session = create_engine_and_session(temp_db_file)
+    temp_db_file_name = get_temp_db_file_name()
+    if os.path.exists(temp_db_file_name):
+        os.remove(temp_db_file_name)
+        
+    engine, Session = create_engine_and_session(temp_db_file_name)
 
     create_tables(engine)
-    
+
     session = Session()
     
     data_folder = 'data'
@@ -141,10 +157,14 @@ if __name__ == "__main__":
         logging.info(f"Finished parsing {file_path}")
     
     session.close()
-    enable_fts(temp_db_file)
-    logging.info("Database population completed with Full Text Search enabled")
-    
+
+    create_indexes_for_foreign_keys_sqlalchemy(Base, engine)
+    logging.info("Indexes for all foreign keys added")
+
     run_data_cleaning(Session())
+
+    enable_fts(temp_db_file_name)
+    logging.info("Database population completed with Full Text Search enabled")
     
     # Run unit tests
     test_result = run_unit_tests()
@@ -155,6 +175,6 @@ if __name__ == "__main__":
         logging.info("Database update completed successfully")
     else:
         logging.error("Tests failed. New database not applied.")
-        if os.path.exists(temp_db_file):
-            os.remove(temp_db_file)
+        if os.path.exists(temp_db_file_name):
+            os.remove(temp_db_file_name)
             logging.info("Temporary database file removed")
